@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Panel MVS</title>
+<link rel="icon" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0c1322; --bg2:#101a2d; --card:#14203a; --card2:#192842; --line:#24365a;
+  --gold:#dda061; --gold2:#b98447; --gold-dim:#dda06126; --text:#ecdfcb; --muted:#9ba6bb;
+  --ok:#7fc29b; --warn:#e8b54a; --bad:#e2735f;
+  --malvel:#7fa8de; --virtuoso:#dda061; --saito:#d9775f;
+  --r:14px; --head:Oswald,"Arial Narrow","Roboto Condensed",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font:15px/1.5 Inter,system-ui,sans-serif;
+  background-image:radial-gradient(1200px 500px at 50% -200px,#1a2a4a 0%,transparent 70%);min-height:100vh}
+h1,h2,h3,.oswald{font-family:var(--head);letter-spacing:.04em;text-transform:uppercase;font-weight:600;margin:0}
+a{color:var(--gold)}
+button,input,select{font:inherit;color:inherit}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px 60px}
+
+/* header */
+header{display:flex;align-items:center;gap:16px;padding:18px 0 14px;border-bottom:1px solid var(--line)}
+header img{width:64px;height:64px;border-radius:12px;border:1px solid var(--gold2);box-shadow:0 0 0 4px #dda06114}
+header h1{font-size:26px;color:var(--gold);line-height:1.1}
+header .sub{color:var(--muted);font-size:13px}
+header .me{margin-left:auto;font-size:12px;color:var(--muted);text-align:right}
+
+nav{display:flex;gap:6px;overflow-x:auto;padding:12px 0;scrollbar-width:none}
+nav button{background:none;border:1px solid transparent;border-radius:999px;padding:7px 14px;cursor:pointer;
+  font-family:var(--head);letter-spacing:.06em;text-transform:uppercase;font-size:14px;color:var(--muted);white-space:nowrap}
+nav button.on{color:var(--bg);background:var(--gold)}
+nav button:not(.on):hover{border-color:var(--line);color:var(--text)}
+nav button .lock{font-size:11px;opacity:.7;margin-left:4px}
+
+.demo{background:#e8b54a1c;border:1px dashed var(--warn);color:var(--warn);padding:8px 12px;border-radius:10px;font-size:13px;margin:6px 0 12px}
+
+.card{background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.card h2{font-size:17px;color:var(--gold);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card h2 .hint{margin-left:auto;font-family:Inter;text-transform:none;letter-spacing:0;font-weight:400;font-size:12px;color:var(--muted)}
+.grid{display:grid;gap:14px;grid-template-columns:minmax(0,1fr)}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g2{grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);align-items:start}
+@media (max-width:900px){.g3,.g2{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:480px){form .row{grid-template-columns:minmax(0,1fr)}.qi{grid-template-columns:60px minmax(0,1fr)}.qi .act{grid-column:1/-1;justify-content:flex-end}header h1{font-size:21px}header .me{display:none}}
+
+/* member cards */
+.mem{position:relative;overflow:hidden}
+.mem::before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:var(--c)}
+.mem .top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.av{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-family:var(--head);font-weight:700;
+  background:color-mix(in srgb,var(--c) 22%,transparent);color:var(--c);border:1px solid var(--c);flex:none}
+.mem .name{font-family:var(--head);font-size:19px;letter-spacing:.05em}
+.pill{display:inline-block;font-size:11px;font-weight:600;padding:2px 9px;border-radius:999px;text-transform:uppercase;letter-spacing:.05em}
+.p-work{background:#7fc29b22;color:var(--ok)} .p-rest{background:#7fa8de22;color:var(--malvel)}
+.p-leave{background:#e8b54a22;color:var(--warn)} .p-idle{background:#9ba6bb22;color:var(--muted)}
+.mem .title{font-weight:600;margin:4px 0 2px}
+.mem .meta{color:var(--muted);font-size:13px}
+.count{font-family:var(--head);font-size:30px;line-height:1;margin-top:10px}
+.count small{font-size:13px;color:var(--muted);font-family:Inter;margin-left:4px}
+.bar{height:6px;background:#0008;border-radius:9px;margin-top:8px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--c);border-radius:9px}
+
+/* queue */
+.q{display:flex;flex-direction:column;gap:8px}
+.qi{display:grid;grid-template-columns:76px 1fr auto;gap:12px;align-items:center;padding:10px 12px;border-radius:12px;background:var(--bg2);border:1px solid var(--line)}
+.qi .d{text-align:center;border-right:1px solid var(--line);padding-right:10px}
+.qi .d b{display:block;font-family:var(--head);font-size:22px;line-height:1;color:var(--gold)}
+.qi .d span{font-size:11px;color:var(--muted);text-transform:uppercase}
+.qi .t{font-weight:600}
+.qi .s{font-size:12.5px;color:var(--muted)}
+.qi .tag{font-size:11px;padding:1px 7px;border-radius:6px;border:1px solid var(--line);margin-left:6px;color:var(--muted)}
+.qi .act{display:flex;gap:6px}
+.warnline{color:var(--warn);font-size:12.5px}
+.badline{color:var(--bad);font-size:12.5px}
+.gap{border-style:dashed;border-color:var(--bad);background:#e2735f10;grid-template-columns:76px 1fr}
+
+.btn{background:var(--gold);color:#1a1206;border:0;border-radius:10px;padding:8px 14px;font-weight:600;cursor:pointer}
+.btn:hover{background:#e8b077}
+.btn.ghost{background:none;color:var(--text);border:1px solid var(--line)}
+.btn.ghost:hover{border-color:var(--gold2)}
+.btn.sm{padding:5px 10px;font-size:13px;border-radius:8px}
+.x{background:none;border:0;color:var(--muted);cursor:pointer;font-size:16px;padding:2px 6px;border-radius:6px}
+.x:hover{color:var(--bad);background:#e2735f18}
+
+form .row{display:grid;gap:10px;grid-template-columns:minmax(0,1fr) minmax(0,1fr);margin-bottom:10px}
+form .row.one{grid-template-columns:1fr}
+label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)}
+label.chk{flex-direction:row;align-items:center;gap:8px;font-size:13.5px;color:var(--text)}
+input,select{background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:8px 10px;min-width:0}
+input:focus,select:focus{outline:2px solid var(--gold2);outline-offset:-1px}
+input[type=checkbox]{accent-color:var(--gold);width:16px;height:16px}
+
+.list{display:flex;flex-direction:column;gap:6px}
+.li{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;background:var(--bg2);font-size:13.5px}
+.li .dot{width:9px;height:9px;border-radius:50%;background:var(--c);flex:none}
+.li .grow{flex:1;min-width:0}
+.li .grow b{font-weight:600}
+.empty{color:var(--muted);font-size:13px;padding:6px 2px}
+
+.locked{display:grid;place-items:center;text-align:center;min-height:320px;gap:10px}
+.locked .big{font-size:46px}
+.locked p{color:var(--muted);max-width:460px;margin:0 auto}
+
+dialog{background:var(--card);color:var(--text);border:1px solid var(--gold2);border-radius:var(--r);padding:20px;width:min(440px,92vw)}
+dialog::backdrop{background:#000a}
+dialog h3{color:var(--gold);margin-bottom:12px}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--card2);border:1px solid var(--gold2);padding:10px 16px;border-radius:10px;opacity:0;transition:.25s;pointer-events:none;z-index:9}
+.toast.on{opacity:1}
+.help{font-size:12.5px;color:var(--muted);margin-top:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <img src="logo.jpg" alt="Logo MVS">
+    <div>
+      <h1>Kwatera MVS</h1>
+      <div class="sub">Malvel · Virtuoso · Saito</div>
+    </div>
+    <div class="me" id="me"></div>
+  </header>
+
+  <nav id="nav"></nav>
+  <div id="demo"></div>
+  <main id="view"></main>
+</div>
+
+<dialog id="dlg"></dialog>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+const MEMBERS = ["Malvel","Virtuoso","Saito"];
+const COLORS = {Malvel:"var(--malvel)",Virtuoso:"var(--virtuoso)",Saito:"var(--saito)"};
+const DEFAULTS = {cadence:4, workPerMin:0.3, minWork:3, restPerMin:0.15};
+const TABS = [
+  {id:"plan", name:"Plan nagrywek"},
+  {id:"perf", name:"Performance", stage:2, icon:"📈", text:"Każdy nowy film pojawi się tu sam, z autorem pobranym z planu nagrywek, oceną w % względem ostatnich wyników kanału i świecącym REKORDEM."},
+  {id:"rec", name:"Rekordy MVS", stage:2, icon:"🏆", text:"Najlepsze filmy po 24 h, 7, 14 i 28 dniach od premiery."},
+  {id:"chal", name:"Wyzwania", stage:3, icon:"🎯", text:"Cel subów, wykres i prognoza daty, odświeżane rano i wieczorem. Na dole ukryte achievementy z podpisem zdobywcy."},
+  {id:"thumb", name:"Miniatury", stage:3, icon:"🖼️", text:"3 miniatury, które najlepiej przyciągały widzów, i generator promptu do AI w ich stylu."},
+  {id:"news", name:"Aktualności", stage:2, icon:"📣", text:"„Film odżywa!”, nowy film na kanale, nowy rekord i inne powiadomienia."},
+  {id:"tags", name:"Tagi", stage:3, icon:"🏷️", text:"Generator tagów na podstawie waszych najlepszych filmów i tytułu nowego."},
+];
+
+/* ---------- daty ---------- */
+const DAY = 864e5;
+const toD = s => { const [y,m,d] = s.split("-").map(Number); return new Date(Date.UTC(y,m-1,d,12)); };
+const toS = d => d.toISOString().slice(0,10);
+const today = () => { const n = new Date(); return toS(new Date(Date.UTC(n.getFullYear(),n.getMonth(),n.getDate(),12))); };
+const addDays = (s,n) => toS(new Date(toD(s).getTime()+n*DAY));
+const diff = (a,b) => Math.round((toD(b)-toD(a))/DAY);
+const maxS = (a,b) => a > b ? a : b;
+const fmt = s => toD(s).toLocaleDateString("pl-PL",{day:"numeric",month:"short",timeZone:"UTC"});
+const dow = s => toD(s).toLocaleDateString("pl-PL",{weekday:"short",timeZone:"UTC"});
+function rel(n){
+  if(n===0) return "dziś";
+  if(n===1) return "jutro";
+  if(n>1) return "za "+n+" dni";
+  return (-n)+" "+(-n===1?"dzień":"dni")+" po terminie";
+}
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+/* ---------- dane ---------- */
+let S = {projects:[], leaves:[], settings:{...DEFAULTS}, me:""};
+let DEMO = false;
+let demoId = 100;
+
+function demoData(){
+  const t = today();
+  return {
+    me:"tryb podglądu",
+    settings:{...DEFAULTS},
+    projects:[
+      {id:1,member:"Saito",title:"Tiger II – czy był aż tak straszny?",start:addDays(t,-6),planned_min:22,wt:1,status:"active"},
+      {id:2,member:"Malvel",title:"Najgorsze samoloty 1. rangi",start:addDays(t,-2),planned_min:12,wt:1,status:"active"},
+      {id:3,member:"Virtuoso",title:"Historia Leoparda 2 – pełny dokument",start:addDays(t,-15),planned_min:45,wt:1,status:"done",uploaded:addDays(t,-3),actual_min:44},
+      {id:4,member:"Malvel",title:"5 czołgów, które grają się same",start:addDays(t,-12),planned_min:10,wt:1,status:"done",uploaded:addDays(t,-7),actual_min:9},
+    ],
+    leaves:[{id:1,member:"Saito",from_date:addDays(t,2),to_date:addDays(t,5),note:"wyjazd"}],
+  };
+}
+
+const api = {
+  async call(method, url, body){
+    if(DEMO) return demoCall(method, url, body);
+    const r = await fetch("/api/"+url,{method,headers:{"content-type":"application/json"},body:body?JSON.stringify(body):undefined});
+    const j = await r.json().catch(()=>({}));
+    if(!r.ok) throw new Error(j.error || "Błąd zapisu");
+    return j;
+  }
+};
+function demoCall(method, url, body){
+  const [res,id] = url.split("/");
+  const list = res==="projects" ? S.projects : res==="leaves" ? S.leaves : null;
+  if(res==="settings"){ Object.assign(S.settings, Object.fromEntries(Object.entries(body).map(([k,v])=>[k,Number(v)]))); return {}; }
+  if(method==="POST"){ const o={id:++demoId, status:"active", ...body}; list.push(o); return {id:o.id}; }
+  if(method==="PUT"){ Object.assign(list.find(x=>x.id==id), body); return {}; }
+  if(method==="DELETE"){ list.splice(list.findIndex(x=>x.id==id),1); return {}; }
+}
+
+async function load(){
+  if(DEMO){ render(); return; }
+  try{
+    const r = await fetch("/api/state",{cache:"no-store"});
+    if(!r.ok) throw 0;
+    const j = await r.json();
+    S = {...j, settings:{...DEFAULTS, ...j.settings}};
+  }catch{
+    DEMO = true; S = demoData();
+  }
+  render();
+}
+async function save(method, url, body, msg){
+  try{ await api.call(method,url,body); toast(msg||"Zapisano"); }
+  catch(e){ toast("⚠ "+e.message); }
+  await load();
+}
+
+/* ---------- algorytm deadline'ów ---------- */
+function onLeave(member, day){
+  return S.leaves.some(l => l.member===member && day>=l.from_date && day<=l.to_date);
+}
+function currentLeave(member, day){
+  return S.leaves.find(l => l.member===member && day<=l.to_date && day>=l.from_date);
+}
+/* najwcześniejszy realny termin: start + N dni pracy, dni urlopu się nie liczą */
+function earliestFinish(p){
+  const st = S.settings;
+  const need = Math.max(st.minWork, Math.ceil(p.planned_min*st.workPerMin));
+  let d = p.start;
+  let worked = 0, leaveDays = 0, guard = 0;
+  while(worked < need && guard++ < 400){
+    if(onLeave(p.member, d)) leaveDays++; else worked++;
+    d = addDays(d,1);
+  }
+  return {date:addDays(d,-1), need, leaveDays};
+}
+function restOf(p){
+  return Math.max(1, Math.round((p.actual_min || p.planned_min) * S.settings.restPerMin));
+}
+function schedule(){
+  const st = S.settings, t = today();
+  const done = S.projects.filter(p=>p.status==="done" && p.uploaded).sort((a,b)=>a.uploaded<b.uploaded?-1:1);
+  const lastUpload = done.length ? done[done.length-1].uploaded : addDays(t,-st.cadence);
+  const active = S.projects.filter(p=>p.status==="active").map(p=>({...p, ef:earliestFinish(p)}));
+  // kolejność premier: kto najwcześniej realnie skończy, ten pierwszy
+  active.sort((a,b)=> a.ef.date===b.ef.date ? (a.start<b.start?-1:1) : (a.ef.date<b.ef.date?-1:1));
+  let prev = lastUpload;
+  const out = [];
+  for(const p of active){
+    const slot = addDays(prev, st.cadence);        // kiedy kanał potrzebuje kolejnego filmu
+    let deadline = maxS(slot, p.ef.date);          // nie wcześniej niż da się zrobić film
+    // termin nie może wypaść w trakcie urlopu autora
+    while(onLeave(p.member, deadline)) deadline = addDays(deadline,1);
+    const gapDays = diff(prev, deadline) - st.cadence; // >0 = kanał będzie stał
+    out.push({...p, slot, deadline, gapDays, prev});
+    prev = deadline;
+  }
+  return {queue:out, lastUpload, done, nextNeeded:addDays(prev, st.cadence)};
+}
+
+/* ---------- widoki ---------- */
+let TAB = location.hash.slice(1) || "plan";
+function renderNav(){
+  document.getElementById("nav").innerHTML = TABS.map(t =>
+    `<button class="${t.id===TAB?"on":""}" data-tab="${t.id}">${esc(t.name)}${t.stage?`<span class="lock">🔒</span>`:""}</button>`).join("");
+}
+function render(){
+  renderNav();
+  document.getElementById("me").innerHTML = S.me ? "zalogowany:<br>"+esc(S.me) : "";
+  document.getElementById("demo").innerHTML = DEMO ? `<div class="demo">Tryb podglądu: przykładowe dane, nic nie jest zapisywane. Po wrzuceniu na Cloudflare panel zacznie korzystać z waszej bazy.</div>` : "";
+  const v = document.getElementById("view");
+  const tab = TABS.find(t=>t.id===TAB) || TABS[0];
+  v.innerHTML = tab.stage ? lockedView(tab) : planView();
+}
+function lockedView(t){
+  return `<div class="card locked"><div><div class="big">${t.icon}</div>
+    <h2 style="justify-content:center">${esc(t.name)}</h2>
+    <p>${esc(t.text)}</p>
+    <p style="margin-top:10px"><span class="pill p-idle">Etap ${t.stage}</span></p></div></div>`;
+}
+
+function planView(){
+  const t = today(), {queue, done, nextNeeded} = schedule();
+  return `
+  <div class="grid g3">${MEMBERS.map(m => memberCard(m, queue, done, t)).join("")}</div>
+  <div class="grid g2" style="margin-top:14px">
+    <div class="card">
+      <h2>Kolejka premier <span class="hint">co ${S.settings.cadence} dni nowy film</span></h2>
+      ${queueView(queue, nextNeeded, t)}
+    </div>
+    <div class="grid" style="align-content:start">
+      <div class="card">
+        <h2>Nowy film</h2>
+        <form id="fNew">
+          <div class="row"><label>Kto<select name="member">${MEMBERS.map(m=>`<option>${m}</option>`).join("")}</select></label>
+            <label>Start pracy<input type="date" name="start" value="${t}" required></label></div>
+          <div class="row one"><label>Tytuł roboczy<input name="title" maxlength="200" placeholder="np. Historia T-34" required></label></div>
+          <div class="row"><label>Planowana długość (min)<input type="number" name="planned_min" min="1" max="300" value="15" required></label>
+            <label class="chk" style="align-self:end;padding-bottom:8px"><input type="checkbox" name="wt" checked> War Thunder</label></div>
+          <button class="btn" type="submit">Dodaj do planu</button>
+        </form>
+      </div>
+      <div class="card">
+        <h2>Wolne / urlop</h2>
+        <form id="fLeave">
+          <div class="row"><label>Kto<select name="member">${MEMBERS.map(m=>`<option>${m}</option>`).join("")}</select></label>
+            <label>Powód (opcjonalnie)<input name="note" maxlength="120" placeholder="wyjazd"></label></div>
+          <div class="row"><label>Od<input type="date" name="from_date" value="${t}" required></label>
+            <label>Do<input type="date" name="to_date" value="${addDays(t,3)}" required></label></div>
+          <button class="btn" type="submit">Zapisz wolne</button>
+        </form>
+        <div class="list" style="margin-top:12px">${leavesList(t)}</div>
+      </div>
+    </div>
+  </div>
+  <div class="grid g2" style="margin-top:14px">
+    <div class="card"><h2>Ostatnio wrzucone</h2><div class="list">${historyList(done)}</div></div>
+    <div class="card"><h2>Ustawienia rytmu</h2>${settingsForm()}</div>
+  </div>`;
+}
+
+function memberCard(m, queue, done, t){
+  const c = COLORS[m];
+  const proj = queue.find(p=>p.member===m);
+  const leave = currentLeave(m, t);
+  const last = [...done].reverse().find(p=>p.member===m);
+  let pill, body;
+  if(proj){
+    const left = diff(t, proj.deadline);
+    const total = Math.max(1, diff(proj.start, proj.deadline));
+    const pct = Math.min(100, Math.max(0, Math.round(diff(proj.start, t)/total*100)));
+    pill = leave ? `<span class="pill p-leave">Urlop do ${fmt(leave.to_date)}</span>` : `<span class="pill p-work">W produkcji</span>`;
+    body = `<div class="title">${esc(proj.title)}</div>
+      <div class="meta">start ${fmt(proj.start)} · ~${proj.planned_min} min${proj.wt?" · WT":""}</div>
+      <div class="count" style="color:${left<0?"var(--bad)":left<=2?"var(--warn)":"var(--text)"}">${fmt(proj.deadline)}<small>${rel(left)}</small></div>
+      <div class="bar"><i style="width:${pct}%"></i></div>`;
+  } else if(leave){
+    pill = `<span class="pill p-leave">Urlop</span>`;
+    body = `<div class="meta">${leave.note?esc(leave.note)+" · ":""}wraca ${fmt(addDays(leave.to_date,1))}</div>`;
+  } else if(last && diff(last.uploaded, t) < restOf(last)){
+    const until = addDays(last.uploaded, restOf(last));
+    pill = `<span class="pill p-rest">Odpoczynek</span>`;
+    body = `<div class="meta">po „${esc(last.title)}” (${last.actual_min||last.planned_min} min)</div>
+      <div class="count">${fmt(until)}<small>${rel(diff(t,until))} koniec przerwy</small></div>`;
+  } else {
+    pill = `<span class="pill p-idle">Wolny</span>`;
+    body = `<div class="meta">Brak filmu w planie. Czas coś wziąć!</div>`;
+  }
+  return `<div class="card mem" style="--c:${c}">
+    <div class="top"><div class="av">${m[0]}</div><div><div class="name">${m}</div>${pill}</div></div>${body}</div>`;
+}
+
+function queueView(queue, nextNeeded, t){
+  if(!queue.length) return `<div class="qi gap"><div class="d"><b>!</b><span>pusto</span></div>
+    <div><div class="t">Nikt nie pracuje nad filmem</div><div class="badline">Kanał potrzebuje premiery do ${fmt(nextNeeded)}. Dodajcie film do planu.</div></div></div>`;
+  let html = "";
+  for(const p of queue){
+    if(p.gapDays > 0) html += `<div class="qi gap"><div class="d"><b>+${p.gapDays}</b><span>dni</span></div>
+      <div><div class="t">Dziura w harmonogramie</div><div class="badline">Między ${fmt(p.prev)} a ${fmt(p.deadline)} kanał będzie stał. Ktoś mógłby wrzucić krótszy film.</div></div></div>`;
+    const notes = [];
+    if(p.ef.leaveDays) notes.push(`<span class="warnline">urlop wydłużył pracę o ${p.ef.leaveDays} d.</span>`);
+    if(p.deadline > p.slot) notes.push(`<span class="warnline">termin przesunięty, bo film wymaga ${p.ef.need} dni pracy</span>`);
+    html += `<div class="qi" style="--c:${COLORS[p.member]}">
+      <div class="d"><b>${toD(p.deadline).getUTCDate()}</b><span>${dow(p.deadline)} ${fmt(p.deadline).split(" ")[1]||""}</span></div>
+      <div><div class="t">${esc(p.title)}${p.wt?'<span class="tag">WT</span>':""}</div>
+        <div class="s"><span style="color:${COLORS[p.member]};font-weight:600">${p.member}</span> · ~${p.planned_min} min · ${rel(diff(t,p.deadline))}</div>
+        ${notes.length?`<div>${notes.join(" · ")}</div>`:""}</div>
+      <div class="act"><button class="btn sm" data-done="${p.id}">Wrzucony</button><button class="x" title="Edytuj" data-edit="${p.id}">✎</button><button class="x" title="Usuń" data-del="${p.id}">✕</button></div>
+    </div>`;
+  }
+  html += `<div class="help">Następny film potrzebny do <b>${fmt(nextNeeded)}</b>. Kto nie ma nic w planie, niech bierze temat.</div>`;
+  return `<div class="q">${html}</div>`;
+}
+
+function leavesList(t){
+  const l = S.leaves.filter(x=>x.to_date>=t);
+  if(!l.length) return `<div class="empty">Brak zaplanowanych wolnych.</div>`;
+  return l.map(x=>`<div class="li" style="--c:${COLORS[x.member]}"><span class="dot"></span>
+    <div class="grow"><b>${x.member}</b> · ${fmt(x.from_date)} – ${fmt(x.to_date)}${x.note?` · ${esc(x.note)}`:""}</div>
+    <button class="x" data-delleave="${x.id}" title="Usuń">✕</button></div>`).join("");
+}
+function historyList(done){
+  const t = today();
+  const l = [...done].reverse().slice(0,6);
+  if(!l.length) return `<div class="empty">Jeszcze nic nie oznaczono jako wrzucone.</div>`;
+  return l.map(p=>`<div class="li" style="--c:${COLORS[p.member]}"><span class="dot"></span>
+    <div class="grow"><b>${esc(p.title)}</b><br><span style="color:var(--muted);font-size:12.5px">${p.member} · ${fmt(p.uploaded)} · ${p.actual_min||p.planned_min} min · przerwa ${restOf(p)} d.</span></div>
+    ${p.video_url?`<a href="${esc(p.video_url)}" target="_blank" rel="noopener">▶</a>`:""}
+    <button class="x" data-undo="${p.id}" title="Cofnij do produkcji">↺</button></div>`).join("");
+}
+function settingsForm(){
+  const s = S.settings;
+  return `<form id="fSet">
+    <div class="row"><label>Nowy film co (dni)<input type="number" name="cadence" min="1" max="30" step="1" value="${s.cadence}"></label>
+      <label>Min. dni pracy<input type="number" name="minWork" min="1" max="30" step="1" value="${s.minWork}"></label></div>
+    <div class="row"><label>Dni pracy na minutę filmu<input type="number" name="workPerMin" min="0" max="5" step="0.05" value="${s.workPerMin}"></label>
+      <label>Dni przerwy na minutę filmu<input type="number" name="restPerMin" min="0" max="5" step="0.05" value="${s.restPerMin}"></label></div>
+    <button class="btn ghost" type="submit">Zapisz ustawienia</button>
+    <div class="help">Przykład przy obecnych ustawieniach: film 45 min to ${Math.max(s.minWork,Math.ceil(45*s.workPerMin))} dni pracy i ${Math.max(1,Math.round(45*s.restPerMin))} dni przerwy, a film 9 min to ${Math.max(s.minWork,Math.ceil(9*s.workPerMin))} dni pracy i ${Math.max(1,Math.round(9*s.restPerMin))} dzień przerwy.</div>
+  </form>`;
+}
+
+/* ---------- akcje ---------- */
+const formObj = f => Object.fromEntries(new FormData(f));
+document.addEventListener("submit", e => {
+  const f = e.target; e.preventDefault();
+  const o = formObj(f);
+  if(f.id==="fNew") save("POST","projects",{member:o.member,title:o.title,start:o.start,planned_min:Number(o.planned_min),wt:!!o.wt},"Film dodany do planu");
+  if(f.id==="fLeave"){
+    if(o.to_date < o.from_date) return toast("⚠ Data końca przed początkiem");
+    save("POST","leaves",o,"Wolne zapisane");
+  }
+  if(f.id==="fSet") save("PUT","settings",o,"Ustawienia zapisane");
+  if(f.id==="fDone"){ dlg.close(); save("PUT","projects/"+f.dataset.id,{status:"done",uploaded:o.uploaded,actual_min:Number(o.actual_min),video_url:o.video_url||null},"Gratulacje, film wrzucony! 🎉"); }
+  if(f.id==="fEdit"){ dlg.close(); save("PUT","projects/"+f.dataset.id,{member:o.member,title:o.title,start:o.start,planned_min:Number(o.planned_min),wt:!!o.wt},"Zmiany zapisane"); }
+});
+document.addEventListener("click", e => {
+  const b = e.target.closest("button,[data-close]"); if(!b) return;
+  const d = b.dataset;
+  if(d.tab){ TAB = d.tab; history.replaceState(null,"","#"+TAB); render(); }
+  if(d.close!==undefined) dlg.close();
+  if(d.del && confirm("Usunąć ten film z planu?")) save("DELETE","projects/"+d.del,null,"Usunięto");
+  if(d.delleave && confirm("Usunąć to wolne?")) save("DELETE","leaves/"+d.delleave,null,"Usunięto");
+  if(d.undo && confirm("Cofnąć film z powrotem do produkcji?")) save("PUT","projects/"+d.undo,{status:"active",uploaded:null,actual_min:null},"Cofnięto");
+  if(d.done) openDone(S.projects.find(p=>p.id==d.done));
+  if(d.edit) openEdit(S.projects.find(p=>p.id==d.edit));
+});
+const dlg = document.getElementById("dlg");
+function openDone(p){
+  dlg.innerHTML = `<h3>Wrzucony: ${esc(p.title)}</h3>
+  <form id="fDone" data-id="${p.id}">
+    <div class="row"><label>Data premiery<input type="date" name="uploaded" value="${today()}" required></label>
+      <label>Faktyczna długość (min)<input type="number" name="actual_min" min="1" max="300" step="0.5" value="${p.planned_min}" required></label></div>
+    <div class="row one"><label>Link do filmu (opcjonalnie)<input type="url" name="video_url" placeholder="https://youtu.be/…"></label></div>
+    <div class="help" style="margin-bottom:12px">Od etapu 2 panel sam wykryje film na kanale. Ręczne oznaczenie zostaje jako zapas.</div>
+    <button class="btn" type="submit">Zapisz</button> <button class="btn ghost" type="button" data-close>Anuluj</button>
+  </form>`;
+  dlg.showModal();
+}
+function openEdit(p){
+  dlg.innerHTML = `<h3>Edycja filmu</h3>
+  <form id="fEdit" data-id="${p.id}">
+    <div class="row"><label>Kto<select name="member">${MEMBERS.map(m=>`<option ${m===p.member?"selected":""}>${m}</option>`).join("")}</select></label>
+      <label>Start pracy<input type="date" name="start" value="${p.start}" required></label></div>
+    <div class="row one"><label>Tytuł roboczy<input name="title" maxlength="200" value="${esc(p.title)}" required></label></div>
+    <div class="row"><label>Planowana długość (min)<input type="number" name="planned_min" min="1" max="300" value="${p.planned_min}" required></label>
+      <label class="chk" style="align-self:end;padding-bottom:8px"><input type="checkbox" name="wt" ${p.wt?"checked":""}> War Thunder</label></div>
+    <button class="btn" type="submit">Zapisz</button> <button class="btn ghost" type="button" data-close>Anuluj</button>
+  </form>`;
+  dlg.showModal();
+}
+let tt;
+function toast(m){ const el=document.getElementById("toast"); el.textContent=m; el.classList.add("on"); clearTimeout(tt); tt=setTimeout(()=>el.classList.remove("on"),2600); }
+
+load();
+setInterval(()=>{ if(!DEMO && !dlg.open) load(); }, 60000);
+</script>
+</body>
+</html>
