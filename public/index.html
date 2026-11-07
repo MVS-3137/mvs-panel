@@ -120,7 +120,7 @@ dialog h3{color:var(--gold);margin-bottom:12px}
   <header>
     <img src="logo.jpg" alt="Logo MVS">
     <div>
-      <h1>Kwatera MVS</h1>
+      <h1>Panel MVS</h1>
       <div class="sub">Malvel · Virtuoso · Saito</div>
     </div>
     <div class="me" id="me"></div>
@@ -192,6 +192,7 @@ const api = {
     if(DEMO) return demoCall(method, url, body);
     const r = await fetch("/api/"+url,{method,headers:{"content-type":"application/json"},body:body?JSON.stringify(body):undefined});
     const j = await r.json().catch(()=>({}));
+    if(r.status===401){ location.href="/login"; throw new Error("Zaloguj się ponownie"); }
     if(!r.ok) throw new Error(j.error || "Błąd zapisu");
     return j;
   }
@@ -209,6 +210,7 @@ async function load(){
   if(DEMO){ render(); return; }
   try{
     const r = await fetch("/api/state",{cache:"no-store"});
+    if(r.status===401){ location.href="/login"; return; }
     if(!r.ok) throw 0;
     const j = await r.json();
     S = {...j, settings:{...DEFAULTS, ...j.settings}};
@@ -274,7 +276,7 @@ function renderNav(){
 }
 function render(){
   renderNav();
-  document.getElementById("me").innerHTML = S.me ? "zalogowany:<br>"+esc(S.me) : "";
+  document.getElementById("me").innerHTML = S.me ? `zalogowany: <b style="color:${COLORS[S.me]||"var(--text)"}">${esc(S.me)}</b>${DEMO?"":'<br><a href="/logout">wyloguj</a>'}` : "";
   document.getElementById("demo").innerHTML = DEMO ? `<div class="demo">Tryb podglądu: przykładowe dane, nic nie jest zapisywane. Po wrzuceniu na Cloudflare panel zacznie korzystać z waszej bazy.</div>` : "";
   const v = document.getElementById("view");
   const tab = TABS.find(t=>t.id===TAB) || TABS[0];
@@ -300,7 +302,7 @@ function planView(){
       <div class="card">
         <h2>Nowy film</h2>
         <form id="fNew">
-          <div class="row"><label>Kto<select name="member">${MEMBERS.map(m=>`<option>${m}</option>`).join("")}</select></label>
+          <div class="row"><label>Kto<select name="member">${memberOpts()}</select></label>
             <label>Start pracy<input type="date" name="start" value="${t}" required></label></div>
           <div class="row one"><label>Tytuł roboczy<input name="title" maxlength="200" placeholder="np. Historia T-34" required></label></div>
           <div class="row"><label>Planowana długość (min)<input type="number" name="planned_min" min="1" max="300" value="15" required></label>
@@ -311,7 +313,7 @@ function planView(){
       <div class="card">
         <h2>Wolne / urlop</h2>
         <form id="fLeave">
-          <div class="row"><label>Kto<select name="member">${MEMBERS.map(m=>`<option>${m}</option>`).join("")}</select></label>
+          <div class="row"><label>Kto<select name="member">${memberOpts()}</select></label>
             <label>Powód (opcjonalnie)<input name="note" maxlength="120" placeholder="wyjazd"></label></div>
           <div class="row"><label>Od<input type="date" name="from_date" value="${t}" required></label>
             <label>Do<input type="date" name="to_date" value="${addDays(t,3)}" required></label></div>
@@ -327,6 +329,7 @@ function planView(){
   </div>`;
 }
 
+const memberOpts = () => MEMBERS.map(m=>`<option ${m===S.me?"selected":""}>${m}</option>`).join("");
 function memberCard(m, queue, done, t){
   const c = COLORS[m];
   const proj = queue.find(p=>p.member===m);
