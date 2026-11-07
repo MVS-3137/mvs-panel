@@ -56,7 +56,7 @@ button{width:100%;margin-top:18px;background:#dda061;color:#1a1206;border:0;bord
 .err{color:#e2735f;font-size:13.5px;margin-top:12px;min-height:1em}
 </style></head><body>
 <form method="post" action="/login">
-<img src="/logo.jpg" alt="Logo MVS"><h1>Kwatera MVS</h1>
+<img src="/logo.jpg" alt="Logo MVS"><h1>Panel MVS</h1>
 <label>Kim jesteś?</label><select name="member">${opts}</select>
 <label>Hasło</label><input type="password" name="password" required autofocus autocomplete="current-password">
 <button>Wejdź</button><div class="err">${msg}</div>
