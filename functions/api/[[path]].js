@@ -1,6 +1,5 @@
 // API panelu MVS — Cloudflare Pages Functions + D1 (binding: DB)
-// Dostęp do całej strony (także /api) chroni Cloudflare Access, więc tutaj
-// tylko zapisujemy, kto wprowadził zmianę.
+// Dostęp chroni functions/_middleware.js (hasła), który podaje zalogowaną osobę w data.user.
 
 const MEMBERS = ["Malvel", "Virtuoso", "Saito"];
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
@@ -13,9 +12,6 @@ const json = (data, status = 200) =>
 
 const bad = (msg) => json({ error: msg }, 400);
 
-function who(request) {
-  return request.headers.get("cf-access-authenticated-user-email") || "nieznany";
-}
 
 async function readBody(request) {
   try { return await request.json(); } catch { return {}; }
@@ -35,7 +31,8 @@ function cleanProject(b) {
   return out;
 }
 
-export async function onRequest({ request, env, params }) {
+export async function onRequest({ request, env, params, data }) {
+  const user = (data && data.user) || "nieznany";
   const db = env.DB;
   if (!db) return json({ error: "Brak bazy D1 (binding DB)" }, 500);
   const path = params.path || [];
@@ -51,7 +48,7 @@ export async function onRequest({ request, env, params }) {
       ]);
       const settings = {};
       for (const r of s.results) settings[r.key] = Number(r.value);
-      return json({ projects: p.results, leaves: l.results, settings, me: who(request) });
+      return json({ projects: p.results, leaves: l.results, settings, me: user });
     }
 
     if (res === "projects") {
@@ -60,7 +57,7 @@ export async function onRequest({ request, env, params }) {
         for (const k of ["member", "title", "start", "planned_min"]) if (b[k] === undefined) return bad("Brak pola " + k);
         const r = await db.prepare(
           "INSERT INTO projects (member, title, start, planned_min, wt, created_by) VALUES (?,?,?,?,?,?)"
-        ).bind(b.member, b.title, b.start, b.planned_min, b.wt ?? 1, who(request)).run();
+        ).bind(b.member, b.title, b.start, b.planned_min, b.wt ?? 1, user).run();
         return json({ id: r.meta.last_row_id });
       }
       if (method === "PUT" && id) {
@@ -83,7 +80,7 @@ export async function onRequest({ request, env, params }) {
         if (!MEMBERS.includes(b.member)) return bad("Nieznana osoba");
         if (!DATE.test(b.from_date) || !DATE.test(b.to_date) || b.to_date < b.from_date) return bad("Złe daty");
         const r = await db.prepare("INSERT INTO leaves (member, from_date, to_date, note, created_by) VALUES (?,?,?,?,?)")
-          .bind(b.member, b.from_date, b.to_date, String(b.note || "").slice(0, 120), who(request)).run();
+          .bind(b.member, b.from_date, b.to_date, String(b.note || "").slice(0, 120), user).run();
         return json({ id: r.meta.last_row_id });
       }
       if (method === "DELETE" && id) {
@@ -111,3 +108,4 @@ export async function onRequest({ request, env, params }) {
     return typeof e === "string" ? bad(e) : json({ error: "Błąd serwera" }, 500);
   }
 }
+

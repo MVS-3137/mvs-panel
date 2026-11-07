@@ -1,13 +1,14 @@
 # Panel MVS – etap 1 (plan nagrywek)
 
 Hosting: **Cloudflare Pages + baza D1**, całość w darmowym planie.
-Dostęp tylko dla waszej trójki: **Cloudflare Access** (logowanie kodem z maila, darmowe do 50 osób).
+Dostęp tylko dla waszej trójki: każdy ma własne hasło.
 
 ## Co jest w paczce
 
 ```
 public/index.html            – cały panel (wygląd + logika deadline'ów)
 public/logo.jpg, favicon.png – wasze logo
+functions/_middleware.js     – logowanie hasłem
 functions/api/[[path]].js    – API zapisujące plan i urlopy w bazie
 schema.sql                   – tabele bazy
 wrangler.toml                – konfiguracja dla Cloudflare
@@ -30,19 +31,24 @@ Otwarcie `public/index.html` bezpośrednio z dysku pokazuje panel w trybie podgl
 
 ### 3. Strona
 1. W Cloudflare: **Workers & Pages → Create → Pages → Connect to Git**, wybierz repo.
-2. Ustawienia builda: *Framework preset* `None`, *Build command* puste, *Build output directory* `public`.
+2. *Build command* puste, *Build output directory* `public`.
 3. **Save and Deploy**. Panel będzie pod adresem `mvs-panel.pages.dev` (lub podobnym).
 
 Każda zmiana w repo na GitHubie wdraża się sama.
 
-### 4. Zamknięcie panelu dla obcych (ważne!)
-1. W Cloudflare otwórz **Zero Trust** (przy pierwszym wejściu wybierz plan *Free*).
-2. **Access → Applications → Add an application → Self-hosted**.
-3. Domena: `mvs-panel.pages.dev`. Dodaj drugą: `*.mvs-panel.pages.dev` (wersje podglądowe).
-4. Polityka: *Action* `Allow`, *Include* → `Emails`, wpisz trzy wasze adresy.
-5. Login method: **One-time PIN**.
+### 4. Hasła (ważne!)
+Panel wpuszcza tylko po haśle, każdy z was ma własne. Hasła nie są w kodzie, tylko w ukrytych ustawieniach Cloudflare.
 
-Od tej chwili wejście na panel wymaga kodu wysłanego na jeden z waszych maili. W rogu panelu widać, kto jest zalogowany.
+1. W projekcie Pages: **Settings → Variables and Secrets → Add**.
+2. Dodaj 4 wpisy, każdy jako typ **Secret**, środowisko **Production**:
+   - `PASS_MALVEL` – hasło Malvela
+   - `PASS_VIRTUOSO` – hasło Virtuoso
+   - `PASS_SAITO` – hasło Saito
+   - `SESSION_SECRET` – długi losowy ciąg znaków (min. 32), nikt go nie musi pamiętać
+3. **Deployments → przy ostatnim wdrożeniu „…” → Retry deployment.** Sekrety działają dopiero w nowym wdrożeniu.
+
+Po wejściu na panel pojawi się ekran logowania: wybierasz siebie i wpisujesz swoje hasło. Logowanie trzyma 30 dni.
+Zmiana hasła: edytujesz sekret i robisz ponowne wdrożenie. Zmiana `SESSION_SECRET` wylogowuje wszystkich.
 
 ## Jak działa liczenie deadline'ów
 
@@ -61,6 +67,6 @@ Od tej chwili wejście na panel wymaga kodu wysłanego na jeden z waszych maili.
 Wszystkie współczynniki zmienicie w sekcji **Ustawienia rytmu**.
 
 ## Kolejne etapy
-- **Etap 2**: YouTube Data/Analytics API i Cloudflare Worker z cronem 2× dziennie.
+- **Etap 2**: YouTube Data/Analytics API i osobny mały Worker z cronem 2× dziennie.
   Daje automatyczne wykrywanie filmów (autor z planu nagrywek), performance, rekordy i aktualności.
 - **Etap 3**: wyzwania z achievementami, miniatury z generatorem promptów, generator tagów.
