@@ -9,7 +9,11 @@ Dostęp tylko dla waszej trójki: każdy ma własne hasło.
 public/index.html            – cały panel (wygląd + logika deadline'ów)
 public/logo.jpg, favicon.png – wasze logo
 functions/_middleware.js     – logowanie hasłem
-functions/api/[[path]].js    – API zapisujące plan i urlopy w bazie
+functions/api/[[path]].js    – API panelu (plan, urlopy, dane YouTube)
+functions/oauth/[[path]].js  – łączenie z kanałem YouTube
+lib/yt.js                    – pobieranie i liczenie statystyk YouTube
+cron/                        – „budzik”: osobny mini-Worker, co godzinę odświeża dane
+schema-etap2.sql             – nowe tabele na etap 2 (dla istniejącej bazy)
 schema.sql                   – tabele bazy
 wrangler.toml                – konfiguracja dla Cloudflare
 ```
@@ -66,7 +70,61 @@ Zmiana hasła: edytujesz sekret i robisz ponowne wdrożenie. Zmiana `SESSION_SEC
 
 Wszystkie współczynniki zmienicie w sekcji **Ustawienia rytmu**.
 
+## Etap 2: YouTube (performance, rekordy, aktualności)
+
+### A. Nowe tabele w bazie
+D1 → `mvs-panel` → **Console**. Wklej **całą jedną linię** z pliku `schema-etap2.sql` i kliknij **Execute**.
+
+### B. Klucze Google (Google Cloud, ok. 10 min)
+1. Wejdź na **console.cloud.google.com** (konto Google, które jest właścicielem kanału) i utwórz projekt, np. `mvs-panel`.
+2. **APIs & Services → Library**: wyszukaj i włącz (**Enable**) dwa API:
+   - **YouTube Data API v3**
+   - **YouTube Analytics API**
+3. **Google Auth Platform** (dawniej „OAuth consent screen”) → **Get started**:
+   - nazwa aplikacji: `Panel MVS`, e-mail: wasz,
+   - *Audience*: **External**.
+4. W **Audience** kliknij **Publish app** (stan *In production*).
+   Bez tego połączenie wygasa co 7 dni. Weryfikacja Google nie jest potrzebna do własnego użytku.
+5. **Clients → Create client** → typ **Web application**.
+   W *Authorized redirect URIs* dodaj: `https://ADRES-PANELU.pages.dev/oauth/callback` (wasz adres panelu).
+6. Skopiuj **Client ID** i **Client secret**.
+
+### C. Sekrety w Cloudflare
+Pages → `mvs-panel` → **Settings → Variables and Secrets**, typ **Secret**:
+- `GOOGLE_CLIENT_ID` – z punktu B6,
+- `GOOGLE_CLIENT_SECRET` – z punktu B6,
+- `CRON_KEY` – długi losowy ciąg (ten sam wpiszecie w budziku, punkt E).
+
+Potem **Retry deployment**.
+
+### D. Połączenie kanału
+1. Panel → zakładka **Performance** → **Połącz z YouTube**.
+2. Wybierz konto, na którym jest kanał. Jeśli to konto marki, wybierz kanał na liście.
+3. Google pokaże „Aplikacja nie została zweryfikowana”: kliknij **Zaawansowane → Przejdź do Panel MVS**.
+4. Zaznacz obie zgody (YouTube i YouTube Analytics).
+
+Pierwsze pobranie trwa chwilę. Historia starych filmów (rekordy 24 h / 7 / 14 / 28 dni) dociąga się po 10 filmów przy każdym odświeżeniu.
+
+### E. Budzik (odświeżanie co godzinę)
+Strony Pages nie mają harmonogramu, dlatego w folderze `cron` jest mini-Worker, który co godzinę (o :05) budzi panel.
+1. W `cron/wrangler.toml` wpisz adres panelu w `PANEL_URL`.
+2. Cloudflare: **Workers & Pages → Create → Workers → Import a repository**, wybierz to samo repo.
+   - *Project name*: `mvs-budzik`
+   - **Advanced settings → Root directory**: `cron`
+   - *Deploy command*: `npx wrangler deploy`
+3. Po wdrożeniu: Worker `mvs-budzik` → **Settings → Variables and Secrets** → Secret `CRON_KEY` z tą samą wartością co w panelu.
+
+### Jak liczona jest ocena filmu
+- **Wynik %** = wyświetlenia filmu ÷ mediana 10 ostatnich filmów **tej samej kategorii** (War Thunder / inne / shorty) w tym samym wieku.
+  Film 3-dniowy porównuje się z tym, ile poprzednie filmy miały po 3 dniach. 100% = typowo, 120%+ = ponad normę.
+- **REKORD** świeci się przy filmie, który ma najlepszy wynik po 24 h / 7 / 14 / 28 dniach (bez shortów).
+  „🔥 na rekordowym kursie” oznacza młody film, który w tym wieku bije wszystkie poprzednie.
+- **Autor** pochodzi z planu nagrywek: tytuł filmu na YouTube jest porównywany z tytułami w planie, a projekt zamyka się sam.
+  Jeśli nic nie pasuje, film dostaje listę „kto montował?”.
+- **Kategoria**: z planu, a dla filmów spoza planu po tytule i tagach („War Thunder”). Shorty to filmy do 3 minut.
+- **Aktualności**: nowy film, nowy rekord, „Film odżywa!”, kamienie milowe subów, film bez autora.
+  „Film odżywa!” = stary film (45+ dni) ma w dobę co najmniej 3× więcej wyświetleń niż zwykle.
+  „Nowy wspierający” nie wchodzi w grę: YouTube nie udostępnia danych o członkostwach i Super Thanks małym aplikacjom.
+
 ## Kolejne etapy
-- **Etap 2**: YouTube Data/Analytics API i osobny mały Worker z cronem 2× dziennie.
-  Daje automatyczne wykrywanie filmów (autor z planu nagrywek), performance, rekordy i aktualności.
 - **Etap 3**: wyzwania z achievementami, miniatury z generatorem promptów, generator tagów.

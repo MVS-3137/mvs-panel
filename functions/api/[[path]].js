@@ -1,3 +1,5 @@
+import { refresh, kvGet, kvSet, linkProject } from "../../lib/yt.js";
+
 // API panelu MVS — Cloudflare Pages Functions + D1 (binding: DB)
 // Dostęp chroni functions/_middleware.js (hasła), który podaje zalogowaną osobę w data.user.
 
@@ -64,8 +66,11 @@ export async function onRequest({ request, env, params, data }) {
         const b = cleanProject(await readBody(request));
         const keys = Object.keys(b);
         if (!keys.length) return bad("Brak zmian");
-        await db.prepare(`UPDATE projects SET ${keys.map((k) => k + "=?").join(",")} WHERE id=?`)
-          .bind(...keys.map((k) => b[k]), Number(id)).run();
+        const st = [db.prepare(`UPDATE projects SET ${keys.map((k) => k + "=?").join(",")} WHERE id=?`).bind(...keys.map((k) => b[k]), Number(id))];
+        if (b.status === "active") st.push(
+          db.prepare("UPDATE videos SET member=NULL, project_id=NULL WHERE project_id=?").bind(Number(id)),
+          db.prepare("UPDATE projects SET video_id=NULL WHERE id=?").bind(Number(id)));
+        await db.batch(st);
         return json({ ok: true });
       }
       if (method === "DELETE" && id) {
@@ -100,6 +105,49 @@ export async function onRequest({ request, env, params, data }) {
         stmts.push(db.prepare("INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value").bind(k, String(n)));
       }
       if (stmts.length) await db.batch(stmts);
+      return json({ ok: true });
+    }
+
+    if (res === "yt" && method === "GET") {
+      const [k, v, n] = await db.batch([
+        db.prepare("SELECT key, value FROM kv WHERE key IN ('channel_title','channel_id','channel_thumb','subs','last_refresh','last_error','records')"),
+        db.prepare("SELECT id, title, published, duration_s, thumb, wt, is_short, member, views, likes, comments, curve, approx24 FROM videos ORDER BY published DESC"),
+        db.prepare("SELECT id, ts, type, text, video_id FROM news ORDER BY id DESC LIMIT 60"),
+      ]);
+      const kv = Object.fromEntries(k.results.map((r) => [r.key, r.value]));
+      const connected = !!(await kvGet(db, "yt_refresh_token"));
+      return json({
+        connected, configured: !!(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET), me: user,
+        channel: { title: kv.channel_title || "", id: kv.channel_id || "", thumb: kv.channel_thumb || "", subs: kv.subs ? Number(kv.subs) : null },
+        last_refresh: kv.last_refresh || null, last_error: kv.last_error || "",
+        videos: v.results.map((r) => ({ ...r, curve: r.curve ? JSON.parse(r.curve) : null })),
+        news: n.results,
+      });
+    }
+
+    if (res === "refresh" && method === "POST") {
+      const last = await kvGet(db, "last_refresh");
+      if (user !== "cron" && last && Date.now() - Date.parse(last) < 60e3) return bad("Odświeżano przed chwilą, poczekaj minutę");
+      try {
+        return json(await refresh(env));
+      } catch (e) {
+        await db.batch([kvSet(db, "last_error", new Date().toISOString() + " " + e.message)]);
+        return json({ error: e.message }, 502);
+      }
+    }
+
+    if (res === "videos" && id && path[2] === "assign" && method === "POST") {
+      const b = await readBody(request);
+      const v = await db.prepare("SELECT * FROM videos WHERE id=?").bind(id).first();
+      if (!v) return json({ error: "Nie ma takiego filmu" }, 404);
+      if (!MEMBERS.includes(b.member)) return bad("Nieznana osoba");
+      const stmts = [db.prepare("UPDATE videos SET member=? WHERE id=?").bind(b.member, id)];
+      if (!v.project_id) {
+        const p = await db.prepare("SELECT * FROM projects WHERE member=? AND video_id IS NULL ORDER BY (status='active') DESC, start DESC LIMIT 1").bind(b.member).first();
+        if (p) stmts.push(...linkProject(db, v, p));
+      }
+      stmts.push(db.prepare("UPDATE news SET type='info', text=? WHERE video_id=? AND type='unassigned'").bind(`Nowy film „${v.title}” (montował: ${b.member}, przypisał: ${user})`, id));
+      await db.batch(stmts);
       return json({ ok: true });
     }
 

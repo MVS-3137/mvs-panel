@@ -66,7 +66,7 @@ button{width:100%;margin-top:18px;background:#dda061;color:#1a1206;border:0;bord
   );
 }
 
-const PUBLIC = ["/logo.jpg", "/favicon.png", "/privacy", "/privacy.html"];
+const PUBLIC = ["/logo.jpg", "/favicon.png"];
 
 export async function onRequest(context) {
   const { request, env, next, data } = context;

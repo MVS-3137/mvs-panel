@@ -113,6 +113,52 @@ dialog h3{color:var(--gold);margin-bottom:12px}
 .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--card2);border:1px solid var(--gold2);padding:10px 16px;border-radius:10px;opacity:0;transition:.25s;pointer-events:none;z-index:9}
 .toast.on{opacity:1}
 .help{font-size:12.5px;color:var(--muted);margin-top:8px}
+/* ---- etap 2 ---- */
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.chip{background:none;border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:13px;cursor:pointer;color:var(--muted)}
+.chip.on{border-color:var(--gold);color:var(--gold);background:var(--gold-dim)}
+.chan{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.chan .big{font-family:var(--head);font-size:30px;color:var(--gold);line-height:1}
+.chan .lbl{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.chan .sp{flex:1}
+.vlist{display:flex;flex-direction:column;gap:8px}
+.vi{display:grid;grid-template-columns:136px minmax(0,1fr) 170px;gap:14px;align-items:center;padding:10px;border-radius:12px;background:var(--bg2);border:1px solid var(--line);position:relative}
+.vi.rec{border-color:var(--gold);box-shadow:0 0 0 1px #dda06155,0 0 22px -6px #dda061aa}
+.th{width:136px;aspect-ratio:16/9;border-radius:8px;object-fit:cover;background:linear-gradient(135deg,#24365a,#14203a);display:grid;place-items:center;color:var(--muted);font-family:var(--head);font-size:13px}
+.vi .t{font-weight:600;line-height:1.3}
+.vi .s{font-size:12.5px;color:var(--muted);margin-top:3px;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center}
+.vi .who{font-weight:600}
+.vi select{padding:3px 6px;font-size:12.5px;border-color:var(--warn)}
+.tg{font-size:10.5px;font-weight:600;padding:1px 7px;border-radius:6px;border:1px solid var(--line);text-transform:uppercase;letter-spacing:.04em}
+.tg.wt{color:var(--ok);border-color:#7fc29b55}.tg.sh{color:var(--malvel);border-color:#7fa8de55}
+.score{text-align:right}
+.score b{display:block;font-family:var(--head);font-size:30px;line-height:1}
+.score span{font-size:11.5px;color:var(--muted);display:block;margin-top:3px}
+.vi a,.champ a{text-decoration:none}
+.up{color:var(--ok)}.mid{color:var(--gold)}.down{color:var(--bad)}
+.rekord{display:inline-block;font-family:var(--head);letter-spacing:.1em;font-size:12px;padding:2px 9px;border-radius:6px;color:#1a1206;font-weight:700;
+  background:linear-gradient(110deg,#b98447 0%,#dda061 35%,#fff4dc 50%,#dda061 65%,#b98447 100%);background-size:250% 100%;animation:shine 2.4s linear infinite}
+@keyframes shine{from{background-position:120% 0}to{background-position:-120% 0}}
+.fire{font-size:12px;color:var(--warn);font-weight:600}
+.rgrid{display:grid;gap:14px;grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:1000px){.rgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.rgrid{grid-template-columns:minmax(0,1fr)}.vi{grid-template-columns:96px minmax(0,1fr)}.th{width:96px}.score{grid-column:1/-1;text-align:left;display:flex;align-items:baseline;gap:8px}.score b{display:inline;font-size:24px}}
+.champ img,.champ .th{width:100%}
+.champ .views{font-family:var(--head);font-size:30px;color:var(--gold);line-height:1;margin-top:10px}
+.champ .t{font-weight:600;margin-top:6px;line-height:1.3}
+.champ .m{font-size:12.5px;color:var(--muted)}
+.rk{display:flex;gap:8px;font-size:13px;padding:6px 0;border-top:1px solid var(--line)}
+.rk i{font-style:normal;color:var(--muted);width:18px}
+.rk .n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.news{display:flex;flex-direction:column;gap:8px}
+.ni{display:flex;gap:12px;align-items:flex-start;padding:10px 12px;border-radius:12px;background:var(--bg2);border:1px solid var(--line)}
+.ni .ic{font-size:20px;line-height:1.2;flex:none}
+.ni .tx{flex:1;min-width:0}
+.ni .tm{font-size:12px;color:var(--muted);margin-top:2px}
+.ni.record{border-color:var(--gold)}.ni.revival{border-color:#e8b54a88}.ni.unassigned{border-color:#7fa8de88}.ni.error{border-color:var(--bad)}
+.connect{text-align:center;padding:30px 16px}
+.connect p{color:var(--muted);max-width:520px;margin:8px auto 16px}
+.navdot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--bad);margin-left:6px;vertical-align:middle}
 </style>
 </head>
 <body>
@@ -141,11 +187,11 @@ const COLORS = {Malvel:"var(--malvel)",Virtuoso:"var(--virtuoso)",Saito:"var(--s
 const DEFAULTS = {cadence:4, workPerMin:0.3, minWork:3, restPerMin:0.15};
 const TABS = [
   {id:"plan", name:"Plan nagrywek"},
-  {id:"perf", name:"Performance", stage:2, icon:"📈", text:"Każdy nowy film pojawi się tu sam, z autorem pobranym z planu nagrywek, oceną w % względem ostatnich wyników kanału i świecącym REKORDEM."},
-  {id:"rec", name:"Rekordy MVS", stage:2, icon:"🏆", text:"Najlepsze filmy po 24 h, 7, 14 i 28 dniach od premiery."},
+  {id:"perf", name:"Performance"},
+  {id:"rec", name:"Rekordy MVS"},
   {id:"chal", name:"Wyzwania", stage:3, icon:"🎯", text:"Cel subów, wykres i prognoza daty, odświeżane rano i wieczorem. Na dole ukryte achievementy z podpisem zdobywcy."},
   {id:"thumb", name:"Miniatury", stage:3, icon:"🖼️", text:"3 miniatury, które najlepiej przyciągały widzów, i generator promptu do AI w ich stylu."},
-  {id:"news", name:"Aktualności", stage:2, icon:"📣", text:"„Film odżywa!”, nowy film na kanale, nowy rekord i inne powiadomienia."},
+  {id:"news", name:"Aktualności"},
   {id:"tags", name:"Tagi", stage:3, icon:"🏷️", text:"Generator tagów na podstawie waszych najlepszych filmów i tytułu nowego."},
 ];
 
@@ -207,7 +253,7 @@ function demoCall(method, url, body){
 }
 
 async function load(){
-  if(DEMO){ render(); return; }
+  if(DEMO){ if(!Y.videos.length) Y = demoYT(); render(); return; }
   try{
     const r = await fetch("/api/state",{cache:"no-store"});
     if(r.status===401){ location.href="/login"; return; }
@@ -217,6 +263,7 @@ async function load(){
   }catch{
     DEMO = true; S = demoData();
   }
+  await loadYT();
   render();
 }
 async function save(method, url, body, msg){
@@ -272,7 +319,7 @@ function schedule(){
 let TAB = location.hash.slice(1) || "plan";
 function renderNav(){
   document.getElementById("nav").innerHTML = TABS.map(t =>
-    `<button class="${t.id===TAB?"on":""}" data-tab="${t.id}">${esc(t.name)}${t.stage?`<span class="lock">🔒</span>`:""}</button>`).join("");
+    `<button class="${t.id===TAB?"on":""}" data-tab="${t.id}">${esc(t.name)}${t.stage?`<span class="lock">🔒</span>`:""}${t.id==="news"&&TAB!=="news"&&unreadNews()?'<span class="navdot"></span>':""}</button>`).join("");
 }
 function render(){
   renderNav();
@@ -280,7 +327,8 @@ function render(){
   document.getElementById("demo").innerHTML = DEMO ? `<div class="demo">Tryb podglądu: przykładowe dane, nic nie jest zapisywane. Po wrzuceniu na Cloudflare panel zacznie korzystać z waszej bazy.</div>` : "";
   const v = document.getElementById("view");
   const tab = TABS.find(t=>t.id===TAB) || TABS[0];
-  v.innerHTML = tab.stage ? lockedView(tab) : planView();
+  if(tab.id==="news") seenNews();
+  v.innerHTML = tab.stage ? lockedView(tab) : ({perf:perfView, rec:recView, news:newsView}[tab.id] || planView)();
 }
 function lockedView(t){
   return `<div class="card locked"><div><div class="big">${t.icon}</div>
@@ -411,6 +459,170 @@ function settingsForm(){
   </form>`;
 }
 
+/* ---------- etap 2: YouTube ---------- */
+const CP = [...Array.from({length:48},(_,i)=>i+1), ...Array.from({length:26},(_,i)=>(i+3)*24)];
+const WIN = [{h:24,n:"24 godziny"},{h:168,n:"7 dni"},{h:336,n:"14 dni"},{h:672,n:"28 dni"}];
+let Y = {connected:false, videos:[], news:[], channel:{}};
+let VF = "all", RF = "all", VSHOW = 25;
+const HOURMS = 36e5;
+const ageH = v => (Date.now() - Date.parse(v.published)) / HOURMS;
+const nf = n => n == null ? "–" : Number(n).toLocaleString("pl-PL");
+const cat = v => v.is_short ? "short" : v.wt ? "wt" : "other";
+const CATN = {wt:"War Thunder", other:"inne", short:"shorty"};
+function cAt(curve, h){
+  if(!curve) return null;
+  if(h <= CP[0]) return curve[0]==null ? null : Math.round(curve[0]*h);
+  for(let i=1;i<CP.length;i++) if(h <= CP[i]){
+    const a=curve[i-1], b=curve[i]; if(a==null||b==null) return null;
+    return Math.round(a + (b-a)*(h-CP[i-1])/(CP[i]-CP[i-1]));
+  }
+  return curve[curve.length-1];
+}
+const vAt = (v,h) => h >= ageH(v) - 0.5 ? v.views : cAt(v.curve,h);
+function relTime(iso){
+  const m = Math.round((Date.now()-Date.parse(iso))/6e4);
+  if(m < 2) return "przed chwilą"; if(m < 60) return m+" min temu";
+  const h = Math.round(m/60); if(h < 24) return h+" godz. temu";
+  const d = Math.round(h/24); return d === 1 ? "wczoraj" : d+" dni temu";
+}
+function ageTxt(h){ return h < 48 ? Math.round(h)+" godz." : Math.round(h/24)+" dni"; }
+function median(a){ const s=[...a].sort((x,y)=>x-y), m=s.length>>1; return s.length%2 ? s[m] : (s[m-1]+s[m])/2; }
+
+function scoreOf(v){
+  const A = ageH(v), h = Math.min(A, 672);
+  const x = A <= 672 ? v.views : (cAt(v.curve,672) ?? v.views);
+  const pick = sameCat => Y.videos.filter(o => o.id!==v.id && o.published < v.published && (sameCat ? cat(o)===cat(v) : !o.is_short) && ageH(o) >= h)
+    .map(o => vAt(o,h)).filter(n => n != null).slice(0,10);
+  let peers = pick(true), mixed = false;
+  if(peers.length < 3 && !v.is_short){ peers = pick(false); mixed = true; }
+  if(peers.length < 3) return null;
+  const base = median(peers);
+  return {pct: base > 0 ? Math.round(x/base*100) : null, base: Math.round(base), h, n: peers.length, mixed};
+}
+function recordTable(filter){
+  const pool = Y.videos.filter(v => !v.is_short && (filter==="all" || cat(v)===filter));
+  return WIN.map(w => ({...w, list: pool.map(v => ({v, n: cAt(v.curve,w.h)})).filter(x => x.n != null).sort((a,b)=>b.n-a.n).slice(0,5)}));
+}
+function recordFlags(){
+  const holders = {}, hot = new Set();
+  for(const w of recordTable("all")) if(w.list[0]) (holders[w.list[0].v.id] ||= []).push(w.n);
+  for(const v of Y.videos){
+    const A = ageH(v); if(v.is_short || A >= 672 || A < 2) continue;
+    const others = Y.videos.filter(o => o.id!==v.id && !o.is_short && ageH(o) >= A).map(o => vAt(o,A)).filter(n=>n!=null);
+    if(others.length >= 3 && v.views > Math.max(...others) && !holders[v.id]) hot.add(v.id);
+  }
+  return {holders, hot};
+}
+
+function connectView(){
+  if(!Y.configured) return `<div class="card connect"><div style="font-size:42px">🔑</div><h2 style="justify-content:center">Brakuje kluczy Google</h2>
+    <p>Dodajcie w Cloudflare sekrety <b>GOOGLE_CLIENT_ID</b> i <b>GOOGLE_CLIENT_SECRET</b> (instrukcja w README, etap 2), zróbcie ponowne wdrożenie i wróćcie tutaj.</p></div>`;
+  return `<div class="card connect"><div style="font-size:42px">📺</div><h2 style="justify-content:center">Połącz panel z kanałem</h2>
+    <p>Zaloguj się kontem Google, które jest właścicielem kanału. Panel dostanie tylko <b>odczyt</b> statystyk: nie może niczego zmienić ani wrzucić.</p>
+    <a class="btn" href="/oauth/start" style="text-decoration:none;display:inline-block">Połącz z YouTube</a></div>`;
+}
+function chanBar(){
+  const c = Y.channel || {};
+  return `<div class="card chan">
+    <div><div class="lbl">Kanał</div><div style="font-weight:600;font-size:17px">${esc(c.title||"–")}</div></div>
+    <div><div class="lbl">Suby</div><div class="big">${nf(c.subs)}</div></div>
+    <div><div class="lbl">Filmy</div><div class="big">${nf(Y.videos.filter(v=>!v.is_short).length)}</div></div>
+    <div class="sp"></div>
+    <div style="text-align:right;font-size:12.5px;color:var(--muted)">${Y.last_refresh?"dane z "+relTime(Y.last_refresh):"czekam na pierwsze dane…"}<br>
+      ${DEMO?"":`<button class="btn ghost sm" data-refresh style="margin-top:6px">Odśwież teraz</button>`}</div>
+    ${Y.last_error?`<div class="badline" style="flex-basis:100%">Ostatni błąd: ${esc(Y.last_error)}</div>`:""}
+  </div>`;
+}
+function thumb(v){ return v.thumb ? `<img class="th" src="${esc(v.thumb)}" alt="" loading="lazy">` : `<div class="th">${v.wt?"WAR THUNDER":"MVS"}</div>`; }
+function whoCell(v){
+  if(v.member) return `<span class="who" style="color:${COLORS[v.member]}">${esc(v.member)}</span>`;
+  if(DEMO) return `<span class="warnline">bez autora</span>`;
+  return `<select data-assign="${esc(v.id)}"><option value="">kto montował?</option>${MEMBERS.map(m=>`<option>${m}</option>`).join("")}</select>`;
+}
+function perfView(){
+  if(!Y.connected && !DEMO) return connectView();
+  const {holders, hot} = recordFlags();
+  const list = Y.videos.filter(v => VF==="all" ? true : cat(v)===VF);
+  const chips = [["all","Wszystkie"],["wt","War Thunder"],["other","Inne"],["short","Shorty"]]
+    .map(([k,n])=>`<button class="chip ${VF===k?"on":""}" data-vf="${k}">${n}</button>`).join("");
+  const rows = list.slice(0, VSHOW).map(v => {
+    const s = scoreOf(v), A = ageH(v);
+    const cls = !s || s.pct==null ? "" : s.pct >= 120 ? "up" : s.pct >= 80 ? "mid" : "down";
+    const rec = holders[v.id];
+    return `<div class="vi ${rec?"rec":""}">
+      <a href="https://youtu.be/${esc(v.id)}" target="_blank" rel="noopener">${thumb(v)}</a>
+      <div><div class="t">${esc(v.title)}</div>
+        <div class="s">${whoCell(v)}<span>${ageTxt(A)} temu</span><span>${nf(v.views)} wyśw.</span>
+          ${v.is_short?'<span class="tg sh">short</span>':v.wt?'<span class="tg wt">WT</span>':'<span class="tg">inne</span>'}
+          ${rec?`<span class="rekord">REKORD ${rec.map(r=>r.replace(" godziny","H").toUpperCase()).join(" · ")}</span>`:""}
+          ${hot.has(v.id)?'<span class="fire">🔥 na rekordowym kursie</span>':""}</div></div>
+      <div class="score">${s && s.pct!=null ? `<b class="${cls}">${s.pct}%</b><span>typowo ${nf(s.base)} po ${ageTxt(s.h)}<br>(mediana ${s.n} ost. ${s.mixed?"filmów":CATN[cat(v)]})</span>` : `<span>za mało danych do porównania</span>`}</div>
+    </div>`;
+  }).join("");
+  return `${chanBar()}<div class="card" style="margin-top:14px"><h2>Performance filmów <span class="hint">100% = typowy wynik kanału w tym samym wieku filmu</span></h2>
+    <div class="chips">${chips}</div><div class="vlist">${rows || '<div class="empty">Brak filmów w tej kategorii.</div>'}</div>
+    ${list.length > VSHOW ? `<div style="text-align:center;margin-top:12px"><button class="btn ghost sm" data-more>Pokaż więcej</button></div>` : ""}</div>`;
+}
+function recView(){
+  if(!Y.connected && !DEMO) return connectView();
+  const chips = [["all","Wszystkie"],["wt","War Thunder"],["other","Inne"]]
+    .map(([k,n])=>`<button class="chip ${RF===k?"on":""}" data-rf="${k}">${n}</button>`).join("");
+  const cards = recordTable(RF).map(w => {
+    const [top, ...rest] = w.list;
+    if(!top) return `<div class="card"><h2>${w.n}</h2><div class="empty">Brak danych.</div></div>`;
+    const ap = w.h===24 && top.v.approx24 ? "≈" : "";
+    return `<div class="card champ"><h2>Po ${w.n}</h2>
+      <a href="https://youtu.be/${esc(top.v.id)}" target="_blank" rel="noopener">${thumb(top.v)}</a>
+      <div class="views">${ap}${nf(top.n)}</div><div class="t">${esc(top.v.title)}</div>
+      <div class="m">${top.v.member?`<b style="color:${COLORS[top.v.member]}">${esc(top.v.member)}</b> · `:""}${fmt(top.v.published.slice(0,10))}</div>
+      <div style="margin-top:10px">${rest.map((x,i)=>`<div class="rk"><i>${i+2}.</i><span class="n" title="${esc(x.v.title)}">${esc(x.v.title)}</span><b>${w.h===24&&x.v.approx24?"≈":""}${nf(x.n)}</b></div>`).join("")}</div>
+    </div>`;
+  }).join("");
+  return `${chanBar()}<div style="margin-top:14px" class="chips">${chips}</div><div class="rgrid">${cards}</div>
+    <div class="help">Wyświetlenia liczone od premiery. „≈” oznacza starsze filmy, dla których pierwsza doba jest wyliczona z dziennych danych YouTube Analytics. Nowe filmy panel mierzy co godzinę, więc ich wynik jest dokładny. Shorty nie biorą udziału w rekordach.</div>`;
+}
+const NICON = {new_video:"🎬", record:"🏆", revival:"🔥", unassigned:"❓", milestone:"🎉", info:"ℹ️", error:"⚠️"};
+function newsView(){
+  if(!Y.connected && !DEMO && !Y.news.length) return connectView();
+  const items = Y.news.map(n => {
+    const v = n.video_id && Y.videos.find(x=>x.id===n.video_id);
+    const assign = n.type==="unassigned" && v && !v.member && !DEMO ? `<div style="margin-top:6px">${whoCell(v)}</div>` : "";
+    return `<div class="ni ${n.type}"><div class="ic">${NICON[n.type]||"•"}</div><div class="tx">${esc(n.text)}${assign}<div class="tm">${relTime(n.ts)}</div></div></div>`;
+  }).join("");
+  return `<div class="card"><h2>Aktualności</h2><div class="news">${items || '<div class="empty">Na razie cisza. Powiadomienia pojawią się po pierwszych danych z kanału.</div>'}</div></div>`;
+}
+function seenNews(){ try{ if(Y.news[0]) localStorage.setItem("mvs_news_seen", String(Y.news[0].id)); }catch{} }
+function unreadNews(){ try{ const s=Number(localStorage.getItem("mvs_news_seen")||0); return Y.news.some(n=>n.id>s); }catch{ return false; } }
+
+async function loadYT(){
+  if(DEMO){ Y = demoYT(); return; }
+  try{
+    const r = await fetch("/api/yt",{cache:"no-store"});
+    if(r.ok) Y = await r.json();
+  }catch{}
+}
+function demoYT(){
+  const now = Date.now(), vids = [];
+  const titles = [["Tiger II – czy był aż tak straszny? | War Thunder",1,"Saito",1320],["Najgorsze samoloty 1. rangi | War Thunder",1,"Malvel",720],
+    ["Historia Leoparda 2 – pełny dokument",1,"Virtuoso",2640],["5 czołgów, które grają się same | War Thunder",1,"Malvel",540],
+    ["Ten pocisk przebił WSZYSTKO",1,"Saito",40],["Minecraft: bitwa o Iwo Jimę",0,"Virtuoso",1500],["T-34 vs Panther – kto wygrał naprawdę?",1,"Saito",960],
+    ["Najlepszy myśliwiec 5. rangi",1,"Malvel",780],["Gramy w Hell Let Loose z widzami",0,"Virtuoso",1900],["IS-2 – dlaczego Niemcy się go bali",1,"Saito",1100],
+    ["Pierwszy raz w Enlisted",0,"Malvel",820],["Japońskie czołgi to żart?",1,"Virtuoso",900],["Śmieszne momenty #12",1,"Saito",600],["Bombowce, które zmieniły wojnę",1,"Malvel",1250]];
+  titles.forEach(([t,wt,m,dur],i) => {
+    const age = i===0 ? 30 : i===1 ? 110 : i===4 ? 70 : 24*(4+i*5);
+    const T = [9000,5200,21000,6400,15000,3800,8800,7200,3100,9400,2600,5600,4800,8100][i];
+    const k = 70 + (i*31)%60, f = h => Math.round(T*(1-Math.exp(-h/k)));
+    vids.push({id:"demo"+i, title:t, wt, is_short:dur<=180?1:0, member:i===12?null:m, published:new Date(now-age*HOURMS).toISOString(),
+      views:f(age), duration_s:dur, thumb:"", approx24:i>5?1:0, curve:CP.map(h=>h<=age?f(h):null)});
+  });
+  return {connected:true, configured:true, channel:{title:"MVS",subs:1287}, last_refresh:new Date(now-20*6e4).toISOString(), last_error:"", videos:vids,
+    news:[{id:5,type:"record",ts:new Date(now-2*HOURMS).toISOString(),text:"NOWY REKORD 24 godzin: „Tiger II – czy był aż tak straszny? | War Thunder” – 2 989 wyświetleń (Saito)"},
+      {id:4,type:"new_video",ts:new Date(now-29*HOURMS).toISOString(),text:"Nowy film na kanale: „Tiger II – czy był aż tak straszny? | War Thunder” (montował: Saito)"},
+      {id:3,type:"revival",ts:new Date(now-50*HOURMS).toISOString(),text:"Film odżywa! „Bombowce, które zmieniły wojnę” złapał 640 wyświetleń w dobę (zwykle ok. 35)."},
+      {id:2,type:"unassigned",ts:new Date(now-3*24*HOURMS).toISOString(),text:"Nowy film „Śmieszne momenty #12”, ale nie pasuje do nikogo z planu. Przypisz autora w zakładce Performance."},
+      {id:1,type:"milestone",ts:new Date(now-6*24*HOURMS).toISOString(),text:"Kanał przekroczył 1 200 subów! 🎉"}]};
+}
+
 /* ---------- akcje ---------- */
 const formObj = f => Object.fromEntries(new FormData(f));
 document.addEventListener("submit", e => {
@@ -429,12 +641,22 @@ document.addEventListener("click", e => {
   const b = e.target.closest("button,[data-close]"); if(!b) return;
   const d = b.dataset;
   if(d.tab){ TAB = d.tab; history.replaceState(null,"","#"+TAB); render(); }
+  if(d.vf){ VF = d.vf; VSHOW = 25; render(); }
+  if(d.rf){ RF = d.rf; render(); }
+  if(d.more!==undefined){ VSHOW += 25; render(); }
+  if(d.refresh!==undefined){ b.disabled = true; b.textContent = "Odświeżam…";
+    api.call("POST","refresh").then(r=>toast(`Pobrano ${r.videos} filmów`)).catch(e=>toast("⚠ "+e.message)).finally(()=>load()); }
   if(d.close!==undefined) dlg.close();
   if(d.del && confirm("Usunąć ten film z planu?")) save("DELETE","projects/"+d.del,null,"Usunięto");
   if(d.delleave && confirm("Usunąć to wolne?")) save("DELETE","leaves/"+d.delleave,null,"Usunięto");
   if(d.undo && confirm("Cofnąć film z powrotem do produkcji?")) save("PUT","projects/"+d.undo,{status:"active",uploaded:null,actual_min:null},"Cofnięto");
   if(d.done) openDone(S.projects.find(p=>p.id==d.done));
   if(d.edit) openEdit(S.projects.find(p=>p.id==d.edit));
+});
+document.addEventListener("change", e => {
+  const id = e.target.dataset && e.target.dataset.assign;
+  if(!id || !e.target.value) return;
+  save("POST","videos/"+id+"/assign",{member:e.target.value},"Autor przypisany");
 });
 const dlg = document.getElementById("dlg");
 function openDone(p){
@@ -464,7 +686,7 @@ let tt;
 function toast(m){ const el=document.getElementById("toast"); el.textContent=m; el.classList.add("on"); clearTimeout(tt); tt=setTimeout(()=>el.classList.remove("on"),2600); }
 
 load();
-setInterval(()=>{ if(!DEMO && !dlg.open) load(); }, 60000);
+setInterval(()=>{ if(!DEMO && !dlg.open && !document.querySelector("select:focus")) load(); }, 120000);
 </script>
 </body>
 </html>
