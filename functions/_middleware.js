@@ -1,6 +1,7 @@
 // Logowanie do panelu MVS: każdy ma własne hasło.
 // Hasła NIE są w kodzie. Ustawia się je w Cloudflare jako sekrety:
 //   PASS_MALVEL, PASS_VIRTUOSO, PASS_SAITO, SESSION_SECRET
+// (etap 2: GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, CRON_KEY)
 
 const MEMBERS = ["Malvel", "Virtuoso", "Saito"];
 const COOKIE = "mvs_session";
@@ -65,7 +66,7 @@ button{width:100%;margin-top:18px;background:#dda061;color:#1a1206;border:0;bord
   );
 }
 
-const PUBLIC = ["/logo.jpg", "/favicon.png"];
+const PUBLIC = ["/logo.jpg", "/favicon.png", "/privacy", "/privacy.html"];
 
 export async function onRequest(context) {
   const { request, env, next, data } = context;
@@ -105,6 +106,13 @@ export async function onRequest(context) {
       return page("Złe hasło. Spróbuj jeszcze raz.", 401);
     }
     return page();
+  }
+
+  // automatyczne odświeżanie z crona (osobny Worker z kluczem CRON_KEY)
+  const cronKey = request.headers.get("x-cron-key");
+  if (cronKey && url.pathname === "/api/refresh" && env.CRON_KEY && (await same(secret, cronKey, env.CRON_KEY))) {
+    data.user = "cron";
+    return next();
   }
 
   const member = await readToken(secret, request);
