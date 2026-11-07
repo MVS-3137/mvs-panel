@@ -463,7 +463,7 @@ function settingsForm(){
 const CP = [...Array.from({length:48},(_,i)=>i+1), ...Array.from({length:26},(_,i)=>(i+3)*24)];
 const WIN = [{h:24,n:"24 godziny"},{h:168,n:"7 dni"},{h:336,n:"14 dni"},{h:672,n:"28 dni"}];
 let Y = {connected:false, videos:[], news:[], channel:{}};
-let VF = "all", RF = "all", VSHOW = 25;
+let VF = "all", RF = "wt", VSHOW = 25;
 const HOURMS = 36e5;
 const ageH = v => (Date.now() - Date.parse(v.published)) / HOURMS;
 const nf = n => n == null ? "–" : Number(n).toLocaleString("pl-PL");
@@ -478,6 +478,7 @@ function cAt(curve, h){
   }
   return curve[curve.length-1];
 }
+const recVal = (v,h) => v.manual && v.manual[h] != null ? v.manual[h] : cAt(v.curve,h);
 const vAt = (v,h) => h >= ageH(v) - 0.5 ? v.views : cAt(v.curve,h);
 function relTime(iso){
   const m = Math.round((Date.now()-Date.parse(iso))/6e4);
@@ -501,11 +502,11 @@ function scoreOf(v){
 }
 function recordTable(filter){
   const pool = Y.videos.filter(v => !v.is_short && (filter==="all" || cat(v)===filter));
-  return WIN.map(w => ({...w, list: pool.map(v => ({v, n: cAt(v.curve,w.h)})).filter(x => x.n != null).sort((a,b)=>b.n-a.n).slice(0,5)}));
+  return WIN.map(w => ({...w, list: pool.map(v => ({v, n: recVal(v,w.h)})).filter(x => x.n != null).sort((a,b)=>b.n-a.n).slice(0,5)}));
 }
 function recordFlags(){
   const holders = {}, hot = new Set();
-  for(const w of recordTable("all")) if(w.list[0]) (holders[w.list[0].v.id] ||= []).push(w.n);
+  for(const c of ["wt","other"]) for(const w of recordTable(c)) if(w.list[0]) (holders[w.list[0].v.id] ||= []).push(w.n);
   for(const v of Y.videos){
     const A = ageH(v); if(v.is_short || A >= 672 || A < 2) continue;
     const others = Y.videos.filter(o => o.id!==v.id && !o.is_short && ageH(o) >= A).map(o => vAt(o,A)).filter(n=>n!=null);
@@ -565,17 +566,17 @@ function perfView(){
 }
 function recView(){
   if(!Y.connected && !DEMO) return connectView();
-  const chips = [["all","Wszystkie"],["wt","War Thunder"],["other","Inne"]]
+  const chips = [["wt","War Thunder"],["other","Inne gry"],["all","Wszystkie"]]
     .map(([k,n])=>`<button class="chip ${RF===k?"on":""}" data-rf="${k}">${n}</button>`).join("");
   const cards = recordTable(RF).map(w => {
     const [top, ...rest] = w.list;
     if(!top) return `<div class="card"><h2>${w.n}</h2><div class="empty">Brak danych.</div></div>`;
-    const ap = w.h===24 && top.v.approx24 ? "≈" : "";
+    const ap = w.h===24 && top.v.approx24 && !(top.v.manual && top.v.manual[24]!=null) ? "≈" : "";
     return `<div class="card champ"><h2>Po ${w.n}</h2>
       <a href="https://youtu.be/${esc(top.v.id)}" target="_blank" rel="noopener">${thumb(top.v)}</a>
       <div class="views">${ap}${nf(top.n)}</div><div class="t">${esc(top.v.title)}</div>
       <div class="m">${top.v.member?`<b style="color:${COLORS[top.v.member]}">${esc(top.v.member)}</b> · `:""}${fmt(top.v.published.slice(0,10))}</div>
-      <div style="margin-top:10px">${rest.map((x,i)=>`<div class="rk"><i>${i+2}.</i><span class="n" title="${esc(x.v.title)}">${esc(x.v.title)}</span><b>${w.h===24&&x.v.approx24?"≈":""}${nf(x.n)}</b></div>`).join("")}</div>
+      <div style="margin-top:10px">${rest.map((x,i)=>`<div class="rk"><i>${i+2}.</i><span class="n" title="${esc(x.v.title)}">${esc(x.v.title)}</span><b>${w.h===24&&x.v.approx24&&!(x.v.manual&&x.v.manual[24]!=null)?"≈":""}${nf(x.n)}</b></div>`).join("")}</div>
     </div>`;
   }).join("");
   return `${chanBar()}<div style="margin-top:14px" class="chips">${chips}</div><div class="rgrid">${cards}</div>
