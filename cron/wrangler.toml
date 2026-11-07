@@ -7,4 +7,4 @@ workers_dev = false
 crons = ["5 * * * *"]
 
 [vars]
-PANEL_URL = "https://WPISZ-ADRES-PANELU.pages.dev"
+PANEL_URL = "https://mvs-panel.pages.dev"
