@@ -39,7 +39,7 @@ INSERT OR IGNORE INTO settings (key, value) VALUES
 
 -- Etap 2 (YouTube)
 CREATE TABLE IF NOT EXISTS kv (key TEXT PRIMARY KEY, value TEXT);
-CREATE TABLE IF NOT EXISTS videos (id TEXT PRIMARY KEY, title TEXT, published TEXT, duration_s INTEGER, thumb TEXT, thumb_hi TEXT, tags TEXT, wt INTEGER DEFAULT 0, is_short INTEGER DEFAULT 0, member TEXT, project_id INTEGER, views INTEGER DEFAULT 0, likes INTEGER DEFAULT 0, comments INTEGER DEFAULT 0, updated TEXT, analytics_at TEXT, curve TEXT, approx24 INTEGER DEFAULT 0, removed_at TEXT);
+CREATE TABLE IF NOT EXISTS videos (id TEXT PRIMARY KEY, title TEXT, published TEXT, duration_s INTEGER, thumb TEXT, thumb_hi TEXT, tags TEXT, wt INTEGER DEFAULT 0, is_short INTEGER DEFAULT 0, member TEXT, project_id INTEGER, views INTEGER DEFAULT 0, likes INTEGER DEFAULT 0, comments INTEGER DEFAULT 0, updated TEXT, analytics_at TEXT, curve TEXT, approx24 INTEGER DEFAULT 0, removed_at TEXT, is_live INTEGER DEFAULT 0, live_override INTEGER);
 CREATE TABLE IF NOT EXISTS snapshots (video_id TEXT NOT NULL, ts TEXT NOT NULL, views INTEGER, PRIMARY KEY (video_id, ts));
 CREATE TABLE IF NOT EXISTS daily (video_id TEXT NOT NULL, day TEXT NOT NULL, views INTEGER, PRIMARY KEY (video_id, day));
 CREATE TABLE IF NOT EXISTS channel_stats (ts TEXT PRIMARY KEY, subs INTEGER, views INTEGER, videos INTEGER);

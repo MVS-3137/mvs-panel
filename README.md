@@ -203,3 +203,19 @@ Działanie:
 - **War Thunder:** stała lista (TV Kowalowe, Turteł, WODZU, MVS, BommerTV, Blekczo, kryptyda), bez dodawania i usuwania.
 - **Polskie kanały gamingowe:** wklejasz link albo @nazwę kanału, klikasz **Dodaj**; ✕ usuwa kanał (MVS nie da się usunąć).
 - YouTube zaokrągla publiczną liczbę subów do 3 cyfr, dlatego dokładniejszym miernikiem wzrostu są wyświetlenia.
+
+## Zapisy streamów
+
+Panel rozpoznaje zapisy transmisji na żywo po polu `liveStreamingDetails` z YouTube i wyklucza je z:
+- Performance i median,
+- Rekordów,
+- achievementów,
+- Miniatur,
+- generatora tagów,
+- dopasowania do planu nagrywek.
+
+Przegląd: Performance → **Streamy**. Pomyłki poprawisz ręcznie:
+- 📡 przy filmie: „to stream”,
+- „To nie stream” w zakładce Streamy.
+
+Migracja: konsola D1 → linia z `schema-streamy.sql`.

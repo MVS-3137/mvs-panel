@@ -122,7 +122,7 @@ export async function onRequest({ request, env, params, data }) {
     if (res === "yt" && method === "GET") {
       const [k, v, n] = await db.batch([
         db.prepare("SELECT key, value FROM kv WHERE key IN ('channel_title','channel_id','channel_thumb','subs','last_refresh','last_error','records')"),
-        db.prepare("SELECT id, title, published, duration_s, thumb, wt, is_short, member, views, likes, comments, curve, approx24 FROM videos WHERE removed_at IS NULL ORDER BY published DESC"),
+        db.prepare("SELECT id, title, published, duration_s, thumb, wt, is_short, member, views, likes, comments, curve, approx24, COALESCE(live_override, is_live, 0) AS live FROM videos WHERE removed_at IS NULL ORDER BY published DESC"),
         db.prepare("SELECT id, ts, type, text, video_id FROM news ORDER BY id DESC LIMIT 60"),
       ]);
       const kv = Object.fromEntries(k.results.map((r) => [r.key, r.value]));
@@ -146,6 +146,12 @@ export async function onRequest({ request, env, params, data }) {
         await db.batch([kvSet(db, "last_error", new Date().toISOString() + " " + e.message)]);
         return json({ error: e.message }, 502);
       }
+    }
+
+    if (res === "videos" && id && path[2] === "live" && method === "POST") {
+      const b = await readBody(request);
+      await db.prepare("UPDATE videos SET live_override=? WHERE id=?").bind(b.live ? 1 : 0, id).run();
+      return json({ ok: true });
     }
 
     if (res === "videos" && id && path[2] === "assign" && method === "POST") {
@@ -211,7 +217,7 @@ export async function onRequest({ request, env, params, data }) {
       const b = await readBody(request);
       const desc = String(b.desc || "").trim().slice(0, 3000), title = String(b.title || "").trim().slice(0, 150);
       if (desc.length < 15) return bad("Opisz film trochę dokładniej (min. kilka słów)");
-      const { results } = await db.prepare("SELECT tags, views, curve, wt, is_short FROM videos WHERE removed_at IS NULL").all();
+      const { results } = await db.prepare("SELECT tags, views, curve, wt, is_short FROM videos WHERE removed_at IS NULL AND COALESCE(live_override, is_live, 0) = 0").all();
       const videos = results.map((r) => ({ ...r, curve: r.curve ? JSON.parse(r.curve) : null }));
       return json(await generateTags(env, { desc, title, wt: !!b.wt }, videos));
     }
