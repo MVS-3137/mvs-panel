@@ -1000,7 +1000,7 @@ function thumbList(list, kind){
   return list.map((v,i)=>{ const on = LIKED.has(v.id);
     return `<div class="thi ${on?"on":""}"><div class="thn">${i+1}</div>
       <a href="https://youtu.be/${esc(v.id)}" target="_blank" rel="noopener">${v.thumb?`<img src="${esc(v.thumb)}" alt="" loading="lazy">`:'<div class="ph"></div>'}</a>
-      <div><div class="t">${esc(v.title)}</div><div class="m"><span class="ctr">${String(v.ctr).replace(".",",")}%</span> CTR · ${nf(v.impressions)} wyśw. miniatury${v.member?` · <b style="color:${COLORS[v.member]}">${esc(v.member)}</b>`:""}</div></div>
+      <div><div class="t">${esc(v.title)}</div><div class="m"><span class="ctr">${String(v.ctr).replace(".",",")}%</span> CTR${v.impressions?` · ${nf(v.impressions)} wyśw. miniatury`:` · ${nf(v.views)} wyśw.`}${v.member?` · <b style="color:${COLORS[v.member]}">${esc(v.member)}</b>`:""}</div></div>
       <label class="cb"><input type="checkbox" data-like="${esc(v.id)}" ${on?"checked":""} aria-label="Podoba mi się"></label></div>`; }).join("");
 }
 function thumbsView(){
