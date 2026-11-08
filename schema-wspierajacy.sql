@@ -1,0 +1,1 @@
+ALTER TABLE videos ADD COLUMN is_members INTEGER DEFAULT 0; ALTER TABLE videos ADD COLUMN members_override INTEGER;

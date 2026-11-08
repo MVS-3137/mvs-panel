@@ -219,3 +219,19 @@ Przegląd: Performance → **Streamy**. Pomyłki poprawisz ręcznie:
 - „To nie stream” w zakładce Streamy.
 
 Migracja: konsola D1 → linia z `schema-streamy.sql`.
+
+## Filmy dla wspierających
+
+YouTube nie oznacza takich filmów w API, więc panel rozpoznaje je po wzorze z kanału MVS:
+- w tytule jest „BEZ CENZURY”, „dla wspierających” albo „members only”,
+- **albo** film ma 3+ dni, mniej niż 100 wyświetleń i co najmniej 5% polubień (oglądają go tylko wspierający).
+
+Sprawdzone na 21 filmach kanału: 21/21 trafnie, także „Zabijesz Mnie to KRADNE Twój BR” bez dopisku w tytule.
+
+Takie filmy są wykluczone ze wszystkich statystyk, tak samo jak streamy, i nie zamykają projektów w planie nagrywek.
+
+Przegląd: Performance → **Dla wspierających**. Pomyłki poprawisz ręcznie:
+- 💎 przy filmie: „tylko dla wspierających”,
+- „To film publiczny” w tej liście.
+
+Migracja: konsola D1 → linia z `schema-wspierajacy.sql`.

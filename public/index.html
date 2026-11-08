@@ -654,13 +654,14 @@ function perfView(){
   if(!Y.connected && !DEMO) return connectView();
   const {holders, hot} = recordFlags();
   const streams = Y.streams || [];
-  const list = VF==="live" ? streams : Y.videos.filter(v => VF==="all" ? true : cat(v)===VF);
-  const chips = [["all","Wszystkie"],["wt","War Thunder"],["other","Inne"],["short","Shorty"],["live",`Streamy (${streams.length})`]]
+  const mem = Y.membersOnly || [];
+  const list = VF==="live" ? streams : VF==="mem" ? mem : Y.videos.filter(v => VF==="all" ? true : cat(v)===VF);
+  const chips = [["all","Wszystkie"],["wt","War Thunder"],["other","Inne"],["short","Shorty"],["live",`Streamy (${streams.length})`],["mem",`Dla wspierających (${mem.length})`]]
     .map(([k,n])=>`<button class="chip ${VF===k?"on":""}" data-vf="${k}">${n}</button>`).join("");
   const rows = list.slice(0, VSHOW).map(v => {
-    if(VF==="live") return `<div class="vi"><a href="https://youtu.be/${esc(v.id)}" target="_blank" rel="noopener">${thumb(v)}</a>
-      <div><div class="t">${esc(v.title)}</div><div class="s"><span>${ageTxt(ageH(v))} temu</span><span>${nf(v.views)} wyśw.</span><span class="tg">zapis streamu</span></div></div>
-      <div class="score">${DEMO?"":`<button class="btn ghost sm" data-live="${esc(v.id)}:0" title="Przywróć do statystyk">To nie stream</button>`}</div></div>`;
+    if(VF==="live" || VF==="mem") return `<div class="vi"><a href="https://youtu.be/${esc(v.id)}" target="_blank" rel="noopener">${thumb(v)}</a>
+      <div><div class="t">${esc(v.title)}</div><div class="s"><span>${ageTxt(ageH(v))} temu</span><span>${nf(v.views)} wyśw.</span><span class="tg">${VF==="live"?"zapis streamu":"dla wspierających"}</span></div></div>
+      <div class="score">${DEMO?"":VF==="live"?`<button class="btn ghost sm" data-live="${esc(v.id)}:0" title="Przywróć do statystyk">To nie stream</button>`:`<button class="btn ghost sm" data-mem="${esc(v.id)}:0" title="Przywróć do statystyk">To film publiczny</button>`}</div></div>`;
     const s = scoreOf(v), A = ageH(v);
     const cls = !s || s.pct==null ? "" : s.pct >= 120 ? "up" : s.pct >= 80 ? "mid" : "down";
     const rec = holders[v.id];
@@ -670,7 +671,7 @@ function perfView(){
         <div class="s">${whoCell(v)}<span>${ageTxt(A)} temu</span><span>${nf(v.views)} wyśw.</span>
           ${v.is_short?'<span class="tg sh">short</span>':v.wt?'<span class="tg wt">WT</span>':'<span class="tg">inne</span>'}
           ${rec?`<span class="rekord">REKORD ${rec.map(r=>r.replace(" godziny","H").toUpperCase()).join(" · ")}</span>`:""}
-          ${DEMO?"":`<button class="x" style="font-size:12px" data-live="${esc(v.id)}:1" title="To zapis streamu – wyklucz ze statystyk">📡</button>`}
+          ${DEMO?"":`<button class="x" style="font-size:12px" data-live="${esc(v.id)}:1" title="To zapis streamu – wyklucz ze statystyk">📡</button><button class="x" style="font-size:12px" data-mem="${esc(v.id)}:1" title="Tylko dla wspierających – wyklucz ze statystyk">💎</button>`}
           ${hot.has(v.id)?`<span class="fire" title="${hot.get(v.id).map(x=>`${x.n}: prognoza ~${nf(x.proj)}, rekord ${nf(x.rec)}`).join(" · ")}">📈 na drodze do rekordu ${hot.get(v.id).map(x=>x.n.replace(" godziny"," h")).join(", ")} (~${nf(hot.get(v.id).at(-1).proj)} vs ${nf(hot.get(v.id).at(-1).rec)})</span>`:""}</div></div>
       <div class="score">${s && s.pct!=null ? `<b class="${cls}">${s.pct}%</b><span>typowo ${nf(s.base)} po ${ageTxt(s.h)}<br>(mediana ${s.n} ost. ${s.mixed?"filmów":CATN[cat(v)]})</span>` : `<span>za mało danych do porównania</span>`}</div>
     </div>`;
@@ -695,7 +696,7 @@ function recView(){
     </div>`;
   }).join("");
   return `${chanBar()}<div style="margin-top:14px" class="chips">${chips}</div><div class="rgrid">${cards}</div>
-    <div class="help">Zapisy streamów nie biorą udziału w rekordach ani w porównaniach. Wyświetlenia liczone od premiery. „≈” oznacza starsze filmy, dla których pierwsza doba jest wyliczona z dziennych danych YouTube Analytics. Nowe filmy panel mierzy co godzinę, więc ich wynik jest dokładny. Shorty nie biorą udziału w rekordach.</div>`;
+    <div class="help">Zapisy streamów i filmy dla wspierających nie biorą udziału w rekordach ani w porównaniach. Wyświetlenia liczone od premiery. „≈” oznacza starsze filmy, dla których pierwsza doba jest wyliczona z dziennych danych YouTube Analytics. Nowe filmy panel mierzy co godzinę, więc ich wynik jest dokładny. Shorty nie biorą udziału w rekordach.</div>`;
 }
 const NICON = {achievement:"🏅", new_video:"🎬", record:"🏆", revival:"🔥", unassigned:"❓", milestone:"🎉", info:"ℹ️", error:"⚠️"};
 function newsView(){
@@ -714,7 +715,7 @@ async function loadYT(){
   if(DEMO){ Y = demoYT(); return; }
   try{
     const r = await fetch("/api/yt",{cache:"no-store"});
-    if(r.ok){ Y = await r.json(); Y.streams = Y.videos.filter(v=>v.live); Y.videos = Y.videos.filter(v=>!v.live); }
+    if(r.ok){ Y = await r.json(); Y.streams = Y.videos.filter(v=>v.live); Y.membersOnly = Y.videos.filter(v=>!v.live && v.members); Y.videos = Y.videos.filter(v=>!v.live && !v.members); }
   }catch{}
 }
 function demoYT(){
@@ -733,7 +734,8 @@ function demoYT(){
   });
   const streams = [{id:"st1",title:"Łikendowy Grind w Łor Tandera ale Jest Wysoko",wt:1,is_short:0,live:1,published:new Date(now-15*24*HOURMS).toISOString(),views:2549,thumb:"",curve:null},
     {id:"st2",title:"ORDT do EMBT – lecimy dalej od 3.0",wt:1,is_short:0,live:1,published:new Date(now-30*24*HOURMS).toISOString(),views:2355,thumb:"",curve:null}];
-  return {streams, connected:true, configured:true, channel:{title:"MVS",subs:1287}, last_refresh:new Date(now-20*6e4).toISOString(), last_error:"", videos:vids,
+  const membersOnly = [{id:"m1",title:"OVERWATCH + CZOŁGI? Czyli hero shooter WOT HEAT | BEZ CENZURY |",wt:0,is_short:0,members:1,published:new Date(now-200*24*HOURMS).toISOString(),views:14,thumb:"",curve:null}];
+  return {streams, membersOnly, connected:true, configured:true, channel:{title:"MVS",subs:1287}, last_refresh:new Date(now-20*6e4).toISOString(), last_error:"", videos:vids,
     news:[{id:5,type:"record",ts:new Date(now-2*HOURMS).toISOString(),text:"NOWY REKORD 24 godzin: „Tiger II – czy był aż tak straszny? | War Thunder” – 2 989 wyświetleń (Saito)"},
       {id:4,type:"new_video",ts:new Date(now-29*HOURMS).toISOString(),text:"Nowy film na kanale: „Tiger II – czy był aż tak straszny? | War Thunder” (montował: Saito)"},
       {id:3,type:"revival",ts:new Date(now-50*HOURMS).toISOString(),text:"Film odżywa! „Bombowce, które zmieniły wojnę” złapał 640 wyświetleń w dobę (zwykle ok. 35)."},
@@ -1176,6 +1178,7 @@ document.addEventListener("click", e => {
   const b = e.target.closest("button,[data-close]"); if(!b) return;
   const d = b.dataset;
   if(d.tab){ TAB = d.tab; history.replaceState(null,"","#"+TAB); render(); }
+  if(d.mem){ const [id,val]=d.mem.split(":"); save("POST","videos/"+id+"/members",{members:val==="1"}, val==="1"?"Oznaczono jako film dla wspierających – wykluczony ze statystyk":"Przywrócono do statystyk"); }
   if(d.live){ const [id,val]=d.live.split(":"); save("POST","videos/"+id+"/live",{live:val==="1"}, val==="1"?"Oznaczono jako stream – wykluczony ze statystyk":"Przywrócono do statystyk"); }
   if(d.vf){ VF = d.vf; VSHOW = 25; render(); }
   if(d.rf){ RF = d.rf; render(); }

@@ -122,7 +122,7 @@ export async function onRequest({ request, env, params, data }) {
     if (res === "yt" && method === "GET") {
       const [k, v, n] = await db.batch([
         db.prepare("SELECT key, value FROM kv WHERE key IN ('channel_title','channel_id','channel_thumb','subs','last_refresh','last_error','records')"),
-        db.prepare("SELECT id, title, published, duration_s, thumb, wt, is_short, member, views, likes, comments, curve, approx24, COALESCE(live_override, is_live, 0) AS live FROM videos WHERE removed_at IS NULL ORDER BY published DESC"),
+        db.prepare("SELECT id, title, published, duration_s, thumb, wt, is_short, member, views, likes, comments, curve, approx24, COALESCE(live_override, is_live, 0) AS live, COALESCE(members_override, is_members, 0) AS members FROM videos WHERE removed_at IS NULL ORDER BY published DESC"),
         db.prepare("SELECT id, ts, type, text, video_id FROM news ORDER BY id DESC LIMIT 60"),
       ]);
       const kv = Object.fromEntries(k.results.map((r) => [r.key, r.value]));
@@ -148,9 +148,16 @@ export async function onRequest({ request, env, params, data }) {
       }
     }
 
-    if (res === "videos" && id && path[2] === "live" && method === "POST") {
+    if (res === "videos" && id && (path[2] === "live" || path[2] === "members") && method === "POST") {
       const b = await readBody(request);
-      await db.prepare("UPDATE videos SET live_override=? WHERE id=?").bind(b.live ? 1 : 0, id).run();
+      const col = path[2] === "live" ? "live_override" : "members_override";
+      const on = path[2] === "live" ? b.live : b.members;
+      const st = [db.prepare(`UPDATE videos SET ${col}=? WHERE id=?`).bind(on ? 1 : 0, id)];
+      if (on) st.push(
+        db.prepare("UPDATE projects SET status='active', uploaded=NULL, actual_min=NULL, video_id=NULL, video_url=NULL WHERE video_id=?").bind(id),
+        db.prepare("UPDATE videos SET project_id=NULL WHERE id=?").bind(id),
+        db.prepare("DELETE FROM news WHERE type IN ('unassigned','new_video') AND video_id=?").bind(id));
+      await db.batch(st);
       return json({ ok: true });
     }
 
@@ -217,7 +224,7 @@ export async function onRequest({ request, env, params, data }) {
       const b = await readBody(request);
       const desc = String(b.desc || "").trim().slice(0, 3000), title = String(b.title || "").trim().slice(0, 150);
       if (desc.length < 15) return bad("Opisz film trochę dokładniej (min. kilka słów)");
-      const { results } = await db.prepare("SELECT tags, views, curve, wt, is_short FROM videos WHERE removed_at IS NULL AND COALESCE(live_override, is_live, 0) = 0").all();
+      const { results } = await db.prepare("SELECT tags, views, curve, wt, is_short FROM videos WHERE removed_at IS NULL AND COALESCE(live_override, is_live, 0) = 0 AND COALESCE(members_override, is_members, 0) = 0").all();
       const videos = results.map((r) => ({ ...r, curve: r.curve ? JSON.parse(r.curve) : null }));
       return json(await generateTags(env, { desc, title, wt: !!b.wt }, videos));
     }
