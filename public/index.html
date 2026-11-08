@@ -1011,7 +1011,7 @@ function thumbsView(){
     : TH.since ? `CTR z raportów YouTube od <b>${fmt(TH.since)}</b>${TH.until?` do ${fmt(TH.until)}`:""} (YouTube dosyła dane z 1–2 dniowym opóźnieniem).`
     : `Raporty CTR uruchomione. YouTube przygotowuje pierwsze dane, może to potrwać do 48 h.`;
   const liked = [...LIKED];
-  return `<div class="card"><h2>Miniatury <span class="hint">bez shortów · min. 200 wyśw. miniatury (doba) / 1000 (cały czas)</span></h2>
+  return `<div class="card"><h2>Miniatury <span class="hint">bez shortów · doba: min. 200 wyśw. miniatury · cały czas: filmy z min. 3000 wyświetleń</span></h2>
     <div class="help" style="margin-top:0">${status}${TH.imported?` Z eksportu Studio: ${TH.imported} filmów.`:""}${TH.partial?` ${TH.partial} starszych filmów czeka na eksport ze Studio, bo raporty obejmują tylko ostatnie tygodnie.`:""}</div>
     ${DEMO?"":`<div class="tgrow"><span class="filebtn btn ghost sm">Wgraj eksport ze Studio (CSV)<input type="file" accept=".csv,text/csv" id="ctrFile"></span>
       <span class="help" style="margin:0">Studio → Statystyki → Tryb zaawansowany → zakres „Od początku” → Eksportuj → CSV → wgraj plik „Dane tabeli.csv” / „Table data.csv”.</span></div>`}
@@ -1055,10 +1055,10 @@ async function importCtrCsv(file){
   const lc = head.map(h=>h.toLowerCase());
   let ctrCol = lc.findIndex(h=>/(ctr|click-through|klikaln|współczynnik klik)/.test(h));
   let impCol = lc.findIndex((h,i)=> i!==ctrCol && /(impression|wyświetlenia miniatur|wyświetlenia na liście|wyświetleń miniatur)/.test(h));
+  const durCol = lc.findIndex(h=>/(czas trwania|duration)/.test(h));
   if(idCol<0 || ctrCol<0){ toast("⚠ Nie rozpoznano kolumn. Wyeksportuj CSV z kolumną CTR (zmień język Studio na angielski, jeśli trzeba)."); return; }
   const num = s => Number(String(s||"").replace(/[\s %]/g,"").replace(",","."));
-  const out = body.filter(r=>idRe.test((r[idCol]||"").trim())).map(r=>({id:r[idCol].trim(), ctr:num(r[ctrCol]), impressions:impCol>=0?num(r[impCol]):0})).filter(r=>!isNaN(r.ctr));
-  if(impCol<0) toast("Uwaga: brak kolumny wyświetleń miniatur, filmy bez niej nie przejdą progu 1000.");
+  const out = body.filter(r=>idRe.test((r[idCol]||"").trim()) && !(durCol>=0 && num(r[durCol])>0 && num(r[durCol])<=180)).map(r=>({id:r[idCol].trim(), ctr:num(r[ctrCol]), impressions:impCol>=0?num(r[impCol]):0})).filter(r=>!isNaN(r.ctr));
   try{ const r = await api.call("POST","ctr/import",{rows:out}); toast(`Wczytano CTR ${r.imported} filmów`); }
   catch(e){ toast("⚠ "+e.message); }
   await load();
