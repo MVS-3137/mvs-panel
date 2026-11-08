@@ -152,6 +152,20 @@ Strony Pages nie mają harmonogramu, dlatego w folderze `cron` jest mini-Worker,
 - Achievementy kanałowe (np. cel subów, serie słabych filmów) nie mają stempla.
 - **Ręczne odblokowanie:**
   - „It's Dangerous to Go Alone”: tylko Saito, z wyborem dwóch osób,
-  - „Toss a Coin to Your Witcher”: każdy z was, bo YouTube nie udostępnia liczby wspierających.
+  - „Toss a Coin to Your Witcher”: tylko Saito, bo YouTube nie udostępnia liczby wspierających.
 - **Half-Life 3** liczy przesunięcia w planie: edycję, która przesuwa start na później albo wydłuża planowany film.
 - **Skill Issue** i **How Did We Get Here?** zamiast CTR (którego API YouTube nie udostępnia) używają wyników pierwszej doby i kolejnych okien.
+
+## Generator tagów
+
+Zakładka **Tagi**: opisujesz film, klikasz **Generuj tagi**, dostajesz 8–15 tagów w limicie 500 znaków, gotowych do wklejenia.
+
+Skąd biorą się tagi:
+- **🔎 szukane:** podpowiedzi wyszukiwarki YouTube, czyli frazy, które ludzie naprawdę wpisują. To nieoficjalne źródło Google; jeśli kiedyś przestanie odpowiadać, generator działa dalej bez tej etykiety.
+- **★ 2×:** wasze tagi z przeszłości; liczba mówi, ile razy lepiej od typowego filmu radziły sobie filmy z tym tagiem (liczone od 2 filmów wzwyż).
+- **kanał:** stałe tagi, które macie na większości filmów tej kategorii.
+- **AI:** darmowy model Llama 3.3 w Cloudflare Workers AI.
+
+**Workers AI:** w `wrangler.toml` jest już binding `AI`, nic nie trzeba klikać. Darmowy limit to 10 000 „neuronów” dziennie. Jedno generowanie zużywa ich ułamek, więc wystarczy na kilkadziesiąt generowań dziennie; po przekroczeniu AI zwróci błąd, a panel pokaże tagi bez części AI. Nic nie zostanie naliczone na planie Free.
+
+**Kopiuj dla Claude** kopiuje gotowe polecenie (opis + dane z panelu) do wklejenia w czacie z Claude, gdy chcecie najlepszej jakości.

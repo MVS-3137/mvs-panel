@@ -6,3 +6,6 @@ compatibility_date = "2026-11-01"
 binding = "DB"
 database_name = "mvs-panel"
 database_id = "cc4aec84-44be-4132-a26b-ada9d629d689"
+
+[ai]
+binding = "AI"

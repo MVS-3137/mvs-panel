@@ -1,5 +1,6 @@
 import { refresh, kvGet, kvSet, linkProject, loadOverrides } from "../../lib/yt.js";
 import { DEFS, DEF, MANUAL, unlockStmts, bestSubs } from "../../lib/ach.js";
+import { generateTags } from "../../lib/tags.js";
 
 // API panelu MVS — Cloudflare Pages Functions + D1 (binding: DB)
 // Dostęp chroni functions/_middleware.js (hasła), który podaje zalogowaną osobę w data.user.
@@ -201,6 +202,15 @@ export async function onRequest({ request, env, params, data }) {
       if (id === "dangerous_alone" && members.length !== 2) return bad("Wybierz dwie osoby, które zrobiły film razem");
       await db.batch(unlockStmts(db, id, { members: id === "toss_coin" ? [] : members, note: "odblokował: " + user }));
       return json({ ok: true });
+    }
+
+    if (res === "tags" && method === "POST") {
+      const b = await readBody(request);
+      const desc = String(b.desc || "").trim().slice(0, 3000), title = String(b.title || "").trim().slice(0, 150);
+      if (desc.length < 15) return bad("Opisz film trochę dokładniej (min. kilka słów)");
+      const { results } = await db.prepare("SELECT tags, views, curve, wt, is_short FROM videos WHERE removed_at IS NULL").all();
+      const videos = results.map((r) => ({ ...r, curve: r.curve ? JSON.parse(r.curve) : null }));
+      return json(await generateTags(env, { desc, title, wt: !!b.wt }, videos));
     }
 
     return json({ error: "Nie znaleziono" }, 404);
