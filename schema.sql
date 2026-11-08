@@ -52,3 +52,5 @@ CREATE TABLE IF NOT EXISTS reach (video_id TEXT NOT NULL, day TEXT NOT NULL, imp
 CREATE TABLE IF NOT EXISTS ctr_import (video_id TEXT PRIMARY KEY, ctr REAL, impressions INTEGER, imported_at TEXT);
 CREATE TABLE IF NOT EXISTS comp_channels (id TEXT NOT NULL, list TEXT NOT NULL, title TEXT, handle TEXT, thumb TEXT, added_by TEXT, added_at TEXT, PRIMARY KEY (id, list));
 CREATE TABLE IF NOT EXISTS comp_stats (id TEXT NOT NULL, day TEXT NOT NULL, subs INTEGER, views INTEGER, videos INTEGER, PRIMARY KEY (id, day));
+CREATE TABLE IF NOT EXISTS grade_stats (video_id TEXT PRIMARY KEY, views90 INTEGER DEFAULT 0, subs90 INTEGER DEFAULT 0, avp90 REAL, hook30 REAL, hook_at TEXT);
+CREATE TABLE IF NOT EXISTS clicks (member TEXT NOT NULL, day TEXT NOT NULL, n INTEGER DEFAULT 0, PRIMARY KEY (member, day));

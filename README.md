@@ -235,3 +235,23 @@ Przegląd: Performance → **Dla wspierających**. Pomyłki poprawisz ręcznie:
 - „To film publiczny” w tej liście.
 
 Migracja: konsola D1 → linia z `schema-wspierajacy.sql`.
+
+## Oceny
+
+Zakładka **Oceny** pokazuje avatar każdego z was, tytuły (najedź, żeby zobaczyć opis) oraz dwie listy: **Co idzie świetnie** i **Do poprawki**. Wszystkie porównania są względem średniej kanału, nie między osobami.
+
+**Tytuły:**
+- **Z waszej listy:** SZEF, Montażysta, Nauczyciel, Ulubieniec widzów, Obibok, MVS Panel Enjoyer, Streamer, Społeczniak, Wędkarz, YouTube na pełny etat, Kiedyś mi się uda..., Rekordzista.
+- **Dodatkowe:** Snajper (CTR), Speedrunner (najszybciej od startu w planie do premiery), Maratończyk (najdłuższe filmy), Pewniak (najczęściej przebija typowy wynik), One Shot, One Kill (najlepszy pojedynczy film z 90 dni), Turysta (najwięcej filmów spoza War Thunder).
+
+**Ręcznie ustawia tylko Saito** (widzi to tylko on, bez powiadomień):
+- **Montażysta:** domyślnie automatycznie wg utrzymania uwagi; panel podpowiada, komu się należy.
+- **Streamer:** zawsze ręcznie.
+
+**Skąd dane:**
+- **YouTube Analytics, raz dziennie:** wyświetlenia, suby i % obejrzenia z 90 dni; hook = % widzów po 30 sekundach (krzywa utrzymania, do 4 filmów dziennie).
+- **Panel:** CTR (zakładka Miniatury), plan nagrywek, licznik kliknięć w panelu.
+
+**Avatary** leżą w `public/avatars/` (malvel.png, virtuoso.png, saito.png). Podmiana pliku zmienia avatar.
+
+Migracja: konsola D1 → linia z `schema-oceny.sql`.

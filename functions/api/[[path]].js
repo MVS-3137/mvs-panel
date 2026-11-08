@@ -4,6 +4,7 @@ import { generateTags } from "../../lib/tags.js";
 import { topThumbs, importStmts } from "../../lib/thumbs.js";
 import { compTables, resolveChannel, EDITABLE, OWN_ID } from "../../lib/comp.js";
 import { accessToken } from "../../lib/yt.js";
+import { computeGrades, clickStmt, MANUAL_TAGS } from "../../lib/grades.js";
 
 // API panelu MVS — Cloudflare Pages Functions + D1 (binding: DB)
 // Dostęp chroni functions/_middleware.js (hasła), który podaje zalogowaną osobę w data.user.
@@ -274,6 +275,35 @@ export async function onRequest({ request, env, params, data }) {
         await db.prepare("DELETE FROM comp_channels WHERE id=? AND list=?").bind(id, list).run();
         return json({ ok: true });
       }
+    }
+
+    if (res === "grades" && method === "GET") {
+      try {
+        const g = await computeGrades(db);
+        // ręczne ustawienia (Montażysta, Streamer) widzi tylko Saito
+        return json(user === "Saito" ? { ...g, saito: true } : { people: g.people, window: g.window });
+      } catch (e) { return json({ error: "Brak tabel ocen. Wykonaj SQL z pliku schema-oceny.sql." }, 500); }
+    }
+
+    if (res === "grades" && id === "manual" && method === "PUT") {
+      if (user !== "Saito") return json({ error: "Nie znaleziono" }, 404);
+      const b = await readBody(request);
+      const cur = JSON.parse((await kvGet(db, "grade_manual")) || "{}");
+      for (const k of MANUAL_TAGS) {
+        if (b[k] === undefined) continue;
+        const v = b[k];
+        if (v === "auto" || v === null || v === "" || MEMBERS.includes(v)) cur[k] = v === "" ? null : v;
+      }
+      await db.batch([kvSet(db, "grade_manual", JSON.stringify(cur))]);
+      return json({ ok: true });
+    }
+
+    if (res === "clicks" && method === "POST") {
+      if (!MEMBERS.includes(user)) return json({ ok: true });
+      const b = await readBody(request);
+      const n = Math.max(0, Math.min(300, Math.round(Number(b.n) || 0)));
+      if (n) await db.batch([clickStmt(db, user, n, new Date().toISOString().slice(0, 10))]);
+      return json({ ok: true });
     }
 
     return json({ error: "Nie znaleziono" }, 404);

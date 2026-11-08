@@ -32,7 +32,7 @@ header .sub{color:var(--muted);font-size:13px}
 header .me{margin-left:auto;font-size:12px;color:var(--muted);text-align:right}
 
 nav{display:flex;gap:6px;overflow-x:auto;padding:12px 0;scrollbar-width:none}
-nav button{background:none;border:1px solid transparent;border-radius:999px;padding:7px 14px;cursor:pointer;
+nav button{background:none;border:1px solid transparent;border-radius:999px;padding:7px 11px;cursor:pointer;
   font-family:var(--head);letter-spacing:.06em;text-transform:uppercase;font-size:14px;color:var(--muted);white-space:nowrap}
 nav button.on{color:var(--bg);background:var(--gold)}
 nav button:not(.on):hover{border-color:var(--line);color:var(--text)}
@@ -254,6 +254,32 @@ textarea:focus{outline:2px solid var(--gold2);outline-offset:-1px}
 .cplace b{font-family:var(--head);font-size:20px;color:var(--gold);margin-right:4px}
 .addrow{display:flex;gap:8px;margin-top:12px}
 .addrow input{flex:1}
+/* ---- oceny ---- */
+.people{display:grid;gap:14px;grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:1000px){.people{grid-template-columns:minmax(0,1fr)}}
+.person{display:flex;flex-direction:column;gap:12px;position:relative;overflow:visible}
+.person::before{content:"";position:absolute;inset:0 0 auto 0;height:4px;border-radius:var(--r) var(--r) 0 0;background:var(--c)}
+.pava{width:150px;height:170px;margin:4px auto 0;border-radius:16px;overflow:hidden;background:radial-gradient(circle at 50% 35%,color-mix(in srgb,var(--c) 30%,#1a2a4a),#0c1322 75%);border:1px solid color-mix(in srgb,var(--c) 60%,transparent)}
+.pava img{width:100%;height:100%;object-fit:cover;object-position:top center;display:block}
+.pname{font-family:var(--head);font-size:24px;letter-spacing:.06em;text-align:center;color:var(--c);text-transform:uppercase}
+.ptags{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;min-height:30px}
+.ptag{position:relative;font-size:12.5px;font-weight:600;padding:4px 10px;border-radius:999px;border:1px solid var(--gold2);color:var(--gold);background:#dda06114;cursor:help;outline:none}
+.ptag.fun{border-color:#e2735f88;color:#f0a090;background:#e2735f14}
+.ptag .tip{position:absolute;left:50%;bottom:calc(100% + 8px);transform:translate(-50%,4px);width:230px;background:var(--card2);border:1px solid var(--gold2);color:var(--text);font-weight:400;font-size:12.5px;line-height:1.45;padding:9px 11px;border-radius:10px;opacity:0;pointer-events:none;transition:.15s;z-index:7;box-shadow:0 10px 30px #0009}
+.ptag:hover .tip,.ptag:focus .tip{opacity:1;transform:translate(-50%,0)}
+.ptag .tip{visibility:hidden}.ptag:hover .tip,.ptag:focus .tip{visibility:visible}
+.ptags{overflow:visible}.person{overflow:hidden}.person .ptags{overflow:visible}
+@media (max-width:560px){.ptag .tip{width:200px}}
+.ptag .tip b{display:block;color:var(--gold);margin-bottom:2px}
+.pnone{font-size:12.5px;color:var(--muted)}
+.pbox{border-radius:12px;padding:10px 12px;font-size:13.5px;line-height:1.45}
+.pbox h4{margin:0 0 6px;font-family:var(--head);font-size:13px;letter-spacing:.06em;text-transform:uppercase}
+.pbox ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:5px}
+.pbox.ok{background:#7fc29b14;border:1px solid #7fc29b44}.pbox.ok h4{color:var(--ok)}
+.pbox.fix{background:#e8b54a12;border:1px solid #e8b54a44}.pbox.fix h4{color:var(--warn)}
+.gset{margin-top:14px}
+.gset .row{display:grid;gap:10px;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+@media (max-width:560px){.gset .row{grid-template-columns:minmax(0,1fr)}}
 </style>
 </head>
 <body>
@@ -289,6 +315,7 @@ const TABS = [
   {id:"news", name:"Aktualności"},
   {id:"tags", name:"Tagi"},
   {id:"comp", name:"Konkurencja"},
+  {id:"grades", name:"Oceny"},
 ];
 
 /* ---------- daty ---------- */
@@ -351,7 +378,7 @@ function demoCall(method, url, body){
 }
 
 async function load(){
-  if(DEMO){ if(!Y.videos.length) Y = demoYT(); if(!C) C = demoChallenge(); if(!TH) TH = demoThumbs(); if(!COMP) COMP = demoComp(); render(); return; }
+  if(DEMO){ if(!Y.videos.length) Y = demoYT(); if(!C) C = demoChallenge(); if(!TH) TH = demoThumbs(); if(!COMP) COMP = demoComp(); if(!GR) GR = demoGrades(); render(); return; }
   try{
     const r = await fetch("/api/state",{cache:"no-store"});
     if(r.status===401){ location.href="/login"; return; }
@@ -361,7 +388,7 @@ async function load(){
   }catch{
     DEMO = true; S = demoData();
   }
-  await Promise.all([loadYT(), loadChallenge(), loadThumbs(), loadComp()]);
+  await Promise.all([loadYT(), loadChallenge(), loadThumbs(), loadComp(), loadGrades()]);
   render();
 }
 async function save(method, url, body, msg){
@@ -428,7 +455,7 @@ function render(){
   const v = document.getElementById("view");
   const tab = TABS.find(t=>t.id===TAB) || TABS[0];
   if(tab.id==="news") seenNews();
-  v.innerHTML = tab.stage ? lockedView(tab) : ({perf:perfView, rec:recView, news:newsView, chal:challengeView, tags:tagsView, thumb:thumbsView, comp:compView}[tab.id] || planView)();
+  v.innerHTML = tab.stage ? lockedView(tab) : ({perf:perfView, rec:recView, news:newsView, chal:challengeView, tags:tagsView, thumb:thumbsView, comp:compView, grades:gradesView}[tab.id] || planView)();
 }
 function lockedView(t){
   return `<div class="card locked"><div><div class="big">${t.icon}</div>
@@ -1157,6 +1184,59 @@ function compView(){
     ${compTable("pl","Polskie kanały gamingowe","wasza liga · możecie dodawać kanały")}`;
 }
 
+/* ---------- oceny ---------- */
+let GR = null;
+async function loadGrades(){
+  if(DEMO){ if(!GR) GR = demoGrades(); return; }
+  try{ const r = await fetch("/api/grades",{cache:"no-store"}); GR = await r.json(); }catch{}
+}
+function demoGrades(){
+  const T = (id,name,kind,desc)=>({id,name,kind,desc});
+  return {window:90, saito:true, manual:{montazysta:"auto"}, hints:{montazysta:"Virtuoso (Malvel: 41,2%, Virtuoso: 47,8%, Saito: 44,0%)"}, people:[
+    {name:"Malvel", avatar:"avatars/malvel.png", tags:[T("ulubieniec","Ulubieniec widzów","good","Jego filmy przyniosły kanałowi najwięcej subskrypcji w ostatnich 90 dniach."),T("enjoyer","MVS Panel Enjoyer","good","Najwięcej klika w panelu (ostatnie 30 dni)."),T("kiedys","Kiedyś mi się uda...","fun","Żaden z jego filmów nie jest (jeszcze) rekordem kanału.")],
+      plus:["Filmy dobrze zamieniają widzów w subskrybentów: 4,1 suba na 1000 wyświetleń (średnia 3,2).","Rozkręcają dyskusję: 5,0 komentarza na 1000 wyświetleń (średnia 3,8)."],
+      minus:["CTR 5,9% przy średniej kanału 7,1%. Warto testować mocniejsze miniatury i tytuły (np. przez zakładkę Miniatury)."]},
+    {name:"Virtuoso", avatar:"avatars/virtuoso.png", tags:[T("montazysta","Montażysta","good","Jego filmy najdłużej utrzymują uwagę widzów (średni % obejrzenia, ostatnie 90 dni)."),T("wedkarz","Wędkarz","good","Jego filmy mają najlepszy hook: najwięcej widzów zostaje po pierwszych 30 sekundach."),T("obibok","Obibok","fun","Nie dodał filmu od ponad 20 dni.")],
+      plus:["Widzowie zostają z filmem: średnio 47,8% obejrzenia (średnia kanału 44,3%).","Mocne otwarcia: po 30 sekundach zostaje 78,0% widzów (średnia kanału 71,5%)."],
+      minus:["Ostatni film 24 dni temu. Warto wpisać coś do planu nagrywek."]},
+    {name:"Saito", avatar:"avatars/saito.png", tags:[T("szef","SZEF","good","Jego filmy przyniosły kanałowi najwięcej wyświetleń w ostatnich 90 dniach."),T("rekordzista","Rekordzista","good","Ma najwięcej rekordów kanału."),T("snajper","Snajper","good","Jego miniatury i tytuły trafiają najcelniej: najwyższy CTR."),T("nauczyciel","Nauczyciel","good","Zrobił najwięcej poradników w ostatnich 180 dniach.")],
+      plus:["Filmy osiągają średnio 148% typowego wyniku kanału po 7 dniach.","Miniatury i tytuły przyciągają kliknięcia: CTR 8,6% (średnia kanału 7,1%).","Najmocniejszy film ostatnio: „TOP 10 NAJGORSZYCH CZOŁGÓW W WAR THUNDER” (13 783 wyświetleń po 7 dniach)."],
+      minus:["Po 30 sekundach zostaje 66,0% widzów (średnia kanału 71,5%). Pierwsze sekundy to dobre miejsce na pokazanie, co będzie w filmie."]}]};
+}
+function gradesView(){
+  if(!Y.connected && !DEMO) return connectView();
+  if(!GR) return `<div class="card"><div class="empty">Ładuję…</div></div>`;
+  if(GR.error) return `<div class="card"><div class="badline">${esc(GR.error)}</div></div>`;
+  const cards = GR.people.map(p => `<div class="card person" style="--c:${COLORS[p.name]}">
+    <div class="pava"><img src="${esc(p.avatar)}" alt="${esc(p.name)}"></div>
+    <div class="pname">${esc(p.name)}</div>
+    <div class="ptags">${p.tags.length ? p.tags.map(t=>`<span class="ptag ${t.kind==="fun"?"fun":""}" tabindex="0">${esc(t.name)}<span class="tip"><b>${esc(t.name)}</b>${esc(t.desc)}</span></span>`).join("") : '<span class="pnone">Brak tytułów. Na razie!</span>'}</div>
+    <div class="pbox ok"><h4>Co idzie świetnie</h4><ul>${p.plus.map(t=>`<li>${esc(t)}</li>`).join("") || "<li>Za mało danych.</li>"}</ul></div>
+    <div class="pbox fix"><h4>Do poprawki</h4><ul>${p.minus.map(t=>`<li>${esc(t)}</li>`).join("") || "<li>Za mało danych.</li>"}</ul></div>
+  </div>`).join("");
+  const opt = (sel, list) => list.map(([v,n])=>`<option value="${v}" ${String(sel??"")===v?"selected":""}>${n}</option>`).join("");
+  const saito = GR.saito && !DEMO ? `<div class="card gset"><h2>Ręczne tytuły <span class="hint">widzisz tylko ty, nikt nie dostaje powiadomień</span></h2>
+    <form id="fGrades"><div class="row">
+      <label>Montażysta<select name="montazysta">${opt(GR.manual?.montazysta ?? "auto", [["auto","Automatycznie (wg danych)"],["Malvel","Malvel"],["Virtuoso","Virtuoso"],["Saito","Saito"],["","Nikt"]])}</select>
+        <span class="help" style="margin:4px 0 0">Wg danych powinien dostać: <b>${esc(GR.hints?.montazysta||"–")}</b> (najwyższe utrzymanie uwagi).</span></label>
+      <label>Streamer<select name="streamer">${opt(GR.manual?.streamer ?? "", [["","Nikt"],["Malvel","Malvel"],["Virtuoso","Virtuoso"],["Saito","Saito"]])}</select>
+        <span class="help" style="margin:4px 0 0">Kto zrobił najwięcej streamów w ostatnim miesiącu.</span></label>
+    </div><button class="btn ghost" type="submit" style="margin-top:12px">Zapisz</button></form></div>` : "";
+  return `<div class="card"><h2>Oceny <span class="hint">tytuły i wskazówki liczone z waszych filmów · najedź na tytuł, żeby zobaczyć opis</span></h2>
+    <div class="help" style="margin-top:0">Wszystkie porównania odnoszą się do średniej całego kanału. Dane z ostatnich 90–180 dni, aktualizacja raz dziennie.</div></div>
+    <div class="people" style="margin-top:14px">${cards}</div>${saito}`;
+}
+/* licznik kliknięć (MVS Panel Enjoyer) */
+let CLK = 0;
+document.addEventListener("click", e => { if(e.target.closest("button,a,input[type=checkbox],select")) CLK++; }, true);
+function flushClicks(){
+  if(DEMO || !CLK) return;
+  const n = CLK; CLK = 0;
+  try{ navigator.sendBeacon("/api/clicks", new Blob([JSON.stringify({n})],{type:"application/json"})); }catch{}
+}
+setInterval(flushClicks, 60000);
+document.addEventListener("visibilitychange", () => { if(document.visibilityState==="hidden") flushClicks(); });
+
 /* ---------- akcje ---------- */
 const formObj = f => Object.fromEntries(new FormData(f));
 document.addEventListener("submit", e => {
@@ -1168,6 +1248,7 @@ document.addEventListener("submit", e => {
     save("POST","leaves",o,"Wolne zapisane");
   }
   if(f.id==="fComp"){ const btn=f.querySelector("button"); btn.disabled=true; btn.textContent="Szukam…"; save("POST","competition/add",{url:o.url, list:"pl"},"Kanał dodany"); }
+  if(f.id==="fGrades"){ save("PUT","grades/manual",{montazysta:o.montazysta, streamer:o.streamer},"Zapisano"); }
   if(f.id==="fGoal"){ dlg.close(); save("PUT","goal",{goal:Number(o.goal)},"Nowy cel ustawiony"); }
   if(f.id==="fUnlock"){ const ms = new FormData(f).getAll("m"); dlg.close(); save("POST","achievements/"+f.dataset.id+"/unlock",{members:ms},"Achievement odblokowany! 🏅"); }
   if(f.id==="fSet") save("PUT","settings",o,"Ustawienia zapisane");
