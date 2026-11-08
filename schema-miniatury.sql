@@ -1,0 +1,1 @@
+CREATE TABLE IF NOT EXISTS reach (video_id TEXT NOT NULL, day TEXT NOT NULL, impressions INTEGER, ctr REAL, PRIMARY KEY (video_id, day)); CREATE TABLE IF NOT EXISTS ctr_import (video_id TEXT PRIMARY KEY, ctr REAL, impressions INTEGER, imported_at TEXT);

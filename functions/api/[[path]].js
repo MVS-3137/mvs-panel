@@ -1,6 +1,7 @@
 import { refresh, kvGet, kvSet, linkProject, loadOverrides } from "../../lib/yt.js";
 import { DEFS, DEF, MANUAL, unlockStmts, bestSubs } from "../../lib/ach.js";
 import { generateTags } from "../../lib/tags.js";
+import { topThumbs, importStmts } from "../../lib/thumbs.js";
 
 // API panelu MVS — Cloudflare Pages Functions + D1 (binding: DB)
 // Dostęp chroni functions/_middleware.js (hasła), który podaje zalogowaną osobę w data.user.
@@ -211,6 +212,20 @@ export async function onRequest({ request, env, params, data }) {
       const { results } = await db.prepare("SELECT tags, views, curve, wt, is_short FROM videos WHERE removed_at IS NULL").all();
       const videos = results.map((r) => ({ ...r, curve: r.curve ? JSON.parse(r.curve) : null }));
       return json(await generateTags(env, { desc, title, wt: !!b.wt }, videos));
+    }
+
+    if (res === "thumbs" && method === "GET") {
+      try { return json(await topThumbs(db)); }
+      catch (e) { return json({ error: "Brak tabel na miniatury. Wykonaj SQL z pliku schema-miniatury.sql." }, 500); }
+    }
+
+    if (res === "ctr" && id === "import" && method === "POST") {
+      const b = await readBody(request);
+      const rows = Array.isArray(b.rows) ? b.rows.slice(0, 5000) : [];
+      const st = importStmts(db, rows.map((r) => ({ id: String(r.id || ""), ctr: Number(r.ctr), impressions: Number(r.impressions) })), new Date().toISOString());
+      if (!st.length) return bad("Nie znaleziono w pliku filmów z CTR");
+      for (let i = 0; i < st.length; i += 100) await db.batch(st.slice(i, i + 100));
+      return json({ ok: true, imported: st.length });
     }
 
     return json({ error: "Nie znaleziono" }, 404);

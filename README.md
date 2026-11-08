@@ -169,3 +169,24 @@ Skąd biorą się tagi:
 **Workers AI:** w `wrangler.toml` jest już binding `AI`, nic nie trzeba klikać. Darmowy limit to 10 000 „neuronów” dziennie. Jedno generowanie zużywa ich ułamek, więc wystarczy na kilkadziesiąt generowań dziennie; po przekroczeniu AI zwróci błąd, a panel pokaże tagi bez części AI. Nic nie zostanie naliczone na planie Free.
 
 **Kopiuj dla Claude** kopiuje gotowe polecenie (opis + dane z panelu) do wklejenia w czacie z Claude, gdy chcecie najlepszej jakości.
+
+## Miniatury (CTR)
+
+1. Konsola D1: wklej linię z `schema-miniatury.sql` i kliknij **Execute**.
+2. Google Cloud → APIs & Services → Library: włącz **YouTube Reporting API** (trzecie API obok Data i Analytics).
+3. Wgraj nową paczkę na GitHuba.
+
+Przy najbliższym odświeżeniu panel zakłada w YouTube raport `channel_reach_basic_a1` (dzienny CTR i wyświetlenia miniatur każdego filmu).
+- Pierwsze dane mogą przyjść do 48 h później.
+- YouTube daje wstecz tylko ok. 30 dni.
+
+**TOP 5 – pierwsza doba:** CTR z dnia premiery i następnego dnia, dla filmów wydanych w okresie objętym raportami.
+
+**TOP 5 – cały czas:** dla starszych filmów wgrajcie raz eksport ze Studio:
+1. Statystyki → Tryb zaawansowany → zakres „Od początku”, upewnij się, że widać kolumnę CTR wyświetleń.
+2. Eksportuj → CSV i rozpakuj zip.
+3. W zakładce Miniatury kliknij **Wgraj eksport ze Studio** i wybierz plik z danymi tabeli.
+
+Shorty są pomijane. Progi: min. 200 wyświetleń miniatury (doba) i 1000 (cały czas).
+
+**Kopiuj prompt** składa polecenie z zaznaczonymi miniaturami (ID filmów) i opisem nowego filmu. Wklejacie je w czacie z Claude i dostajecie gotowy prompt po angielsku do generatora grafik.

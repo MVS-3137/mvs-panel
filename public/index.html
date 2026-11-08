@@ -213,6 +213,25 @@ textarea:focus{outline:2px solid var(--gold2);outline-offset:-1px}
 .legend span{display:inline-flex;gap:6px;align-items:center}
 .spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--gold2);border-right-color:transparent;border-radius:50%;animation:spin .8s linear infinite;vertical-align:-3px;margin-right:8px}
 @keyframes spin{to{transform:rotate(360deg)}}
+/* ---- miniatury ---- */
+.thgrid{display:grid;gap:14px;grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width:900px){.thgrid{grid-template-columns:minmax(0,1fr)}}
+.thhead{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:10px}
+.thhead h2{margin:0}
+.thhead .like{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;text-align:center;width:74px}
+.thl{display:flex;flex-direction:column;gap:8px}
+.thi{display:grid;grid-template-columns:22px 150px minmax(0,1fr) 74px;gap:12px;align-items:center;padding:8px;border-radius:12px;background:var(--bg2);border:1px solid var(--line)}
+.thi.on{border-color:var(--gold);box-shadow:0 0 0 1px #dda06144}
+.thi .thn{font-family:var(--head);font-size:20px;color:var(--gold);text-align:center}
+.thi img,.thi .ph{width:150px;aspect-ratio:16/9;object-fit:cover;border-radius:8px;display:block;background:linear-gradient(135deg,#24365a,#14203a)}
+.thi .t{font-weight:600;font-size:13.5px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.thi .m{font-size:12px;color:var(--muted);margin-top:4px}
+.thi .ctr{font-family:var(--head);font-size:20px;color:var(--ok);line-height:1}
+.thi .cb{display:flex;justify-content:center}
+.thi input[type=checkbox]{width:22px;height:22px;cursor:pointer}
+@media (max-width:560px){.thi{grid-template-columns:18px 104px minmax(0,1fr) 34px;gap:8px}.thi img,.thi .ph{width:104px}.thhead .like{width:auto}}
+.filebtn{position:relative;overflow:hidden;display:inline-block}
+.filebtn input{position:absolute;inset:0;opacity:0;cursor:pointer}
 </style>
 </head>
 <body>
@@ -244,7 +263,7 @@ const TABS = [
   {id:"perf", name:"Performance"},
   {id:"rec", name:"Rekordy MVS"},
   {id:"chal", name:"Wyzwania"},
-  {id:"thumb", name:"Miniatury", stage:3, icon:"🖼️", text:"3 miniatury, które najlepiej przyciągały widzów, i generator promptu do AI w ich stylu."},
+  {id:"thumb", name:"Miniatury"},
   {id:"news", name:"Aktualności"},
   {id:"tags", name:"Tagi"},
 ];
@@ -309,7 +328,7 @@ function demoCall(method, url, body){
 }
 
 async function load(){
-  if(DEMO){ if(!Y.videos.length) Y = demoYT(); if(!C) C = demoChallenge(); render(); return; }
+  if(DEMO){ if(!Y.videos.length) Y = demoYT(); if(!C) C = demoChallenge(); if(!TH) TH = demoThumbs(); render(); return; }
   try{
     const r = await fetch("/api/state",{cache:"no-store"});
     if(r.status===401){ location.href="/login"; return; }
@@ -319,7 +338,7 @@ async function load(){
   }catch{
     DEMO = true; S = demoData();
   }
-  await Promise.all([loadYT(), loadChallenge()]);
+  await Promise.all([loadYT(), loadChallenge(), loadThumbs()]);
   render();
 }
 async function save(method, url, body, msg){
@@ -379,13 +398,14 @@ function renderNav(){
 }
 function render(){
   if(document.getElementById("tgDesc")) syncTagInputs();
+  const thd = document.getElementById("thDesc"); if(thd) THDESC = thd.value;
   renderNav();
   document.getElementById("me").innerHTML = S.me ? `zalogowany: <b style="color:${COLORS[S.me]||"var(--text)"}">${esc(S.me)}</b>${DEMO?"":'<br><a href="/logout">wyloguj</a>'}` : "";
   document.getElementById("demo").innerHTML = DEMO ? `<div class="demo">Tryb podglądu: przykładowe dane, nic nie jest zapisywane. Po wrzuceniu na Cloudflare panel zacznie korzystać z waszej bazy.</div>` : "";
   const v = document.getElementById("view");
   const tab = TABS.find(t=>t.id===TAB) || TABS[0];
   if(tab.id==="news") seenNews();
-  v.innerHTML = tab.stage ? lockedView(tab) : ({perf:perfView, rec:recView, news:newsView, chal:challengeView, tags:tagsView}[tab.id] || planView)();
+  v.innerHTML = tab.stage ? lockedView(tab) : ({perf:perfView, rec:recView, news:newsView, chal:challengeView, tags:tagsView, thumb:thumbsView}[tab.id] || planView)();
 }
 function lockedView(t){
   return `<div class="card locked"><div><div class="big">${t.icon}</div>
@@ -959,6 +979,99 @@ async function copyText(txt){
   catch{ const ta=document.createElement("textarea"); ta.value=txt; document.body.appendChild(ta); ta.select(); let ok=false; try{ ok=document.execCommand("copy"); }catch{} ta.remove(); return ok; }
 }
 
+/* ---------- miniatury ---------- */
+let TH = null, THDESC = "";
+let LIKED = (()=>{ try{ return new Set(JSON.parse(localStorage.getItem("mvs_liked")||"[]")); }catch{ return new Set(); } })();
+const saveLiked = () => { try{ localStorage.setItem("mvs_liked", JSON.stringify([...LIKED])); }catch{} };
+async function loadThumbs(){
+  if(DEMO){ if(!TH) TH = demoThumbs(); return; }
+  try{ const r = await fetch("/api/thumbs",{cache:"no-store"}); TH = await r.json(); }catch{}
+}
+function demoThumbs(){
+  const v = (id,title,ctr,imp,member,d) => ({id,title,ctr,impressions:imp,member,thumb:`https://i.ytimg.com/vi/${id}/mqdefault.jpg`,published:new Date(Date.now()-d*864e5).toISOString(),source:"api"});
+  return {since:new Date(Date.now()-40*864e5).toISOString().slice(0,10), imported:0, partial:12, error:"",
+    top24:[v("ahXb9ko4VuQ","Od REZERWY do TOPTIERA - NIEMIECKIE Czołgi Ciężkie | WAR THUNDER",11.8,18400,"Saito",11),v("VpOiOvOCpKA","Obejrzyj Zanim Wydasz HAJ$ na War Thunder",10.2,12100,"Malvel",20),
+      v("_JqigtQ0v1w","Zagrałem KAŻDYM POJAZDEM 1 Ery Japonii [Część 1]",9.6,15300,"Saito",24),v("Ly1FFxP5iwQ","War Thunder ALE Z KAŻDYM KILLEM jest CIĘŻEJ",8.1,9800,"Virtuoso",34),v("ZuMxUi-R9ug","Jaką nację wybrać w WAR THUNDER? Japonia",7.4,8800,"Malvel",49)],
+    topLife:[v("FAjBzrriFjM","TOP 10 NAJGORSZYCH CZOŁGÓW W WAR THUNDER",9.9,311000,"Saito",67),v("ahXb9ko4VuQ","Od REZERWY do TOPTIERA - NIEMIECKIE Czołgi Ciężkie | WAR THUNDER",9.1,140000,"Saito",11),
+      v("VN2lK9mp6Uc","Jako Czołgista MUSISZ Znać Te Triki w War Thunder!",8.7,132000,"Virtuoso",71),v("_JqigtQ0v1w","Zagrałem KAŻDYM POJAZDEM 1 Ery Japonii [Część 1]",8.2,170000,"Saito",24),v("jUSQtAl8Wag","NAJSZYBSZA Droga do T-80 w War Thunder?",7.9,115000,"Malvel",63)]};
+}
+function thumbList(list, kind){
+  if(!list || !list.length) return `<div class="empty">${kind==="24"?"Pojawi się, gdy raporty CTR obejmą premierę nowego filmu (raporty YouTube ruszają do 48 h po wdrożeniu).":"Wgraj eksport ze Studio (przycisk wyżej), żeby zobaczyć CTR starszych filmów."}</div>`;
+  return list.map((v,i)=>{ const on = LIKED.has(v.id);
+    return `<div class="thi ${on?"on":""}"><div class="thn">${i+1}</div>
+      <a href="https://youtu.be/${esc(v.id)}" target="_blank" rel="noopener">${v.thumb?`<img src="${esc(v.thumb)}" alt="" loading="lazy">`:'<div class="ph"></div>'}</a>
+      <div><div class="t">${esc(v.title)}</div><div class="m"><span class="ctr">${String(v.ctr).replace(".",",")}%</span> CTR · ${nf(v.impressions)} wyśw. miniatury${v.member?` · <b style="color:${COLORS[v.member]}">${esc(v.member)}</b>`:""}</div></div>
+      <label class="cb"><input type="checkbox" data-like="${esc(v.id)}" ${on?"checked":""} aria-label="Podoba mi się"></label></div>`; }).join("");
+}
+function thumbsView(){
+  if(!Y.connected && !DEMO) return connectView();
+  if(!TH) return `<div class="card"><div class="empty">Ładuję…</div></div>`;
+  if(TH.error && !TH.top24) return `<div class="card"><div class="badline">${esc(TH.error)}</div></div>`;
+  const status = TH.error ? `<div class="badline">${esc(TH.error)}</div>`
+    : TH.since ? `CTR z raportów YouTube od <b>${fmt(TH.since)}</b>${TH.until?` do ${fmt(TH.until)}`:""} (YouTube dosyła dane z 1–2 dniowym opóźnieniem).`
+    : `Raporty CTR uruchomione. YouTube przygotowuje pierwsze dane, może to potrwać do 48 h.`;
+  const liked = [...LIKED];
+  return `<div class="card"><h2>Miniatury <span class="hint">bez shortów · min. 200 wyśw. miniatury (doba) / 1000 (cały czas)</span></h2>
+    <div class="help" style="margin-top:0">${status}${TH.imported?` Z eksportu Studio: ${TH.imported} filmów.`:""}${TH.partial?` ${TH.partial} starszych filmów czeka na eksport ze Studio, bo raporty obejmują tylko ostatnie tygodnie.`:""}</div>
+    ${DEMO?"":`<div class="tgrow"><span class="filebtn btn ghost sm">Wgraj eksport ze Studio (CSV)<input type="file" accept=".csv,text/csv" id="ctrFile"></span>
+      <span class="help" style="margin:0">Studio → Statystyki → Tryb zaawansowany → zakres „Od początku” → Eksportuj → CSV → wgraj plik „Dane tabeli.csv” / „Table data.csv”.</span></div>`}
+  </div>
+  <div class="thgrid" style="margin-top:14px">
+    <div class="card"><div class="thhead"><h2>TOP 5 – pierwsza doba</h2><div class="like">Podoba mi się</div></div><div class="thl">${thumbList(TH.top24,"24")}</div></div>
+    <div class="card"><div class="thhead"><h2>TOP 5 – cały czas</h2><div class="like">Podoba mi się</div></div><div class="thl">${thumbList(TH.topLife,"life")}</div></div>
+  </div>
+  <div class="card" style="margin-top:14px"><h2>Nowa miniatura <span class="hint">zaznaczone: ${liked.length}</span></h2>
+    <label>O czym jest nowy film?<textarea id="thDesc" maxlength="2000" placeholder="np. Gram każdym niemieckim niszczycielem czołgów od rezerwy do topu; na końcu Jagdtiger. Chcę pokazać emocje i duży kontrast.">${esc(THDESC)}</textarea></label>
+    <div class="tgrow"><button class="btn" data-thprompt>Kopiuj prompt</button><span class="help" style="margin:0">Wklej w czacie z Claude. Odpowiem gotowym promptem po angielsku do generatora grafik.</span></div>
+  </div>`;
+}
+function thumbPrompt(){
+  const all = [...(TH.top24||[]).map(v=>({...v,k:"po pierwszej dobie"})), ...(TH.topLife||[]).map(v=>({...v,k:"od początku"}))];
+  const seen = new Map();
+  for(const v of all) if(LIKED.has(v.id)){ const s = seen.get(v.id); if(s) s.k.push(`${String(v.ctr).replace(".",",")}% ${v.k}`); else seen.set(v.id,{...v,k:[`${String(v.ctr).replace(".",",")}% ${v.k}`]}); }
+  const list = [...seen.values()];
+  return `Pomóż mi zrobić miniaturę YouTube dla kanału MVS (polski kanał gamingowy, głównie War Thunder).
+
+Podobają mi się miniatury tych filmów (najwyższy CTR na kanale):
+${list.map((v,i)=>`${i+1}. https://youtu.be/${v.id} – „${v.title}” (CTR ${v.k.join(", ")})`).join("\n")}
+ID filmów: ${list.map(v=>v.id).join(", ")}
+
+Obejrzyj te miniatury (np. przez vidIQ: vidiq_get_images z tymi ID) i wyciągnij ich wspólny styl: kompozycja, kadr, kolory i kontrast, postać/maskotka, pojazdy, tło, efekty, miejsce na tekst.
+
+Nowy film: ${THDESC.trim()}
+
+Odpowiedz w 3 częściach:
+1. Po polsku, krótko (3–5 punktów): jaki wspólny styl widzisz w tych miniaturach.
+2. Gotowy prompt PO ANGIELSKU w bloku kodu, do skopiowania do generatora grafik AI: miniatura 16:9 (1280×720) w tym samym stylu, idealnie dopasowana do nowego filmu. Bez napisów w samej grafice, za to z czystym miejscem na tekst (napisy generowane przez AI zwykle wychodzą krzywo).
+3. Propozycja tekstu na miniaturę po polsku (2–4 słowa), z kolorem i miejscem, gdzie go dodać.`;
+}
+async function importCtrCsv(file){
+  const text = await file.text();
+  const rows = parseCsv(text);
+  if(rows.length < 2){ toast("⚠ Pusty plik"); return; }
+  const head = rows[0].map(h=>h.trim()), body = rows.slice(1);
+  const idRe = /^[A-Za-z0-9_-]{11}$/;
+  const idCol = head.findIndex((_,i)=> body.filter(r=>idRe.test((r[i]||"").trim())).length >= Math.max(1, body.length*0.5));
+  const lc = head.map(h=>h.toLowerCase());
+  let ctrCol = lc.findIndex(h=>/(ctr|click-through|klikaln|współczynnik klik)/.test(h));
+  let impCol = lc.findIndex((h,i)=> i!==ctrCol && /(impression|wyświetlenia miniatur|wyświetlenia na liście|wyświetleń miniatur)/.test(h));
+  if(idCol<0 || ctrCol<0){ toast("⚠ Nie rozpoznano kolumn. Wyeksportuj CSV z kolumną CTR (zmień język Studio na angielski, jeśli trzeba)."); return; }
+  const num = s => Number(String(s||"").replace(/[\s %]/g,"").replace(",","."));
+  const out = body.filter(r=>idRe.test((r[idCol]||"").trim())).map(r=>({id:r[idCol].trim(), ctr:num(r[ctrCol]), impressions:impCol>=0?num(r[impCol]):0})).filter(r=>!isNaN(r.ctr));
+  if(impCol<0) toast("Uwaga: brak kolumny wyświetleń miniatur, filmy bez niej nie przejdą progu 1000.");
+  try{ const r = await api.call("POST","ctr/import",{rows:out}); toast(`Wczytano CTR ${r.imported} filmów`); }
+  catch(e){ toast("⚠ "+e.message); }
+  await load();
+}
+function parseCsv(t){
+  const rows=[]; let row=[], f="", q=false;
+  for(let i=0;i<t.length;i++){ const c=t[i];
+    if(q){ if(c==='"'){ if(t[i+1]==='"'){ f+='"'; i++; } else q=false; } else f+=c; }
+    else if(c==='"') q=true; else if(c===","){ row.push(f); f=""; } else if(c==="\n"){ row.push(f); rows.push(row); row=[]; f=""; } else if(c!=="\r") f+=c; }
+  if(f||row.length){ row.push(f); rows.push(row); }
+  return rows.filter(r=>r.some(x=>x.trim()));
+}
+
 /* ---------- akcje ---------- */
 const formObj = f => Object.fromEntries(new FormData(f));
 document.addEventListener("submit", e => {
@@ -983,6 +1096,10 @@ document.addEventListener("click", e => {
   if(d.rf){ RF = d.rf; render(); }
   if(d.goal!==undefined) openGoal();
   if(d.gentags!==undefined) genTags();
+  if(d.thprompt!==undefined){ const t=document.getElementById("thDesc"); if(t) THDESC=t.value;
+    if(!LIKED.size || ![...(TH.top24||[]),...(TH.topLife||[])].some(v=>LIKED.has(v.id))) toast("⚠ Zaznacz „Podoba mi się” przy co najmniej jednej miniaturze");
+    else if(THDESC.trim().length < 10) toast("⚠ Opisz nowy film");
+    else copyText(thumbPrompt()).then(ok=>toast(ok?"Prompt skopiowany: wklej go w czacie z Claude":"⚠ Nie udało się skopiować")); }
   if(d.tagtoggle){ TG.off.has(d.tagtoggle) ? TG.off.delete(d.tagtoggle) : TG.off.add(d.tagtoggle); syncTagInputs(); render(); }
   if(d.copytags!==undefined) copyText(activeTags().join(", ")).then(ok=>toast(ok?"Tagi skopiowane":"⚠ Nie udało się skopiować, zaznacz tekst ręcznie"));
   if(d.claudetags!==undefined) copyText(claudeTagPrompt()).then(ok=>toast(ok?"Skopiowane: wklej w czacie z Claude":"⚠ Nie udało się skopiować"));
@@ -998,6 +1115,9 @@ document.addEventListener("click", e => {
   if(d.edit) openEdit(S.projects.find(p=>p.id==d.edit));
 });
 document.addEventListener("change", e => {
+  if(e.target.dataset && e.target.dataset.like){ const id=e.target.dataset.like; e.target.checked ? LIKED.add(id) : LIKED.delete(id); saveLiked();
+    const t=document.getElementById("thDesc"); if(t) THDESC=t.value; render(); return; }
+  if(e.target.id==="ctrFile" && e.target.files[0]){ importCtrCsv(e.target.files[0]); return; }
   const id = e.target.dataset && e.target.dataset.assign;
   if(!id || !e.target.value) return;
   save("POST","videos/"+id+"/assign",{member:e.target.value},"Autor przypisany");
