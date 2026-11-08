@@ -255,3 +255,16 @@ Zakładka **Oceny** pokazuje avatar każdego z was, tytuły (najedź, żeby zoba
 **Avatary** leżą w `public/avatars/` (malvel.png, virtuoso.png, saito.png). Podmiana pliku zmienia avatar.
 
 Migracja: konsola D1 → linia z `schema-oceny.sql`.
+
+## Limity darmowej bazy D1 (ważne)
+
+Darmowy plan D1 daje dziennie 5 mln odczytów i 100 tys. zapisów wierszy. Pierwsze wersje panelu przekraczały odczyty, dlatego:
+- co godzinę odświeżane są tylko filmy do 32 dni, pełna lista raz dziennie (usunięte filmy też wykrywane raz dziennie);
+- film zapisuje się tylko wtedy, gdy coś się w nim zmieniło;
+- migawki wyświetleń: co godzinę do 50 h po premierze, potem raz dziennie do 31 dni;
+- CTR miniatur starszy niż 35 dni jest zwijany do sum w tabeli `reach_sum`; shorty są pomijane;
+- zakładki Miniatury, Konkurencja i Oceny są liczone raz i trzymane w `kv` (cache), kasowane po nowych danych;
+- przeglądarka pobiera dane zakładki dopiero po wejściu w nią i odświeża panel co 15 min tylko przy otwartej karcie.
+
+Migracja: konsola D1 → linia z `schema-limity.sql`.
+Zużycie sprawdzisz w Cloudflare: Storage & Databases → D1 → panel Usage po prawej.

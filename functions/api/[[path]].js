@@ -20,6 +20,16 @@ const json = (data, status = 200) =>
 
 const bad = (msg) => json({ error: msg }, 400);
 
+// gotowe odpowiedzi ciężkich zakładek trzymamy w kv (kasowane po nowych danych), żeby nie czytać bazy przy każdym wejściu
+async function cached(db, key, compute) {
+  const row = await db.prepare("SELECT value FROM kv WHERE key=?").bind(key).first();
+  if (row) { try { return JSON.parse(row.value); } catch {} }
+  const val = await compute();
+  await db.prepare("INSERT INTO kv (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value").bind(key, JSON.stringify(val)).run();
+  return val;
+}
+const dropCache = (db, ...keys) => db.prepare(`DELETE FROM kv WHERE key IN (${keys.map(() => "?").join(",")})`).bind(...keys);
+
 
 async function readBody(request) {
   try { return await request.json(); } catch { return {}; }
@@ -153,7 +163,7 @@ export async function onRequest({ request, env, params, data }) {
       const b = await readBody(request);
       const col = path[2] === "live" ? "live_override" : "members_override";
       const on = path[2] === "live" ? b.live : b.members;
-      const st = [db.prepare(`UPDATE videos SET ${col}=? WHERE id=?`).bind(on ? 1 : 0, id)];
+      const st = [db.prepare(`UPDATE videos SET ${col}=? WHERE id=?`).bind(on ? 1 : 0, id), dropCache(db, "cache_thumbs", "cache_grades")];
       if (on) st.push(
         db.prepare("UPDATE projects SET status='active', uploaded=NULL, actual_min=NULL, video_id=NULL, video_url=NULL WHERE video_id=?").bind(id),
         db.prepare("UPDATE videos SET project_id=NULL WHERE id=?").bind(id),
@@ -167,7 +177,7 @@ export async function onRequest({ request, env, params, data }) {
       const v = await db.prepare("SELECT * FROM videos WHERE id=?").bind(id).first();
       if (!v) return json({ error: "Nie ma takiego filmu" }, 404);
       if (!MEMBERS.includes(b.member)) return bad("Nieznana osoba");
-      const stmts = [db.prepare("UPDATE videos SET member=? WHERE id=?").bind(b.member, id)];
+      const stmts = [db.prepare("UPDATE videos SET member=? WHERE id=?").bind(b.member, id), dropCache(db, "cache_thumbs", "cache_grades")];
       if (!v.project_id) {
         const p = await db.prepare("SELECT * FROM projects WHERE member=? AND video_id IS NULL ORDER BY (status='active') DESC, start DESC LIMIT 1").bind(b.member).first();
         if (p) stmts.push(...linkProject(db, v, p));
@@ -231,7 +241,7 @@ export async function onRequest({ request, env, params, data }) {
     }
 
     if (res === "thumbs" && method === "GET") {
-      try { return json(await topThumbs(db)); }
+      try { return json(await cached(db, "cache_thumbs", () => topThumbs(db))); }
       catch (e) { return json({ error: "Brak tabel na miniatury. Wykonaj SQL z pliku schema-miniatury.sql." }, 500); }
     }
 
@@ -241,12 +251,13 @@ export async function onRequest({ request, env, params, data }) {
       const st = importStmts(db, rows.map((r) => ({ id: String(r.id || ""), ctr: Number(r.ctr), impressions: Number(r.impressions) })), new Date().toISOString());
       if (!st.length) return bad("Nie znaleziono w pliku filmów z CTR");
       for (let i = 0; i < st.length; i += 100) await db.batch(st.slice(i, i + 100));
+      await db.batch([dropCache(db, "cache_thumbs", "cache_grades")]);
       return json({ ok: true, imported: st.length });
     }
 
     if (res === "competition") {
       if (method === "GET" && !id) {
-        try { return json(await compTables(db)); }
+        try { return json(await cached(db, "cache_comp", () => compTables(db))); }
         catch { return json({ error: "Brak tabel konkurencji. Wykonaj SQL z pliku schema-konkurencja.sql." }, 500); }
       }
       if (method === "POST" && id === "add") {
@@ -266,20 +277,21 @@ export async function onRequest({ request, env, params, data }) {
           db.prepare("INSERT OR REPLACE INTO comp_stats (id, day, subs, views, videos) VALUES (?,?,?,?,?)")
             .bind(c.id, today, c.statistics.hiddenSubscriberCount ? null : Number(c.statistics.subscriberCount), Number(c.statistics.viewCount || 0), Number(c.statistics.videoCount || 0)),
         ]);
+        await db.batch([dropCache(db, "cache_comp")]);
         return json({ ok: true, title: c.snippet.title });
       }
       if (method === "DELETE" && id) {
         const list = new URL(request.url).searchParams.get("list") || "pl";
         if (!EDITABLE.has(list)) return json({ error: "Z tej tabeli nie można usuwać kanałów" }, 403);
         if (id === OWN_ID) return bad("Nie można usunąć MVS");
-        await db.prepare("DELETE FROM comp_channels WHERE id=? AND list=?").bind(id, list).run();
+        await db.batch([db.prepare("DELETE FROM comp_channels WHERE id=? AND list=?").bind(id, list), dropCache(db, "cache_comp")]);
         return json({ ok: true });
       }
     }
 
     if (res === "grades" && method === "GET") {
       try {
-        const g = await computeGrades(db);
+        const g = await cached(db, "cache_grades", () => computeGrades(db));
         // ręczne ustawienia (Montażysta, Streamer) widzi tylko Saito
         return json(user === "Saito" ? { ...g, saito: true } : { people: g.people, window: g.window });
       } catch (e) { return json({ error: "Brak tabel ocen. Wykonaj SQL z pliku schema-oceny.sql." }, 500); }
@@ -294,7 +306,7 @@ export async function onRequest({ request, env, params, data }) {
         const v = b[k];
         if (v === "auto" || v === null || v === "" || MEMBERS.includes(v)) cur[k] = v === "" ? null : v;
       }
-      await db.batch([kvSet(db, "grade_manual", JSON.stringify(cur))]);
+      await db.batch([kvSet(db, "grade_manual", JSON.stringify(cur)), dropCache(db, "cache_grades")]);
       return json({ ok: true });
     }
 

@@ -388,8 +388,16 @@ async function load(){
   }catch{
     DEMO = true; S = demoData();
   }
-  await Promise.all([loadYT(), loadChallenge(), loadThumbs(), loadComp(), loadGrades()]);
+  await Promise.all([loadYT(), loadTabData(TAB, true)]);
   render();
+}
+/* dane zakładek pobieramy dopiero przy wejściu w zakładkę i trzymamy 10 min (oszczędza darmowy limit bazy) */
+const TABDATA = {chal:()=>loadChallenge(), thumb:()=>loadThumbs(), comp:()=>loadComp(), grades:()=>loadGrades()};
+const TABAT = {};
+async function loadTabData(tab, force){
+  const f = TABDATA[tab]; if(!f || DEMO) return;
+  if(!force && TABAT[tab] && Date.now() - TABAT[tab] < 10*60e3) return;
+  TABAT[tab] = Date.now(); await f();
 }
 async function save(method, url, body, msg){
   try{ await api.call(method,url,body); toast(msg||"Zapisano"); }
@@ -1261,7 +1269,7 @@ document.addEventListener("submit", e => {
 document.addEventListener("click", e => {
   const b = e.target.closest("button,[data-close]"); if(!b) return;
   const d = b.dataset;
-  if(d.tab){ TAB = d.tab; history.replaceState(null,"","#"+TAB); render(); }
+  if(d.tab){ TAB = d.tab; history.replaceState(null,"","#"+TAB); render(); if(TABDATA[TAB] && !DEMO){ const t=TAB; loadTabData(t).then(()=>{ if(TAB===t) render(); }); } }
   if(d.mem){ const [id,val]=d.mem.split(":"); save("POST","videos/"+id+"/members",{members:val==="1"}, val==="1"?"Oznaczono jako film dla wspierających – wykluczony ze statystyk":"Przywrócono do statystyk"); }
   if(d.live){ const [id,val]=d.live.split(":"); save("POST","videos/"+id+"/live",{live:val==="1"}, val==="1"?"Oznaczono jako stream – wykluczony ze statystyk":"Przywrócono do statystyk"); }
   if(d.vf){ VF = d.vf; VSHOW = 25; render(); }
@@ -1324,7 +1332,8 @@ let tt;
 function toast(m){ const el=document.getElementById("toast"); el.textContent=m; el.classList.add("on"); clearTimeout(tt); tt=setTimeout(()=>el.classList.remove("on"),2600); }
 
 load();
-setInterval(()=>{ if(!DEMO && !dlg.open && !document.querySelector("select:focus,textarea:focus,input:focus")) load(); }, 120000);
+// automatyczne odświeżenie co 15 min, tylko gdy karta jest na wierzchu
+setInterval(()=>{ if(!DEMO && document.visibilityState==="visible" && !dlg.open && !document.querySelector("select:focus,textarea:focus,input:focus")) load(); }, 15*60e3);
 </script>
 </body>
 </html>
