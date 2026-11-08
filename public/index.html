@@ -410,9 +410,9 @@ function planView(){
       </div>
     </div>
   </div>
-  <div class="grid g2" style="margin-top:14px">
+  <div class="grid ${S.me==="Saito"||DEMO?"g2":""}" style="margin-top:14px">
     <div class="card"><h2>Ostatnio wrzucone</h2><div class="list">${historyList(done)}</div></div>
-    <div class="card"><h2>Ustawienia rytmu</h2>${settingsForm()}</div>
+    ${S.me==="Saito"||DEMO?`<div class="card"><h2>Ustawienia rytmu <span class="hint">widoczne tylko dla Saito</span></h2>${settingsForm()}</div>`:""}
   </div>`;
 }
 
