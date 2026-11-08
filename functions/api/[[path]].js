@@ -171,7 +171,7 @@ export async function onRequest({ request, env, params, data }) {
       if (on) st.push(
         db.prepare("UPDATE projects SET status='active', uploaded=NULL, actual_min=NULL, video_id=NULL, video_url=NULL WHERE video_id=?").bind(id),
         db.prepare("UPDATE videos SET project_id=NULL WHERE id=?").bind(id),
-        db.prepare("DELETE FROM news WHERE type IN ('unassigned','new_video') AND video_id=?").bind(id));
+        db.prepare("DELETE FROM news WHERE type IN ('unassigned','new_video','slow_start') AND video_id=?").bind(id));
       await db.batch(st);
       return json({ ok: true });
     }

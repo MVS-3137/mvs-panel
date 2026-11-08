@@ -274,3 +274,4 @@ Zużycie sprawdzisz w Cloudflare: Storage & Databases → D1 → panel Usage po 
 - Plan nagrywek: kalendarz (ten + następny miesiąc), najlepsze dni tygodnia (`lib/times.js`, raz dziennie, 1 zapytanie Analytics) i godzina premiery; termin może przesunąć się o `favorShift` dni na lepszy dzień (wcześniej ≥ +5%, później ≥ +10%).
 - Performance: klik w tag WT / inne zmienia typ filmu na stałe (`POST /api/videos/:id/wt`).
 - Miniatury: wynik 0–100 (`lib/thumbs.js`): 40% CTR na tle zasięgu, 25% zasięg, 20% widzowie bez suba, 15% średni % obejrzenia; dane o widzach pobierane po 4 filmy na odświeżenie.
+- Aktualności: „Kiepski początek” (slow_start: długi film po 24 h < 60% mediany 10 poprzednich z tej samej kategorii) i zmiany tytułów z Ocen (grade, raz dziennie, bez Montażysty i Streamera).
