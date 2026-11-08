@@ -1,0 +1,1 @@
+ALTER TABLE projects ADD COLUMN shifts INTEGER DEFAULT 0; ALTER TABLE videos ADD COLUMN removed_at TEXT; CREATE TABLE IF NOT EXISTS achievements (id TEXT PRIMARY KEY, unlocked_at TEXT, members TEXT, video_id TEXT, note TEXT); CREATE TABLE IF NOT EXISTS goal_points (ts TEXT PRIMARY KEY, subs INTEGER);

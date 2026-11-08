@@ -14,6 +14,8 @@ functions/oauth/[[path]].js  – łączenie z kanałem YouTube
 lib/yt.js                    – pobieranie i liczenie statystyk YouTube
 cron/                        – „budzik”: osobny mini-Worker, co godzinę odświeża dane
 schema-etap2.sql             – nowe tabele na etap 2 (dla istniejącej bazy)
+schema-etap3.sql             – nowe tabele na tablicę wyzwań
+lib/ach.js                   – cel subów i achievementy
 schema.sql                   – tabele bazy
 wrangler.toml                – konfiguracja dla Cloudflare
 ```
@@ -126,5 +128,30 @@ Strony Pages nie mają harmonogramu, dlatego w folderze `cron` jest mini-Worker,
   „Film odżywa!” = stary film (45+ dni) ma w dobę co najmniej 3× więcej wyświetleń niż zwykle.
   „Nowy wspierający” nie wchodzi w grę: YouTube nie udostępnia danych o członkostwach i Super Thanks małym aplikacjom.
 
-## Kolejne etapy
-- **Etap 3**: wyzwania z achievementami, miniatury z generatorem promptów, generator tagów.
+## Etap 3: Tablica wyzwań
+
+### Uruchomienie
+1. Konsola D1: wklej jedną linię z `schema-etap3.sql` i kliknij **Execute**.
+2. Wgraj na GitHuba nowe pliki z zachowaniem folderów (najpewniej całą paczkę z zipa).
+   Sprawdź, czy `functions/api/[[path]].js` ma nawiasy w nazwie.
+3. Przy pierwszym odświeżeniu (cron albo „Odśwież teraz”) tablica startuje sama:
+   - cel 20 000,
+   - pierwszy punkt wykresu = dzisiejsza liczba subów,
+   - achievementy liczą się od tej chwili.
+
+### Wykres i cel
+- **Punkt na wykresie** dochodzi co poniedziałek rano (pierwsze odświeżenie po 6:00).
+- **Prognoza** jest liczona z przyrostu subów w ostatnich 28 dniach (YouTube Analytics, aktualizacja raz dziennie).
+  Pod wykresem widać przybliżoną datę osiągnięcia celu.
+- **Liczba subów** jest dokładna z Analytics, a gdy nie jest dostępna, publiczna (YouTube zaokrągla ją do 3 cyfr).
+- **„Zmień cel”** resetuje wykres: rysuje się od nowa, od dzisiejszej liczby subów.
+
+### Achievementy
+- 36 sztuk w 5 grupach: Common, Uncommon, Rare, Epic, Legendary.
+  Zakryte pokazują tylko obrys i „?”. Po zdobyciu odkrywają ikonę, nazwę, opis (po najechaniu) i stempel z nickiem.
+- Achievementy kanałowe (np. cel subów, serie słabych filmów) nie mają stempla.
+- **Ręczne odblokowanie:**
+  - „It's Dangerous to Go Alone”: tylko Saito, z wyborem dwóch osób,
+  - „Toss a Coin to Your Witcher”: każdy z was, bo YouTube nie udostępnia liczby wspierających.
+- **Half-Life 3** liczy przesunięcia w planie: edycję, która przesuwa start na później albo wydłuża planowany film.
+- **Skill Issue** i **How Did We Get Here?** zamiast CTR (którego API YouTube nie udostępnia) używają wyników pierwszej doby i kolejnych okien.
