@@ -187,6 +187,19 @@ Przy najbliższym odświeżeniu panel zakłada w YouTube raport `channel_reach_b
 2. Eksportuj → CSV i rozpakuj zip.
 3. W zakładce Miniatury kliknij **Wgraj eksport ze Studio** i wybierz plik z danymi tabeli.
 
-Shorty są pomijane. Progi: min. 200 wyświetleń miniatury (doba) i 1000 (cały czas).
+Shorty są pomijane. Progi: doba – min. 200 wyświetleń miniatury; cały czas – tylko filmy z min. 3000 wyświetleń.
 
 **Kopiuj prompt** składa polecenie z zaznaczonymi miniaturami (ID filmów) i opisem nowego filmu. Wklejacie je w czacie z Claude i dostajecie gotowy prompt po angielsku do generatora grafik.
+
+## Konkurencja
+
+1. Konsola D1: wklej całą linię z `schema-konkurencja.sql` i kliknij **Execute**.
+   Tworzy dwie tabele i wpisuje kanały startowe oraz ich stan sprzed ~30 dni (dane z vidIQ), żeby przyrosty były widoczne od pierwszego dnia.
+2. Wgraj nową paczkę na GitHuba.
+
+Działanie:
+- Raz dziennie panel pobiera suby, wyświetlenia i ikony wszystkich kanałów: jedno zapytanie do YouTube na 50 kanałów.
+- Przyrost liczony jest względem pomiaru sprzed 28 dni.
+- **War Thunder:** stała lista (TV Kowalowe, Turteł, WODZU, MVS, BommerTV, Blekczo, kryptyda), bez dodawania i usuwania.
+- **Polskie kanały gamingowe:** wklejasz link albo @nazwę kanału, klikasz **Dodaj**; ✕ usuwa kanał (MVS nie da się usunąć).
+- YouTube zaokrągla publiczną liczbę subów do 3 cyfr, dlatego dokładniejszym miernikiem wzrostu są wyświetlenia.

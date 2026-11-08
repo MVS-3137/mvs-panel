@@ -232,6 +232,28 @@ textarea:focus{outline:2px solid var(--gold2);outline-offset:-1px}
 @media (max-width:560px){.thi{grid-template-columns:18px 104px minmax(0,1fr) 34px;gap:8px}.thi img,.thi .ph{width:104px}.thhead .like{width:auto}}
 .filebtn{position:relative;overflow:hidden;display:inline-block}
 .filebtn input{position:absolute;inset:0;opacity:0;cursor:pointer}
+/* ---- konkurencja ---- */
+.ctable{width:100%;border-collapse:collapse;font-size:14px}
+.cwrap{overflow-x:auto;margin:0 -4px}
+.ctable th{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;text-align:right;padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+.ctable th:nth-child(2){text-align:left}
+.ctable td{padding:8px;border-bottom:1px solid #24365a88;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.ctable td.ch{text-align:left;white-space:normal;min-width:170px}
+.ctable tr.own td{background:#dda0611a}
+.ctable tr.own td:first-child{box-shadow:inset 3px 0 0 var(--gold)}
+.ctable .pos{font-family:var(--head);font-size:17px;color:var(--muted);text-align:center;width:34px}
+.ctable tr.own .pos{color:var(--gold)}
+.cname{display:flex;align-items:center;gap:10px}
+.cname img,.cname .noav{width:34px;height:34px;border-radius:50%;flex:none;object-fit:cover;background:#24365a;display:grid;place-items:center;font-family:var(--head);color:var(--muted)}
+.cname a{color:var(--text);text-decoration:none;font-weight:600}
+.cname a:hover{color:var(--gold)}
+.cname small{display:block;color:var(--muted);font-size:11.5px;font-weight:400}
+.up2{color:var(--ok)}.dn2{color:var(--bad)}.z2{color:var(--muted)}
+.ctable small.pp{display:block;font-size:11.5px}
+.cplace{display:flex;gap:18px;flex-wrap:wrap;margin:-2px 0 12px;font-size:13px;color:var(--muted)}
+.cplace b{font-family:var(--head);font-size:20px;color:var(--gold);margin-right:4px}
+.addrow{display:flex;gap:8px;margin-top:12px}
+.addrow input{flex:1}
 </style>
 </head>
 <body>
@@ -266,6 +288,7 @@ const TABS = [
   {id:"thumb", name:"Miniatury"},
   {id:"news", name:"Aktualności"},
   {id:"tags", name:"Tagi"},
+  {id:"comp", name:"Konkurencja"},
 ];
 
 /* ---------- daty ---------- */
@@ -328,7 +351,7 @@ function demoCall(method, url, body){
 }
 
 async function load(){
-  if(DEMO){ if(!Y.videos.length) Y = demoYT(); if(!C) C = demoChallenge(); if(!TH) TH = demoThumbs(); render(); return; }
+  if(DEMO){ if(!Y.videos.length) Y = demoYT(); if(!C) C = demoChallenge(); if(!TH) TH = demoThumbs(); if(!COMP) COMP = demoComp(); render(); return; }
   try{
     const r = await fetch("/api/state",{cache:"no-store"});
     if(r.status===401){ location.href="/login"; return; }
@@ -338,7 +361,7 @@ async function load(){
   }catch{
     DEMO = true; S = demoData();
   }
-  await Promise.all([loadYT(), loadChallenge(), loadThumbs()]);
+  await Promise.all([loadYT(), loadChallenge(), loadThumbs(), loadComp()]);
   render();
 }
 async function save(method, url, body, msg){
@@ -405,7 +428,7 @@ function render(){
   const v = document.getElementById("view");
   const tab = TABS.find(t=>t.id===TAB) || TABS[0];
   if(tab.id==="news") seenNews();
-  v.innerHTML = tab.stage ? lockedView(tab) : ({perf:perfView, rec:recView, news:newsView, chal:challengeView, tags:tagsView, thumb:thumbsView}[tab.id] || planView)();
+  v.innerHTML = tab.stage ? lockedView(tab) : ({perf:perfView, rec:recView, news:newsView, chal:challengeView, tags:tagsView, thumb:thumbsView, comp:compView}[tab.id] || planView)();
 }
 function lockedView(t){
   return `<div class="card locked"><div><div class="big">${t.icon}</div>
@@ -1072,6 +1095,59 @@ function parseCsv(t){
   return rows.filter(r=>r.some(x=>x.trim()));
 }
 
+/* ---------- konkurencja ---------- */
+let COMP = null, CPSORT = {wt:"subs", pl:"subs"};
+async function loadComp(){
+  if(DEMO){ if(!COMP) COMP = demoComp(); return; }
+  try{ const r = await fetch("/api/competition",{cache:"no-store"}); COMP = await r.json(); }catch{}
+}
+function demoComp(){
+  const R = (id,title,handle,subs,dS,views,dV,own) => ({id,title,handle,thumb:"",subs,views,dSubs:dS,pSubs:dS/(subs-dS)*100,dViews:dV,pViews:dV/(views-dV)*100,days:28,baseDay:"x",own:!!own});
+  return {updated:new Date().toISOString().slice(0,10), editable:["pl"], lists:{
+    wt:[R("a","TV Kowalowe","@tvkowalowe",50700,0,23043239,141900),R("b","Turteł","@turtel",21200,100,5474865,160400),R("c","WODZU","@wodzu123098",18800,100,7618693,162500),
+      R("UC57B3vFUeVbjNS3Ob-nINkA","MVS","@mvs3173",11700,300,5859759,127300,true),R("d","BommerTV","@bommer21",10600,0,8134484,70100),R("e","Blekczo","@blekczo",6850,-20,11421724,11400),R("f","kryptyda","@kryptydameow",3910,130,484249,19900)],
+    pl:[R("g","Bananszef","@bananszef",34100,100,2575729,106400),R("h","EsoGranie","@esogranie",22400,0,5324764,12700),R("b","Turteł","@turtel",21200,100,5474865,160400),
+      R("i","MosiekTV","@mosiektv",20400,0,7143753,31300),R("j","Edzzi","@edzzi",20000,-100,1732896,1900),R("k","FS_Noyan","@fs_noyan",16800,300,8433916,548200),
+      R("UC57B3vFUeVbjNS3Ob-nINkA","MVS","@mvs3173",11700,300,5859759,127300,true),R("l","Węgorzyk","@wegorzyk",10700,0,669472,20100)]}};
+}
+function compSorted(list, key){
+  const k = {subs:r=>r.subs??-1, ps:r=>r.pSubs??-1e9, pv:r=>r.pViews??-1e9}[key];
+  return [...list].sort((a,b)=>k(b)-k(a));
+}
+const sgn = (n, d=0) => n==null ? "–" : (n>0?"+":"") + (d ? n.toFixed(d).replace(".",",") : nf(Math.round(n)));
+const cls = n => n==null ? "z2" : n>0 ? "up2" : n<0 ? "dn2" : "z2";
+function compTable(listId, title, sub){
+  const list = (COMP.lists||{})[listId] || [];
+  const sort = CPSORT[listId];
+  const rows = compSorted(list, sort);
+  const ownSubs = compSorted(list,"subs").findIndex(r=>r.own)+1, ownGrow = compSorted(list,"ps").findIndex(r=>r.own)+1, ownView = compSorted(list,"pv").findIndex(r=>r.own)+1;
+  const editable = (COMP.editable||[]).includes(listId) && !DEMO;
+  const chips = [["subs","Suby"],["ps","Wzrost subów"],["pv","Wzrost wyświetleń"]].map(([k,n])=>`<button class="chip ${sort===k?"on":""}" data-csort="${listId}:${k}">${n}</button>`).join("");
+  return `<div class="card" style="margin-top:14px"><h2>${title} <span class="hint">${sub}</span></h2>
+    ${ownSubs?`<div class="cplace"><span><b>#${ownSubs}</b>z ${list.length} wg subów</span><span><b>#${ownGrow}</b>wg wzrostu subów</span><span><b>#${ownView}</b>wg wzrostu wyświetleń</span></div>`:""}
+    <div class="chips">${chips}</div>
+    <div class="cwrap"><table class="ctable"><thead><tr><th></th><th>Kanał</th><th>Suby</th><th>Suby · 28 dni</th><th>Wyświetlenia · 28 dni</th>${editable?"<th></th>":""}</tr></thead><tbody>
+    ${rows.map((r,i)=>`<tr class="${r.own?"own":""}"><td class="pos">${i+1}</td>
+      <td class="ch"><div class="cname">${r.thumb?`<img src="${esc(r.thumb)}" alt="" loading="lazy" referrerpolicy="no-referrer">`:`<span class="noav">${esc((r.title||"?")[0])}</span>`}
+        <a href="https://www.youtube.com/${r.handle?esc(r.handle):"channel/"+esc(r.id)}" target="_blank" rel="noopener">${esc(r.title||r.id)}<small>${esc(r.handle||"")}</small></a></div></td>
+      <td>${nf(r.subs)}</td>
+      <td class="${cls(r.dSubs)}">${r.baseDay?`${sgn(r.dSubs)}<small class="pp">${sgn(r.pSubs,2)}%</small>`:'<span class="z2">zbieram dane</span>'}</td>
+      <td class="${cls(r.dViews)}">${r.baseDay?`${sgn(r.dViews)}<small class="pp">${sgn(r.pViews,2)}%</small>`:'<span class="z2">–</span>'}</td>
+      ${editable?`<td>${r.own?"":`<button class="x" data-cdel="${esc(r.id)}" title="Usuń z tabeli">✕</button>`}</td>`:""}</tr>`).join("")}
+    </tbody></table></div>
+    ${editable?`<form id="fComp" class="addrow"><input name="url" placeholder="Wklej link do kanału albo @nazwę, np. youtube.com/@turtel" required><button class="btn" type="submit">Dodaj</button></form>`:""}
+  </div>`;
+}
+function compView(){
+  if(!Y.connected && !DEMO) return connectView();
+  if(!COMP) return `<div class="card"><div class="empty">Ładuję…</div></div>`;
+  if(COMP.error) return `<div class="card"><div class="badline">${esc(COMP.error)}</div></div>`;
+  return `<div class="card"><h2>Konkurencja <span class="hint">${COMP.updated?"dane z "+fmt(COMP.updated):""}</span></h2>
+    <div class="help" style="margin-top:0">Aktualizacja raz dziennie. YouTube zaokrągla publiczną liczbę subów do 3 cyfr (np. 11 700), więc przy mniejszych kanałach wzrost subów bywa 0, choć realnie rosną. Dokładniej pokazuje to wzrost wyświetleń.</div></div>
+    ${compTable("wt","War Thunder","polscy twórcy WT")}
+    ${compTable("pl","Polskie kanały gamingowe","wasza liga · możecie dodawać kanały")}`;
+}
+
 /* ---------- akcje ---------- */
 const formObj = f => Object.fromEntries(new FormData(f));
 document.addEventListener("submit", e => {
@@ -1082,6 +1158,7 @@ document.addEventListener("submit", e => {
     if(o.to_date < o.from_date) return toast("⚠ Data końca przed początkiem");
     save("POST","leaves",o,"Wolne zapisane");
   }
+  if(f.id==="fComp"){ const btn=f.querySelector("button"); btn.disabled=true; btn.textContent="Szukam…"; save("POST","competition/add",{url:o.url, list:"pl"},"Kanał dodany"); }
   if(f.id==="fGoal"){ dlg.close(); save("PUT","goal",{goal:Number(o.goal)},"Nowy cel ustawiony"); }
   if(f.id==="fUnlock"){ const ms = new FormData(f).getAll("m"); dlg.close(); save("POST","achievements/"+f.dataset.id+"/unlock",{members:ms},"Achievement odblokowany! 🏅"); }
   if(f.id==="fSet") save("PUT","settings",o,"Ustawienia zapisane");
@@ -1096,6 +1173,8 @@ document.addEventListener("click", e => {
   if(d.rf){ RF = d.rf; render(); }
   if(d.goal!==undefined) openGoal();
   if(d.gentags!==undefined) genTags();
+  if(d.csort){ const [l,k]=d.csort.split(":"); CPSORT[l]=k; render(); }
+  if(d.cdel && confirm("Usunąć ten kanał z tabeli?")) save("DELETE","competition/"+d.cdel+"?list=pl",null,"Usunięto kanał");
   if(d.thprompt!==undefined){ const t=document.getElementById("thDesc"); if(t) THDESC=t.value;
     if(!LIKED.size || ![...(TH.top24||[]),...(TH.topLife||[])].some(v=>LIKED.has(v.id))) toast("⚠ Zaznacz „Podoba mi się” przy co najmniej jednej miniaturze");
     else if(THDESC.trim().length < 10) toast("⚠ Opisz nowy film");

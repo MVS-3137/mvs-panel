@@ -2,6 +2,8 @@ import { refresh, kvGet, kvSet, linkProject, loadOverrides } from "../../lib/yt.
 import { DEFS, DEF, MANUAL, unlockStmts, bestSubs } from "../../lib/ach.js";
 import { generateTags } from "../../lib/tags.js";
 import { topThumbs, importStmts } from "../../lib/thumbs.js";
+import { compTables, resolveChannel, EDITABLE, OWN_ID } from "../../lib/comp.js";
+import { accessToken } from "../../lib/yt.js";
 
 // API panelu MVS — Cloudflare Pages Functions + D1 (binding: DB)
 // Dostęp chroni functions/_middleware.js (hasła), który podaje zalogowaną osobę w data.user.
@@ -226,6 +228,39 @@ export async function onRequest({ request, env, params, data }) {
       if (!st.length) return bad("Nie znaleziono w pliku filmów z CTR");
       for (let i = 0; i < st.length; i += 100) await db.batch(st.slice(i, i + 100));
       return json({ ok: true, imported: st.length });
+    }
+
+    if (res === "competition") {
+      if (method === "GET" && !id) {
+        try { return json(await compTables(db)); }
+        catch { return json({ error: "Brak tabel konkurencji. Wykonaj SQL z pliku schema-konkurencja.sql." }, 500); }
+      }
+      if (method === "POST" && id === "add") {
+        const b = await readBody(request);
+        const list = String(b.list || "pl");
+        if (!EDITABLE.has(list)) return json({ error: "Do tej tabeli nie można dodawać kanałów" }, 403);
+        const rt = await kvGet(db, "yt_refresh_token");
+        if (!rt) return bad("Najpierw połącz panel z YouTube");
+        const token = await accessToken(env, rt);
+        const gfetch = async (u) => { const r = await fetch(u, { headers: { authorization: "Bearer " + token } }); return r.json(); };
+        const c = await resolveChannel(gfetch, b.url);
+        if (!c) return bad("Nie znaleziono kanału. Wklej link w stylu youtube.com/@nazwa albo youtube.com/channel/UC…");
+        const today = new Date().toISOString().slice(0, 10);
+        await db.batch([
+          db.prepare("INSERT OR REPLACE INTO comp_channels (id, list, title, handle, thumb, added_by, added_at) VALUES (?,?,?,?,?,?,?)")
+            .bind(c.id, list, c.snippet.title, c.snippet.customUrl || null, c.snippet.thumbnails?.default?.url || "", user, new Date().toISOString()),
+          db.prepare("INSERT OR REPLACE INTO comp_stats (id, day, subs, views, videos) VALUES (?,?,?,?,?)")
+            .bind(c.id, today, c.statistics.hiddenSubscriberCount ? null : Number(c.statistics.subscriberCount), Number(c.statistics.viewCount || 0), Number(c.statistics.videoCount || 0)),
+        ]);
+        return json({ ok: true, title: c.snippet.title });
+      }
+      if (method === "DELETE" && id) {
+        const list = new URL(request.url).searchParams.get("list") || "pl";
+        if (!EDITABLE.has(list)) return json({ error: "Z tej tabeli nie można usuwać kanałów" }, 403);
+        if (id === OWN_ID) return bad("Nie można usunąć MVS");
+        await db.prepare("DELETE FROM comp_channels WHERE id=? AND list=?").bind(id, list).run();
+        return json({ ok: true });
+      }
     }
 
     return json({ error: "Nie znaleziono" }, 404);
