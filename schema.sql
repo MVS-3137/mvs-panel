@@ -39,7 +39,7 @@ INSERT OR IGNORE INTO settings (key, value) VALUES
 
 -- Etap 2 (YouTube)
 CREATE TABLE IF NOT EXISTS kv (key TEXT PRIMARY KEY, value TEXT);
-CREATE TABLE IF NOT EXISTS videos (id TEXT PRIMARY KEY, title TEXT, published TEXT, duration_s INTEGER, thumb TEXT, thumb_hi TEXT, tags TEXT, wt INTEGER DEFAULT 0, is_short INTEGER DEFAULT 0, member TEXT, project_id INTEGER, views INTEGER DEFAULT 0, likes INTEGER DEFAULT 0, comments INTEGER DEFAULT 0, updated TEXT, analytics_at TEXT, curve TEXT, approx24 INTEGER DEFAULT 0, removed_at TEXT, is_live INTEGER DEFAULT 0, live_override INTEGER, is_members INTEGER DEFAULT 0, members_override INTEGER);
+CREATE TABLE IF NOT EXISTS videos (id TEXT PRIMARY KEY, title TEXT, published TEXT, duration_s INTEGER, thumb TEXT, thumb_hi TEXT, tags TEXT, wt INTEGER DEFAULT 0, is_short INTEGER DEFAULT 0, member TEXT, project_id INTEGER, views INTEGER DEFAULT 0, likes INTEGER DEFAULT 0, comments INTEGER DEFAULT 0, updated TEXT, analytics_at TEXT, curve TEXT, approx24 INTEGER DEFAULT 0, removed_at TEXT, is_live INTEGER DEFAULT 0, live_override INTEGER, is_members INTEGER DEFAULT 0, members_override INTEGER, wt_override INTEGER);
 CREATE TABLE IF NOT EXISTS snapshots (video_id TEXT NOT NULL, ts TEXT NOT NULL, views INTEGER, PRIMARY KEY (video_id, ts));
 CREATE TABLE IF NOT EXISTS daily (video_id TEXT NOT NULL, day TEXT NOT NULL, views INTEGER, PRIMARY KEY (video_id, day));
 CREATE TABLE IF NOT EXISTS channel_stats (ts TEXT PRIMARY KEY, subs INTEGER, views INTEGER, videos INTEGER);
@@ -56,3 +56,5 @@ CREATE TABLE IF NOT EXISTS grade_stats (video_id TEXT PRIMARY KEY, views90 INTEG
 CREATE TABLE IF NOT EXISTS clicks (member TEXT NOT NULL, day TEXT NOT NULL, n INTEGER DEFAULT 0, PRIMARY KEY (member, day));
 CREATE TABLE IF NOT EXISTS reach_sum (video_id TEXT PRIMARY KEY, imp REAL DEFAULT 0, clk REAL DEFAULT 0, imp24 REAL DEFAULT 0, clk24 REAL DEFAULT 0);
 CREATE INDEX IF NOT EXISTS reach_day ON reach (day);
+CREATE TABLE IF NOT EXISTS thumb_stats (video_id TEXT PRIMARY KEY, views24 INTEGER, nonsub24 INTEGER, avp24 REAL, d24_at TEXT, views_life INTEGER, nonsub_life INTEGER, avp_life REAL, life_at TEXT);
+INSERT OR IGNORE INTO settings (key, value) VALUES ('favorShift', '1');

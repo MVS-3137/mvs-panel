@@ -268,3 +268,9 @@ Darmowy plan D1 daje dziennie 5 mln odczytów i 100 tys. zapisów wierszy. Pierw
 
 Migracja: konsola D1 → linia z `schema-limity.sql`.
 Zużycie sprawdzisz w Cloudflare: Storage & Databases → D1 → panel Usage po prawej.
+
+## Etap: kalendarz, pory wrzucania, typ filmu, wynik miniatur
+- Migracja: `schema-kalendarz.sql` (kolumna `wt_override`, tabela `thumb_stats`, ustawienie `favorShift`).
+- Plan nagrywek: kalendarz (ten + następny miesiąc), najlepsze dni tygodnia (`lib/times.js`, raz dziennie, 1 zapytanie Analytics) i godzina premiery; termin może przesunąć się o `favorShift` dni na lepszy dzień (wcześniej ≥ +5%, później ≥ +10%).
+- Performance: klik w tag WT / inne zmienia typ filmu na stałe (`POST /api/videos/:id/wt`).
+- Miniatury: wynik 0–100 (`lib/thumbs.js`): 40% CTR na tle zasięgu, 25% zasięg, 20% widzowie bez suba, 15% średni % obejrzenia; dane o widzach pobierane po 4 filmy na odświeżenie.

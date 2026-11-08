@@ -76,7 +76,7 @@ nav button .lock{font-size:11px;opacity:.7;margin-left:4px}
 .qi .s{font-size:12.5px;color:var(--muted)}
 .qi .tag{font-size:11px;padding:1px 7px;border-radius:6px;border:1px solid var(--line);margin-left:6px;color:var(--muted)}
 .qi .act{display:flex;gap:6px}
-.warnline{color:var(--warn);font-size:12.5px}
+.warnline{color:var(--warn);font-size:12.5px}.okline{color:var(--ok);font-size:12.5px}
 .badline{color:var(--bad);font-size:12.5px}
 .gap{border-style:dashed;border-color:var(--bad);background:#e2735f10;grid-template-columns:76px 1fr}
 
@@ -130,6 +130,7 @@ dialog h3{color:var(--gold);margin-bottom:12px}
 .vi .who{font-weight:600}
 .vi select{padding:3px 6px;font-size:12.5px;border-color:var(--warn)}
 .tg{font-size:10.5px;font-weight:600;padding:1px 7px;border-radius:6px;border:1px solid var(--line);text-transform:uppercase;letter-spacing:.04em}
+.tgb{background:none;color:inherit;cursor:pointer;font-family:inherit}.tgb:hover{border-color:var(--gold)}
 .tg.wt{color:var(--ok);border-color:#7fc29b55}.tg.sh{color:#7fa8de;border-color:#7fa8de55}
 .score{text-align:right}
 .score b{display:block;font-family:var(--head);font-size:30px;line-height:1}
@@ -227,6 +228,8 @@ textarea:focus{outline:2px solid var(--gold2);outline-offset:-1px}
 .thi .t{font-weight:600;font-size:13.5px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .thi .m{font-size:12px;color:var(--muted);margin-top:4px}
 .thi .ctr{font-family:var(--head);font-size:20px;color:var(--ok);line-height:1}
+.thi .ctr small{font-size:11px;color:var(--muted);margin-left:1px}.thi .ctr{cursor:help}
+.sbars{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:6px;cursor:help}.sbars span{display:block}.sbars i{display:block;height:4px;border-radius:2px;background:var(--ok)}.sbars span::before{content:"";display:block;height:4px;border-radius:2px;background:var(--line);margin-bottom:-4px}.sbars em{display:block;font-style:normal;font-size:10px;opacity:.65;margin-top:3px}
 .thi .cb{display:flex;justify-content:center}
 .thi input[type=checkbox]{width:22px;height:22px;cursor:pointer}
 @media (max-width:560px){.thi{grid-template-columns:18px 104px minmax(0,1fr) 34px;gap:8px}.thi img,.thi .ph{width:104px}.thhead .like{width:auto}}
@@ -280,6 +283,28 @@ textarea:focus{outline:2px solid var(--gold2);outline-offset:-1px}
 .gset{margin-top:14px}
 .gset .row{display:grid;gap:10px;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 @media (max-width:560px){.gset .row{grid-template-columns:minmax(0,1fr)}}
+
+/* kalendarz */
+.cal{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+@media (max-width:620px){.cal{grid-template-columns:minmax(0,1fr)}}
+.cm h3{font-size:14px;color:var(--gold);margin-bottom:8px}
+.cg{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}
+.cg .wd{font-size:10.5px;text-transform:uppercase;color:var(--muted);text-align:center;padding-bottom:2px;border-bottom:2px solid transparent}
+.cg .wd.hot{color:var(--ok);border-bottom-color:var(--ok)}.cg .wd.cold{opacity:.55}
+.cd{position:relative;min-height:42px;border-radius:6px;background:var(--bg2);border:1px solid transparent;padding:2px 4px 7px;font-size:11.5px;overflow:hidden}
+.cd.pad{background:none}.cd.past{opacity:.55}.cd.today{border-color:var(--gold)}.cd.today .n{color:var(--gold);font-weight:700}
+.cd[title]{cursor:help}
+.cd .n{display:block;line-height:1.2;color:var(--muted)}
+.cd .mk{display:flex;flex-wrap:wrap;gap:3px;margin-top:3px}
+.cd .mk i,.clg i{display:inline-block;width:9px;height:9px;border-radius:50%}
+.cd .mk i.plan,.clg i.plan{border:2px solid var(--c);background:none}
+.cd .mk i.up,.clg i.up{background:var(--c);border-radius:2px}
+.cd .mk i.start,.clg i.start{width:9px;height:3px;border-radius:2px;background:var(--c);margin-top:3px}
+.cd .lv{position:absolute;left:0;right:0;bottom:0;display:flex;height:4px}.cd .lv b{flex:1}
+.clg{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:12px;font-size:12px;color:var(--muted)}
+.clg span{display:inline-flex;align-items:center;gap:6px}.clg b{display:inline-block;width:14px;height:4px;border-radius:2px}
+.clg em{font-style:normal;font-size:10px;text-transform:uppercase;color:var(--ok);border-bottom:2px solid var(--ok)}
+.count .hr{font-size:.55em;margin-left:8px;color:var(--muted);font-weight:500}
 </style>
 </head>
 <body>
@@ -305,7 +330,7 @@ textarea:focus{outline:2px solid var(--gold2);outline-offset:-1px}
 "use strict";
 const MEMBERS = ["Malvel","Virtuoso","Saito"];
 const COLORS = {Malvel:"var(--malvel)",Virtuoso:"var(--virtuoso)",Saito:"var(--saito)"};
-const DEFAULTS = {cadence:4, workPerMin:0.3, minWork:3, restPerMin:0.15};
+const DEFAULTS = {cadence:4, workPerMin:0.3, minWork:3, restPerMin:0.15, favorShift:1};
 const TABS = [
   {id:"plan", name:"Plan nagrywek"},
   {id:"perf", name:"Performance"},
@@ -328,6 +353,8 @@ const diff = (a,b) => Math.round((toD(b)-toD(a))/DAY);
 const maxS = (a,b) => a > b ? a : b;
 const fmt = s => toD(s).toLocaleDateString("pl-PL",{day:"numeric",month:"short",timeZone:"UTC"});
 const dow = s => toD(s).toLocaleDateString("pl-PL",{weekday:"short",timeZone:"UTC"});
+const DOWL = ["niedziela","poniedziałek","wtorek","środa","czwartek","piątek","sobota"];
+const dowLong = s => DOWL[toD(s).getUTCDay()];
 function rel(n){
   if(n===0) return "dziś";
   if(n===1) return "jutro";
@@ -349,10 +376,12 @@ function demoData(){
     projects:[
       {id:1,member:"Saito",title:"Tiger II – czy był aż tak straszny?",start:addDays(t,-6),planned_min:22,wt:1,status:"active"},
       {id:2,member:"Malvel",title:"Najgorsze samoloty 1. rangi",start:addDays(t,-2),planned_min:12,wt:1,status:"active"},
-      {id:3,member:"Virtuoso",title:"Historia Leoparda 2 – pełny dokument",start:addDays(t,-15),planned_min:45,wt:1,status:"done",uploaded:addDays(t,-3),actual_min:44},
-      {id:4,member:"Malvel",title:"5 czołgów, które grają się same",start:addDays(t,-12),planned_min:10,wt:1,status:"done",uploaded:addDays(t,-7),actual_min:9},
+      {id:3,member:"Virtuoso",title:"Historia Leoparda 2 – pełny dokument",start:addDays(t,-15),planned_min:45,wt:1,status:"done",uploaded:addDays(t,-3),actual_min:44,video_id:"a"},
+      {id:4,member:"Malvel",title:"5 czołgów, które grają się same",start:addDays(t,-12),planned_min:10,wt:1,status:"done",uploaded:addDays(t,-7),actual_min:9,video_id:"b"},
     ],
     leaves:[{id:1,member:"Saito",from_date:addDays(t,2),to_date:addDays(t,5),note:"wyjazd"}],
+    times:{days:{f:[1.12,0.93,0.9,0.95,0.98,1.03,1.09]}, hour:{hour:16,ratio:1.24,n:9}},
+    uploads:[{id:"a",title:"Historia Leoparda 2 – pełny dokument",published:addDays(t,-3)+"T15:00:00Z",member:"Virtuoso"},{id:"b",title:"5 czołgów, które grają się same",published:addDays(t,-7)+"T15:00:00Z",member:"Malvel"}],
   };
 }
 
@@ -395,7 +424,7 @@ async function load(){
 const TABDATA = {chal:()=>loadChallenge(), thumb:()=>loadThumbs(), comp:()=>loadComp(), grades:()=>loadGrades()};
 const TABAT = {};
 async function loadTabData(tab, force){
-  const f = TABDATA[tab]; if(!f || DEMO) return;
+  const f = TABDATA[tab]; if(!f) return; if(DEMO) return f();
   if(!force && TABAT[tab] && Date.now() - TABAT[tab] < 10*60e3) return;
   TABAT[tab] = Date.now(); await f();
 }
@@ -406,6 +435,10 @@ async function save(method, url, body, msg){
 }
 
 /* ---------- algorytm deadline'ów ---------- */
+// współczynnik dnia tygodnia z panelu (1 = przeciętny dzień); null = jeszcze brak danych
+const WDF = () => S.times && S.times.days && S.times.days.f || null;
+const dayFactor = d => { const f = WDF(); return f ? f[toD(d).getUTCDay()] : 1; };
+const bestHourTxt = () => S.times && S.times.hour ? String(S.times.hour.hour).padStart(2,"0")+":00" : null;
 function onLeave(member, day){
   return S.leaves.some(l => l.member===member && day>=l.from_date && day<=l.to_date);
 }
@@ -441,8 +474,23 @@ function schedule(){
     let deadline = maxS(slot, p.ef.date);          // nie wcześniej niż da się zrobić film
     // termin nie może wypaść w trakcie urlopu autora
     while(onLeave(p.member, deadline)) deadline = addDays(deadline,1);
-    const gapDays = diff(prev, deadline) - st.cadence; // >0 = kanał będzie stał
-    out.push({...p, slot, deadline, gapDays, prev});
+    // lepszy dzień tygodnia: przesuń o max „favorShift” dni, jeśli tamten dzień ma wyraźnie więcej wyświetleń
+    let moved = null;
+    const sh = Math.round(st.favorShift ?? 1);
+    if(WDF() && sh > 0){
+      const base = deadline, bf = dayFactor(base);
+      let best = base, f0 = bf;
+      for(let k=-sh;k<=sh;k++){
+        if(!k) continue;
+        const d = addDays(base,k), f = dayFactor(d);
+        if(d < p.ef.date || d < t || diff(prev,d) < Math.max(1, st.cadence-1) || onLeave(p.member,d)) continue;
+        if(f >= bf*(k > 0 ? 1.10 : 1.05) && (f > f0 + 1e-9 || (Math.abs(f-f0) < 1e-9 && Math.abs(k) < Math.abs(diff(base,best))))){ best = d; f0 = f; }
+      }
+      if(best !== base){ moved = {from:base, gain:Math.round((f0/bf-1)*100)}; deadline = best; }
+    }
+    // >0 = kanał będzie stał (świadome przesunięcie na lepszy dzień nie liczy się jako dziura)
+    const gapDays = diff(prev, moved && moved.from < deadline ? moved.from : deadline) - st.cadence;
+    out.push({...p, slot, deadline, gapDays, prev, moved});
     prev = deadline;
   }
   return {queue:out, lastUpload, done, nextNeeded:addDays(prev, st.cadence)};
@@ -477,9 +525,12 @@ function planView(){
   return `
   <div class="grid g3">${MEMBERS.map(m => memberCard(m, queue, done, t)).join("")}</div>
   <div class="grid g2" style="margin-top:14px">
-    <div class="card">
-      <h2>Kolejka premier <span class="hint">co ${S.settings.cadence} dni nowy film</span></h2>
-      ${queueView(queue, nextNeeded, t)}
+    <div class="grid" style="align-content:start">
+      <div class="card">
+        <h2>Kolejka premier <span class="hint">co ${S.settings.cadence} dni nowy film</span></h2>
+        ${queueView(queue, nextNeeded, t)}
+      </div>
+      <div class="card"><h2>Kalendarz</h2>${calendarView(queue, done, t)}</div>
     </div>
     <div class="grid" style="align-content:start">
       <div class="card">
@@ -526,7 +577,7 @@ function memberCard(m, queue, done, t){
     pill = leave ? `<span class="pill p-leave">Urlop do ${fmt(leave.to_date)}</span>` : `<span class="pill p-work">W produkcji</span>`;
     body = `<div class="title">${esc(proj.title)}</div>
       <div class="meta">start ${fmt(proj.start)} · ~${proj.planned_min} min${proj.wt?" · WT":""}</div>
-      <div class="count" style="color:${left<0?"var(--bad)":left<=2?"var(--warn)":"var(--text)"}">${fmt(proj.deadline)}<small>${rel(left)}</small></div>
+      <div class="count" style="color:${left<0?"var(--bad)":left<=2?"var(--warn)":"var(--text)"}">${fmt(proj.deadline)}${bestHourTxt()?`<span class="hr">${bestHourTxt()}</span>`:""}<small>${rel(left)}</small></div>
       <div class="bar"><i style="width:${pct}%"></i></div>`;
   } else if(leave){
     pill = `<span class="pill p-leave">Urlop</span>`;
@@ -553,17 +604,64 @@ function queueView(queue, nextNeeded, t){
       <div><div class="t">Dziura w harmonogramie</div><div class="badline">Między ${fmt(p.prev)} a ${fmt(p.deadline)} kanał będzie stał. Ktoś mógłby wrzucić krótszy film.</div></div></div>`;
     const notes = [];
     if(p.ef.leaveDays) notes.push(`<span class="warnline">urlop wydłużył pracę o ${p.ef.leaveDays} d.</span>`);
-    if(p.deadline > p.slot) notes.push(`<span class="warnline">termin przesunięty, bo film wymaga ${p.ef.need} dni pracy</span>`);
+    if(p.deadline > p.slot && !(p.moved && p.moved.from <= p.slot)) notes.push(`<span class="warnline">termin przesunięty, bo film wymaga ${p.ef.need} dni pracy</span>`);
+    if(p.moved) notes.push(`<span class="okline">termin ${p.moved.from < p.deadline ? "przesunięty" : "przyspieszony"} o ${Math.abs(diff(p.moved.from,p.deadline))} d. na lepszy dzień (${dowLong(p.deadline)}: ok. +${p.moved.gain}% wyświetleń względem ${fmt(p.moved.from)})</span>`);
     html += `<div class="qi" style="--c:${COLORS[p.member]}">
       <div class="d"><b>${toD(p.deadline).getUTCDate()}</b><span>${dow(p.deadline)} ${fmt(p.deadline).split(" ")[1]||""}</span></div>
       <div><div class="t">${esc(p.title)}${p.wt?'<span class="tag">WT</span>':""}</div>
-        <div class="s"><span style="color:${COLORS[p.member]};font-weight:600">${p.member}</span> · ~${p.planned_min} min · ${rel(diff(t,p.deadline))}</div>
+        <div class="s"><span style="color:${COLORS[p.member]};font-weight:600">${p.member}</span> · ~${p.planned_min} min · ${rel(diff(t,p.deadline))}${bestHourTxt()?` · <span title="Najlepsza godzina premiery wg waszych statystyk">wrzuć ok. <b>${bestHourTxt()}</b></span>`:""}</div>
         ${notes.length?`<div>${notes.join(" · ")}</div>`:""}</div>
       <div class="act"><button class="btn sm" data-done="${p.id}">Wrzucony</button><button class="x" title="Edytuj" data-edit="${p.id}">✎</button><button class="x" title="Usuń" data-del="${p.id}">✕</button></div>
     </div>`;
   }
   html += `<div class="help">Następny film potrzebny do <b>${fmt(nextNeeded)}</b>. Kto nie ma nic w planie, niech bierze temat.</div>`;
   return `<div class="q">${html}</div>`;
+}
+
+/* ---------- kalendarz: ten i następny miesiąc ---------- */
+const MONTHS = ["styczeń","luty","marzec","kwiecień","maj","czerwiec","lipiec","sierpień","wrzesień","październik","listopad","grudzień"];
+const warsawDay = iso => { try{ return new Intl.DateTimeFormat("sv-SE",{timeZone:"Europe/Warsaw"}).format(new Date(iso)); }catch{ return iso.slice(0,10); } };
+function calendarView(queue, done, t){
+  const ev = {};
+  const put = (d, e) => (ev[d] = ev[d] || []).push(e);
+  for(const p of queue) put(p.deadline, {k:"plan", m:p.member, txt:`Planowany upload: „${p.title}” (${p.member})${bestHourTxt()?`, ok. ${bestHourTxt()}`:""}`});
+  const seen = new Set();
+  for(const u of (S.uploads||[])){ const d = warsawDay(u.published); seen.add(u.id); put(d, {k:"up", m:u.member, txt:`Wrzucony: „${u.title}”${u.member?` (${u.member})`:""}`}); }
+  for(const p of done) if(p.uploaded && !(p.video_id && seen.has(p.video_id))) put(p.uploaded, {k:"up", m:p.member, txt:`Wrzucony: „${p.title}” (${p.member})`});
+  for(const p of S.projects.filter(x=>x.status==="active")) put(p.start, {k:"start", m:p.member, txt:`Start pracy: „${p.title}” (${p.member})`});
+  const leaveOn = d => S.leaves.filter(l => d>=l.from_date && d<=l.to_date);
+  const f = WDF();
+  const base = toD(t);
+  const month = off => {
+    const y = base.getUTCFullYear(), m = base.getUTCMonth()+off;
+    const first = new Date(Date.UTC(y, m, 1, 12)), days = new Date(Date.UTC(y, m+1, 0, 12)).getUTCDate();
+    const lead = (first.getUTCDay()+6)%7; // poniedziałek = 0
+    let cells = "";
+    for(let i=0;i<lead;i++) cells += `<div class="cd pad"></div>`;
+    for(let dd=1; dd<=days; dd++){
+      const d = toS(new Date(Date.UTC(first.getUTCFullYear(), first.getUTCMonth(), dd, 12)));
+      const e = ev[d] || [], lv = leaveOn(d);
+      const tip = [...e.map(x=>x.txt), ...lv.map(l=>`Wolne: ${l.member}${l.note?` (${l.note})`:""}`)].join("\n");
+      cells += `<div class="cd ${d===t?"today":""} ${d<t?"past":""}" ${tip?`title="${esc(tip)}"`:""}>
+        <span class="n">${dd}</span>
+        <span class="mk">${e.map(x=>`<i class="${x.k}" style="--c:${x.m?COLORS[x.m]:"var(--muted)"}"></i>`).join("")}</span>
+        ${lv.length?`<span class="lv">${lv.map(l=>`<b style="background:${COLORS[l.member]}"></b>`).join("")}</span>`:""}</div>`;
+    }
+    const hd = [1,2,3,4,5,6,0].map(w => { const x = f ? f[w] : 1, cls = f ? (x>=1.05?"hot":x<=0.95?"cold":"") : "";
+      return `<div class="wd ${cls}" ${f?`title="${DOWL[w]}: ${x>=1?"+":""}${Math.round((x-1)*100)}% wyświetleń względem przeciętnego dnia"`:""}>${["pn","wt","śr","cz","pt","sb","nd"][(w+6)%7]}</div>`; }).join("");
+    return `<div class="cm"><h3>${MONTHS[first.getUTCMonth()]} ${first.getUTCFullYear()}</h3><div class="cg">${hd}${cells}</div></div>`;
+  };
+  const H = S.times && S.times.hour;
+  let stat = "";
+  if(f){
+    const order = [0,1,2,3,4,5,6].sort((a,b)=>f[b]-f[a]);
+    const pc = w => `${f[w]>=1?"+":"−"}${Math.abs(Math.round((f[w]-1)*100))}%`;
+    stat = `Najwięcej wyświetleń: <b>${DOWL[order[0]]}</b> (${pc(order[0])}) i <b>${DOWL[order[1]]}</b> (${pc(order[1])}), najmniej: ${DOWL[order[6]]} (${pc(order[6])}). Liczone z dziennych wyświetleń kanału z ostatniego roku.`;
+  }
+  if(H) stat += ` Godzina premiery: <b>${bestHourTxt()}</b>${H.ratio&&H.n>=3?`. Wasze filmy wrzucane między ${H.hour}:00 a ${H.hour+2}:00 mają po 7 dniach ok. ${String(H.ratio).replace(".",",")}× typowe wyświetlenia (${H.n} filmów z ostatniego roku)`:", czyli pora, o której najczęściej wrzucacie (za mało filmów, żeby porównać godziny)"}.`;
+  return `<div class="cal">${month(0)}${month(1)}</div>
+    <div class="clg"><span><i class="plan" style="--c:var(--gold)"></i>planowany upload</span><span><i class="up" style="--c:var(--gold)"></i>wrzucony film</span><span><i class="start" style="--c:var(--gold)"></i>start pracy</span><span><b style="background:var(--gold)"></b>wolne / urlop</span><span><em class="hot">sb</em>dzień z większymi wyświetleniami</span></div>
+    <div class="help">${stat || "Najlepsze dni i godzina pojawią się po najbliższym odświeżeniu danych z YouTube."} Najedź na dzień, żeby zobaczyć szczegóły. Kolory = osoby.</div>`;
 }
 
 function leavesList(t){
@@ -589,7 +687,9 @@ function settingsForm(){
       <label>Min. dni pracy<input type="number" name="minWork" min="1" max="30" step="1" value="${s.minWork}"></label></div>
     <div class="row"><label>Dni pracy na minutę filmu<input type="number" name="workPerMin" min="0" max="5" step="0.05" value="${s.workPerMin}"></label>
       <label>Dni przerwy na minutę filmu<input type="number" name="restPerMin" min="0" max="5" step="0.05" value="${s.restPerMin}"></label></div>
+    <div class="row"><label>Przesuwaj na lepszy dzień o max (dni)<input type="number" name="favorShift" min="0" max="3" step="1" value="${s.favorShift??1}"></label><div></div></div>
     <button class="btn ghost" type="submit">Zapisz ustawienia</button>
+    <div class="help">„Przesuwaj na lepszy dzień”: termin może się przesunąć o tyle dni, jeśli tamten dzień tygodnia ma więcej wyświetleń (wcześniej: min. +5%, później: min. +10%, bo opóźnia kolejkę) (0 = wyłączone). Kanał nigdy nie dostanie przez to dwóch premier dzień po dniu.</div>
     <div class="help">Przykład przy obecnych ustawieniach: film 45 min to ${Math.max(s.minWork,Math.ceil(45*s.workPerMin))} dni pracy i ${Math.max(1,Math.round(45*s.restPerMin))} dni przerwy, a film 9 min to ${Math.max(s.minWork,Math.ceil(9*s.workPerMin))} dni pracy i ${Math.max(1,Math.round(9*s.restPerMin))} dzień przerwy.</div>
   </form>`;
 }
@@ -706,7 +806,7 @@ function perfView(){
       <a href="https://youtu.be/${esc(v.id)}" target="_blank" rel="noopener">${thumb(v)}</a>
       <div><div class="t">${esc(v.title)}</div>
         <div class="s">${whoCell(v)}<span>${ageTxt(A)} temu</span><span>${nf(v.views)} wyśw.</span>
-          ${v.is_short?'<span class="tg sh">short</span>':v.wt?'<span class="tg wt">WT</span>':'<span class="tg">inne</span>'}
+          ${v.is_short?'<span class="tg sh">short</span>':DEMO?(v.wt?'<span class="tg wt">WT</span>':'<span class="tg">inne</span>'):`<button class="tg ${v.wt?"wt":""} tgb" data-wt="${esc(v.id)}:${v.wt?0:1}" title="Źle rozpoznany? Kliknij, żeby zmienić na ${v.wt?"inne gry":"War Thunder"}">${v.wt?"WT":"inne"} ⇄</button>`}
           ${rec?`<span class="rekord">REKORD ${rec.map(r=>r.replace(" godziny","H").toUpperCase()).join(" · ")}</span>`:""}
           ${DEMO?"":`<button class="x" style="font-size:12px" data-live="${esc(v.id)}:1" title="To zapis streamu – wyklucz ze statystyk">📡</button><button class="x" style="font-size:12px" data-mem="${esc(v.id)}:1" title="Tylko dla wspierających – wyklucz ze statystyk">💎</button>`}
           ${hot.has(v.id)?`<span class="fire" title="${hot.get(v.id).map(x=>`${x.n}: prognoza ~${nf(x.proj)}, rekord ${nf(x.rec)}`).join(" · ")}">📈 na drodze do rekordu ${hot.get(v.id).map(x=>x.n.replace(" godziny"," h")).join(", ")} (~${nf(hot.get(v.id).at(-1).proj)} vs ${nf(hot.get(v.id).at(-1).rec)})</span>`:""}</div></div>
@@ -1058,19 +1158,31 @@ async function loadThumbs(){
   try{ const r = await fetch("/api/thumbs",{cache:"no-store"}); TH = await r.json(); }catch{}
 }
 function demoThumbs(){
-  const v = (id,title,ctr,imp,member,d) => ({id,title,ctr,impressions:imp,member,thumb:`https://i.ytimg.com/vi/${id}/mqdefault.jpg`,published:new Date(Date.now()-d*864e5).toISOString(),source:"api"});
+  let n=0; const v = (id,title,ctr,imp,member,d) => { n++; const sc=Math.max(40,95-(n%5)*9); return {id,title,ctr,impressions:imp,member,thumb:`https://i.ytimg.com/vi/${id}/mqdefault.jpg`,published:new Date(Date.now()-d*864e5).toISOString(),source:"api",
+    score:sc, fresh:40+(n*7)%35, hold:35+(n*5)%20, parts:{ctr:Math.min(100,sc+6),reach:Math.max(0,sc-12),fresh:Math.min(100,sc+3),hold:Math.max(0,sc-8)}, partial:false}; };
   return {since:new Date(Date.now()-40*864e5).toISOString().slice(0,10), imported:0, partial:12, error:"",
     top24:[v("ahXb9ko4VuQ","Od REZERWY do TOPTIERA - NIEMIECKIE Czołgi Ciężkie | WAR THUNDER",11.8,18400,"Saito",11),v("VpOiOvOCpKA","Obejrzyj Zanim Wydasz HAJ$ na War Thunder",10.2,12100,"Malvel",20),
       v("_JqigtQ0v1w","Zagrałem KAŻDYM POJAZDEM 1 Ery Japonii [Część 1]",9.6,15300,"Saito",24),v("Ly1FFxP5iwQ","War Thunder ALE Z KAŻDYM KILLEM jest CIĘŻEJ",8.1,9800,"Virtuoso",34),v("ZuMxUi-R9ug","Jaką nację wybrać w WAR THUNDER? Japonia",7.4,8800,"Malvel",49)],
     topLife:[v("FAjBzrriFjM","TOP 10 NAJGORSZYCH CZOŁGÓW W WAR THUNDER",9.9,311000,"Saito",67),v("ahXb9ko4VuQ","Od REZERWY do TOPTIERA - NIEMIECKIE Czołgi Ciężkie | WAR THUNDER",9.1,140000,"Saito",11),
       v("VN2lK9mp6Uc","Jako Czołgista MUSISZ Znać Te Triki w War Thunder!",8.7,132000,"Virtuoso",71),v("_JqigtQ0v1w","Zagrałem KAŻDYM POJAZDEM 1 Ery Japonii [Część 1]",8.2,170000,"Saito",24),v("jUSQtAl8Wag","NAJSZYBSZA Droga do T-80 w War Thunder?",7.9,115000,"Malvel",63)]};
 }
+const SPARTS = [["ctr","CTR"],["reach","zasięg"],["fresh","nowi"],["hold","utrzymanie"]];
+function scoreTip(v){
+  if(!v.parts) return "";
+  const P = v.parts, f = x => x==null ? "brak danych (jeszcze się pobiera)" : x+"/100";
+  return `Wynik ${v.score}/100 (50 = typowa miniatura kanału)
+CTR na tle zasięgu (40%): ${f(P.ctr)} – CTR ${String(v.ctr).replace(".",",")}%
+Zasięg (25%): ${f(P.reach)}${v.impressions?` – ${nf(v.impressions)} wyświetleń miniatury`:""}
+Nowi widzowie (20%): ${f(P.fresh)}${v.fresh!=null?` – ${String(v.fresh).replace(".",",")}% wyświetleń od osób bez suba`:""}
+Dotrzymana obietnica (15%): ${f(P.hold)}${v.hold!=null?` – średnio obejrzane ${String(v.hold).replace(".",",")}% filmu`:""}`;
+}
 function thumbList(list, kind){
   if(!list || !list.length) return `<div class="empty">${kind==="24"?"Pojawi się, gdy raporty CTR obejmą premierę nowego filmu (raporty YouTube ruszają do 48 h po wdrożeniu).":"Wgraj eksport ze Studio (przycisk wyżej), żeby zobaczyć CTR starszych filmów."}</div>`;
   return list.map((v,i)=>{ const on = LIKED.has(v.id);
     return `<div class="thi ${on?"on":""}"><div class="thn">${i+1}</div>
       <a href="https://youtu.be/${esc(v.id)}" target="_blank" rel="noopener">${v.thumb?`<img src="${esc(v.thumb)}" alt="" loading="lazy">`:'<div class="ph"></div>'}</a>
-      <div><div class="t">${esc(v.title)}</div><div class="m"><span class="ctr">${String(v.ctr).replace(".",",")}%</span> CTR${v.impressions?` · ${nf(v.impressions)} wyśw. miniatury`:` · ${nf(v.views)} wyśw.`}${v.member?` · <b style="color:${COLORS[v.member]}">${esc(v.member)}</b>`:""}</div></div>
+      <div><div class="t">${esc(v.title)}</div><div class="m"><span class="ctr" title="${esc(scoreTip(v))}">${v.score??"–"}<small>/100</small></span> · CTR ${String(v.ctr).replace(".",",")}%${v.fresh!=null?` · ${String(v.fresh).replace(".",",")}% bez suba`:""}${v.member?` · <b style="color:${COLORS[v.member]}">${esc(v.member)}</b>`:""}</div>
+        ${v.parts?`<div class="sbars" title="${esc(scoreTip(v))}">${SPARTS.map(([k,n])=>`<span><i style="width:${v.parts[k]??0}%;${v.parts[k]==null?"opacity:.25":""}"></i><em>${n}</em></span>`).join("")}</div>`:""}</div>
       <label class="cb"><input type="checkbox" data-like="${esc(v.id)}" ${on?"checked":""} aria-label="Podoba mi się"></label></div>`; }).join("");
 }
 function thumbsView(){
@@ -1081,7 +1193,8 @@ function thumbsView(){
     : TH.since ? `CTR z raportów YouTube od <b>${fmt(TH.since)}</b>${TH.until?` do ${fmt(TH.until)}`:""} (YouTube dosyła dane z 1–2 dniowym opóźnieniem).`
     : `Raporty CTR uruchomione. YouTube przygotowuje pierwsze dane, może to potrwać do 48 h.`;
   const liked = [...LIKED];
-  return `<div class="card"><h2>Miniatury <span class="hint">bez shortów · doba: min. 200 wyśw. miniatury · cały czas: filmy z min. 3000 wyświetleń</span></h2>
+  return `<div class="card"><h2>Miniatury <span class="hint">wynik 0–100 · bez shortów · doba: min. 200 wyśw. miniatury · cały czas: filmy z min. 3000 wyświetleń</span></h2>
+    <div class="help" style="margin-top:0">Wynik porównuje miniaturę z resztą filmów kanału (50 = typowa). Liczą się: <b>CTR na tle zasięgu</b> (40%, bo CTR naturalnie spada, gdy YouTube pokazuje film szerzej), <b>zasięg</b> (25%, ile razy pokazano miniaturę), <b>nowi widzowie</b> (20%, udział wyświetleń od osób bez suba) i <b>dotrzymana obietnica</b> (15%, średni % obejrzenia, bo clickbait z szybkim odpływem nie jest dobrą miniaturą). Najedź na wynik, żeby zobaczyć rozbicie.${TH.audience!=null&&!DEMO&&TH.poolLife>TH.audience?` Dane o widzach spoza subów pobierają się stopniowo (${TH.audience} filmów gotowych), do tego czasu część wyników liczy się z CTR i zasięgu.`:""}</div>
     <div class="help" style="margin-top:0">${status}${TH.imported?` Z eksportu Studio: ${TH.imported} filmów.`:""}${TH.partial?` ${TH.partial} starszych filmów czeka na eksport ze Studio, bo raporty obejmują tylko ostatnie tygodnie.`:""}</div>
     ${DEMO?"":`<div class="tgrow"><span class="filebtn btn ghost sm">Wgraj eksport ze Studio (CSV)<input type="file" accept=".csv,text/csv" id="ctrFile"></span>
       <span class="help" style="margin:0">Studio → Statystyki → Tryb zaawansowany → zakres „Od początku” → Eksportuj → CSV → wgraj plik „Dane tabeli.csv” / „Table data.csv”.</span></div>`}
@@ -1098,12 +1211,12 @@ function thumbsView(){
 function thumbPrompt(){
   const all = [...(TH.top24||[]).map(v=>({...v,k:"po pierwszej dobie"})), ...(TH.topLife||[]).map(v=>({...v,k:"od początku"}))];
   const seen = new Map();
-  for(const v of all) if(LIKED.has(v.id)){ const s = seen.get(v.id); if(s) s.k.push(`${String(v.ctr).replace(".",",")}% ${v.k}`); else seen.set(v.id,{...v,k:[`${String(v.ctr).replace(".",",")}% ${v.k}`]}); }
+  for(const v of all) if(LIKED.has(v.id)){ const s = seen.get(v.id); const t=`wynik ${v.score}/100, CTR ${String(v.ctr).replace(".",",")}% ${v.k}`; if(s) s.k.push(t); else seen.set(v.id,{...v,k:[t]}); }
   const list = [...seen.values()];
   return `Pomóż mi zrobić miniaturę YouTube dla kanału MVS (polski kanał gamingowy, głównie War Thunder).
 
-Podobają mi się miniatury tych filmów (najwyższy CTR na kanale):
-${list.map((v,i)=>`${i+1}. https://youtu.be/${v.id} – „${v.title}” (CTR ${v.k.join(", ")})`).join("\n")}
+Podobają mi się miniatury tych filmów (najlepszy wynik miniatury na kanale: CTR na tle zasięgu, zasięg, nowi widzowie, utrzymanie):
+${list.map((v,i)=>`${i+1}. https://youtu.be/${v.id} – „${v.title}” (${v.k.join("; ")})`).join("\n")}
 ID filmów: ${list.map(v=>v.id).join(", ")}
 
 Obejrzyj te miniatury (np. przez vidIQ: vidiq_get_images z tymi ID) i wyciągnij ich wspólny styl: kompozycja, kadr, kolory i kontrast, postać/maskotka, pojazdy, tło, efekty, miejsce na tekst.
@@ -1271,6 +1384,7 @@ document.addEventListener("click", e => {
   const d = b.dataset;
   if(d.tab){ TAB = d.tab; history.replaceState(null,"","#"+TAB); render(); if(TABDATA[TAB] && !DEMO){ const t=TAB; loadTabData(t).then(()=>{ if(TAB===t) render(); }); } }
   if(d.mem){ const [id,val]=d.mem.split(":"); save("POST","videos/"+id+"/members",{members:val==="1"}, val==="1"?"Oznaczono jako film dla wspierających – wykluczony ze statystyk":"Przywrócono do statystyk"); }
+  if(d.wt){ const [id,val]=d.wt.split(":"); save("POST","videos/"+id+"/wt",{wt:val==="1"}, val==="1"?"Zmieniono na War Thunder":"Zmieniono na inne gry"); }
   if(d.live){ const [id,val]=d.live.split(":"); save("POST","videos/"+id+"/live",{live:val==="1"}, val==="1"?"Oznaczono jako stream – wykluczony ze statystyk":"Przywrócono do statystyk"); }
   if(d.vf){ VF = d.vf; VSHOW = 25; render(); }
   if(d.rf){ RF = d.rf; render(); }

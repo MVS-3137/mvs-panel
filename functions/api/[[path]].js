@@ -59,14 +59,18 @@ export async function onRequest({ request, env, params, data }) {
 
   try {
     if (res === "state" && method === "GET") {
-      const [p, l, s] = await db.batch([
+      const [p, l, s, bt, up] = await db.batch([
         db.prepare("SELECT * FROM projects ORDER BY start"),
         db.prepare("SELECT * FROM leaves ORDER BY from_date"),
         db.prepare("SELECT key, value FROM settings"),
+        db.prepare("SELECT value FROM kv WHERE key='best_times'"),
+        db.prepare("SELECT id, title, published, member FROM videos WHERE is_short = 0 AND removed_at IS NULL AND published >= ? AND COALESCE(live_override, is_live, 0) = 0 AND COALESCE(members_override, is_members, 0) = 0").bind(new Date(Date.now() - 70 * 864e5).toISOString()),
       ]);
       const settings = {};
       for (const r of s.results) settings[r.key] = Number(r.value);
-      return json({ projects: p.results, leaves: l.results, settings, me: user });
+      let times = null;
+      try { times = bt.results[0] ? JSON.parse(bt.results[0].value) : null; } catch {}
+      return json({ projects: p.results, leaves: l.results, settings, me: user, times, uploads: up.results });
     }
 
     if (res === "projects") {
@@ -118,7 +122,7 @@ export async function onRequest({ request, env, params, data }) {
     if (res === "settings" && method === "PUT") {
       if (user !== "Saito") return json({ error: "Ustawienia rytmu może zmieniać tylko Saito" }, 403);
       const b = await readBody(request);
-      const allowed = ["cadence", "workPerMin", "minWork", "restPerMin"];
+      const allowed = ["cadence", "workPerMin", "minWork", "restPerMin", "favorShift"];
       const stmts = [];
       for (const k of allowed) {
         if (b[k] === undefined) continue;
@@ -169,6 +173,13 @@ export async function onRequest({ request, env, params, data }) {
         db.prepare("UPDATE videos SET project_id=NULL WHERE id=?").bind(id),
         db.prepare("DELETE FROM news WHERE type IN ('unassigned','new_video') AND video_id=?").bind(id));
       await db.batch(st);
+      return json({ ok: true });
+    }
+
+    if (res === "videos" && id && path[2] === "wt" && method === "POST") {
+      const b = await readBody(request);
+      const on = b.wt ? 1 : 0;
+      await db.batch([db.prepare("UPDATE videos SET wt_override=?, wt=? WHERE id=?").bind(on, on, id), dropCache(db, "cache_thumbs", "cache_grades")]);
       return json({ ok: true });
     }
 
