@@ -101,6 +101,7 @@ export async function onRequest({ request, env, params, data }) {
     }
 
     if (res === "settings" && method === "PUT") {
+      if (user !== "Saito") return json({ error: "Ustawienia rytmu może zmieniać tylko Saito" }, 403);
       const b = await readBody(request);
       const allowed = ["cadence", "workPerMin", "minWork", "restPerMin"];
       const stmts = [];
