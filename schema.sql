@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS projects (
   video_url   TEXT,
   video_id    TEXT,
   shifts      INTEGER DEFAULT 0,
+  game        TEXT,
   created_by  TEXT,
   created_at  TEXT DEFAULT (datetime('now'))
 );
@@ -58,3 +59,4 @@ CREATE TABLE IF NOT EXISTS reach_sum (video_id TEXT PRIMARY KEY, imp REAL DEFAUL
 CREATE INDEX IF NOT EXISTS reach_day ON reach (day);
 CREATE TABLE IF NOT EXISTS thumb_stats (video_id TEXT PRIMARY KEY, views24 INTEGER, nonsub24 INTEGER, avp24 REAL, d24_at TEXT, views_life INTEGER, nonsub_life INTEGER, avp_life REAL, life_at TEXT);
 INSERT OR IGNORE INTO settings (key, value) VALUES ('favorShift', '1');
+CREATE TABLE IF NOT EXISTS games (member TEXT NOT NULL, name TEXT NOT NULL, PRIMARY KEY (member, name));

@@ -305,6 +305,16 @@ textarea:focus{outline:2px solid var(--gold2);outline-offset:-1px}
 .clg span{display:inline-flex;align-items:center;gap:6px}.clg b{display:inline-block;width:14px;height:4px;border-radius:2px}
 .clg em{font-style:normal;font-size:10px;text-transform:uppercase;color:var(--ok);border-bottom:2px solid var(--ok)}
 .count .hr{font-size:.55em;margin-left:8px;color:var(--muted);font-weight:500}
+
+/* podpowiedzi */
+.adv{display:grid;gap:8px}
+.adi{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;padding:10px 12px;border-radius:10px;background:var(--bg2);border:1px solid var(--line);border-left:3px solid var(--line)}
+.adi .ic{font-size:18px;line-height:1.3}.adi .t{font-weight:600;font-size:14px}.adi .x{font-size:13px;color:var(--text);opacity:.9;margin-top:2px}
+.adi.warn{border-left-color:var(--warn)}.adi.idea{border-left-color:var(--c,var(--gold))}.adi.ok{border-left-color:var(--ok);opacity:.85}.adi.info{border-left-color:var(--saito)}
+.advs{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:7px 0;border-top:1px dashed var(--line)}.advs:first-child{border-top:0;padding-top:4px}
+.advs .tag{font-size:10.5px;padding:1px 7px;border:1px solid var(--line);border-radius:6px;margin-left:6px;color:var(--muted);font-weight:500}
+.advs .btn{flex:none}.advg{padding:3px 0}.muted{color:var(--muted);font-size:12.5px}.badline.inl,.adi .badline{display:inline}
+@media (max-width:480px){.advs{flex-direction:column;align-items:flex-start}}
 </style>
 </head>
 <body>
@@ -381,6 +391,11 @@ function demoData(){
     ],
     leaves:[{id:1,member:"Saito",from_date:addDays(t,2),to_date:addDays(t,5),note:"wyjazd"}],
     times:{days:{f:[1.12,0.93,0.9,0.95,0.98,1.03,1.09]}, hour:{hour:16,ratio:1.24,n:9}},
+    wtMedian:9100,
+    games:{Malvel:["World of Tanks","Hell Let Loose","Arma 3","Hearts of Iron IV","Crossout Remastered","Phasmophobia","Battlefield 2042","War Thunder"],Virtuoso:["DCS World","Enlisted","World War 3","IronWolf","From The Depths","Crossout Remastered","World of Warships","War Thunder"],Saito:["War Thunder","RimWorld","Hearts of Iron IV"]},
+    recent:[{id:"a",title:"Historia Leoparda 2 – pełny dokument",published:addDays(t,-3)+"T15:00:00Z",member:"Virtuoso",is_short:0,wt:1,views:20800,v24:6100},{id:"b",title:"5 czołgów, które grają się same",published:addDays(t,-7)+"T15:00:00Z",member:"Malvel",is_short:0,wt:1,views:6300,v24:2900},
+      {id:"c",title:"Ja w czołgu vs najpotężniejsze bossy w Minecraft",published:addDays(t,-40)+"T15:00:00Z",member:"Malvel",is_short:0,wt:0,views:5200,v28:5100,avp90:34},{id:"d",title:"RimWorld – kolonia na skraju | Megakampania",published:addDays(t,-12)+"T15:00:00Z",member:"Saito",is_short:0,wt:0,views:700},
+      {id:"s1",title:"short WT",published:addDays(t,-2)+"T15:00:00Z",is_short:1,wt:1,views:900},{id:"s2",title:"short WT 2",published:addDays(t,-5)+"T15:00:00Z",is_short:1,wt:1,views:900}],
     uploads:[{id:"a",title:"Historia Leoparda 2 – pełny dokument",published:addDays(t,-3)+"T15:00:00Z",member:"Virtuoso"},{id:"b",title:"5 czołgów, które grają się same",published:addDays(t,-7)+"T15:00:00Z",member:"Malvel"}],
   };
 }
@@ -522,6 +537,7 @@ function lockedView(t){
 
 function planView(){
   const t = today(), {queue, done, nextNeeded} = schedule();
+  const A = advice(queue, done, t); PLANADV = A;
   return `
   <div class="grid g3">${MEMBERS.map(m => memberCard(m, queue, done, t)).join("")}</div>
   <div class="grid g2" style="margin-top:14px">
@@ -530,6 +546,7 @@ function planView(){
         <h2>Kolejka premier <span class="hint">co ${S.settings.cadence} dni nowy film</span></h2>
         ${queueView(queue, nextNeeded, t)}
       </div>
+      ${A.notes.length?`<div class="card"><h2>Podpowiedzi panelu <span class="hint">wg planu przejścia na kanał gamingowy</span></h2>${adviceView(A)}</div>`:""}
       <div class="card"><h2>Kalendarz</h2>${calendarView(queue, done, t)}</div>
     </div>
     <div class="grid" style="align-content:start">
@@ -541,6 +558,8 @@ function planView(){
           <div class="row one"><label>Tytuł roboczy<input name="title" maxlength="200" placeholder="np. Historia T-34" required></label></div>
           <div class="row"><label>Planowana długość (min)<input type="number" name="planned_min" min="1" max="300" value="15" required></label>
             <label class="chk" style="align-self:end;padding-bottom:8px"><input type="checkbox" name="wt" checked> War Thunder</label></div>
+          <div class="row one"><label>Gra (opcjonalnie)<input name="game" maxlength="80" list="gameList" placeholder="np. World of Tanks"></label></div>
+          <datalist id="gameList">${allGameNames().map(g=>`<option value="${esc(g)}">`).join("")}</datalist>
           <button class="btn" type="submit">Dodaj do planu</button>
         </form>
       </div>
@@ -555,6 +574,7 @@ function planView(){
         </form>
         <div class="list" style="margin-top:12px">${leavesList(t)}</div>
       </div>
+      ${gamesCard()}
     </div>
   </div>
   <div class="grid ${S.me==="Saito"||DEMO?"g2":""}" style="margin-top:14px">
@@ -595,20 +615,26 @@ function memberCard(m, queue, done, t){
     <div class="top"><div class="av">${m[0]}</div><div><div class="name">${m}</div>${pill}</div></div>${body}</div>`;
 }
 
+let PLANADV = null;
+function gapWho(){
+  const f = PLANADV ? PLANADV.free : [];
+  if(!f.length) return "Ktoś mógłby wrzucić krótszy film.";
+  return `Nic nie mają w planie: <b>${f.join(", ")}</b> – krótszy film (ok. 8–12 min) zatka dziurę. Propozycje są w „Podpowiedziach panelu”.`;
+}
 function queueView(queue, nextNeeded, t){
   if(!queue.length) return `<div class="qi gap"><div class="d"><b>!</b><span>pusto</span></div>
     <div><div class="t">Nikt nie pracuje nad filmem</div><div class="badline">Kanał potrzebuje premiery do ${fmt(nextNeeded)}. Dodajcie film do planu.</div></div></div>`;
   let html = "";
   for(const p of queue){
     if(p.gapDays > 0) html += `<div class="qi gap"><div class="d"><b>+${p.gapDays}</b><span>dni</span></div>
-      <div><div class="t">Dziura w harmonogramie</div><div class="badline">Między ${fmt(p.prev)} a ${fmt(p.deadline)} kanał będzie stał. Ktoś mógłby wrzucić krótszy film.</div></div></div>`;
+      <div><div class="t">Dziura w harmonogramie</div><div class="badline">Między ${fmt(p.prev)} a ${fmt(p.deadline)} kanał będzie stał. ${gapWho()}</div></div></div>`;
     const notes = [];
     if(p.ef.leaveDays) notes.push(`<span class="warnline">urlop wydłużył pracę o ${p.ef.leaveDays} d.</span>`);
     if(p.deadline > p.slot && !(p.moved && p.moved.from <= p.slot)) notes.push(`<span class="warnline">termin przesunięty, bo film wymaga ${p.ef.need} dni pracy</span>`);
     if(p.moved) notes.push(`<span class="okline">termin ${p.moved.from < p.deadline ? "przesunięty" : "przyspieszony"} o ${Math.abs(diff(p.moved.from,p.deadline))} d. na lepszy dzień (${dowLong(p.deadline)}: ok. +${p.moved.gain}% wyświetleń względem ${fmt(p.moved.from)})</span>`);
     html += `<div class="qi" style="--c:${COLORS[p.member]}">
       <div class="d"><b>${toD(p.deadline).getUTCDate()}</b><span>${dow(p.deadline)} ${fmt(p.deadline).split(" ")[1]||""}</span></div>
-      <div><div class="t">${esc(p.title)}${p.wt?'<span class="tag">WT</span>':""}</div>
+      <div><div class="t">${esc(p.title)}${p.wt?'<span class="tag">WT</span>':gameOf(p.title,p.game)?`<span class="tag">${esc(gameOf(p.title,p.game))}</span>`:""}</div>
         <div class="s"><span style="color:${COLORS[p.member]};font-weight:600">${p.member}</span> · ~${p.planned_min} min · ${rel(diff(t,p.deadline))}${bestHourTxt()?` · <span title="Najlepsza godzina premiery wg waszych statystyk">wrzuć ok. <b>${bestHourTxt()}</b></span>`:""}</div>
         ${notes.length?`<div>${notes.join(" · ")}</div>`:""}</div>
       <div class="act"><button class="btn sm" data-done="${p.id}">Wrzucony</button><button class="x" title="Edytuj" data-edit="${p.id}">✎</button><button class="x" title="Usuń" data-del="${p.id}">✕</button></div>
@@ -616,6 +642,227 @@ function queueView(queue, nextNeeded, t){
   }
   html += `<div class="help">Następny film potrzebny do <b>${fmt(nextNeeded)}</b>. Kto nie ma nic w planie, niech bierze temat.</div>`;
   return `<div class="q">${html}</div>`;
+}
+
+/* ---------- podpowiedzi panelu: plan przejścia na kanał gamingowy (12 tygodni od 9 lis 2026) ---------- */
+const PLAN_START = "2026-11-09";
+const PLAN12 = [
+  {wt:"Od rezerwy do toptiera: czołgi ciężkie USA", ng:null, sh:"3 z WT"},
+  {wt:"Zagrałem każdym pojazdem 1 ery Japonii [cz. 2]", ng:"TOP 10 najgorszych czołgów w historii gier", sh:"3 z WT, 2 z rankingu"},
+  {wt:"Czy [pojazd] ma jeszcze sens w 2026?", ng:null, sh:"3 z WT, 3 zwiad z nowej gry"},
+  {wt:"TOP 10 najgorszych samolotów w War Thunder", ng:"Czołgista z War Thundera gra w [nowa gra]", sh:"3 z WT, 2 z nowej gry"},
+  {wt:"Malvel vs Virtuoso vs Saito: każdy jedną nacją", ng:"Nowa gra cz. 2 (jeśli przeszła próg) albo test HOI4", sh:"3 z WT, 2 z nowej gry, teasery Iwo Jimy"},
+  {wt:"Od najmniejszego do największego działa w WT", ng:"Film flagowy: bitwa o Iwo Jimę w Minecrafcie", sh:"5–8 z eventu"},
+  {wt:"Jak grać w War Thunder w 2026 (poradnik)", ng:null, sh:"3 z eventu, 2 z WT"},
+  {wt:"Najlepsze i najgorsze zmiany w WT w 2026", ng:"Gra A: film 3", sh:"3 z WT, 2 z gry A"},
+  {wt:"Od rezerwy do toptiera: kolejna nacja", ng:"Gra A: seria, odcinek 1", sh:"2 z WT, 3 z gry A"},
+  {wt:"Czy [pojazd] ma sens w 2027?", ng:"Gra A: seria, odcinek 2", sh:"2 z WT, 3 z gry A"},
+  {wt:"TOP 10 (kolejna kategoria WT)", ng:"Test gry B (wojenna lub strategiczna)", sh:"2 z WT, 3 zwiad z gry B"},
+  {wt:"Malvel vs Virtuoso vs Saito: rewanż", ng:"Gra A: seria, odcinek 3", sh:"2 z WT, 3 z gry A"},
+];
+// sprawdzone formaty WT (bank tematów); key = fraza, po której poznajemy, że format był niedawno
+const WT_BANK = [
+  {t:"Gram CAŁĄ linią [nacja/klasa] – od rezerwy do toptiera", key:/rezerwy/i, why:"wasz najlepszy format: 38,5 tys., 8,8× średniej"},
+  {t:"TOP 10 NAJGORSZYCH [kategoria] w War Thunder", key:/top\s*10/i, why:"wersja czołgowa zrobiła 28,8 tys."},
+  {t:"Od najmniejszego do NAJWIĘKSZEGO [działa/bomby] w War Thunder", key:/najmniejsz/i, why:"bomby: 24,4 tys."},
+  {t:"Zagrałem KAŻDYM pojazdem 1 ery [nacja]", key:/każdym|kazdym/i, why:"Japonia cz. 1: 13,9 tys."},
+  {t:"Czy [pojazd] ma jeszcze sens w 2026? | War Thunder", key:/ma (jeszcze )?sens/i, why:"u konkurencji 6–19× średniej kanału"},
+  {t:"Jak grać w War Thunder w 2026 – poradnik dla nowych", key:/jak grać|poradnik/i, why:"u konkurencji 12× średniej"},
+  {t:"Malvel vs Virtuoso vs Saito: każdy jedną nacją", key:/vs .* vs/i, why:"format trójki, przenośny na każdą grę"},
+];
+// gry-mosty: cat decyduje o formatach; prio: im mniej, tym bliżej waszej widowni
+const BRIDGE = [
+  [/world of tanks(?! blitz)/i,"World of Tanks","tank"],[/world of tanks blitz/i,"World of Tanks Blitz","tank"],[/armored warfare/i,"Armored Warfare","tank"],
+  [/total tank simulator/i,"Total Tank Simulator","tank"],[/tanki online/i,"Tanki Online","tank"],[/tank force/i,"Tank Force","tank"],
+  [/crossout/i,"Crossout","build"],[/from the depths/i,"From The Depths","build"],[/space engineers/i,"Space Engineers","build"],[/robocraft/i,"Robocraft","build"],[/garry'?s mod/i,"Garry's Mod","build"],
+  [/hell let loose/i,"Hell Let Loose","war",true],[/arma 3/i,"Arma 3","war",true],[/enlisted/i,"Enlisted","war",true],[/battlefield 2042/i,"Battlefield 2042","war",true],
+  [/world war 3/i,"World War 3","war",true],[/wwii online/i,"WWII Online","war",true],[/helldivers/i,"HELLDIVERS 2","war"],[/operation: harsh doorstop/i,"Operation: Harsh Doorstop","war",true],
+  [/insurgency/i,"Insurgency","war"],[/enemy front/i,"Enemy Front","war"],[/call of duty/i,"Call of Duty","war"],[/company of heroes/i,"Company of Heroes 2","strategy"],
+  [/dcs world/i,"DCS World","air"],[/world of warships/i,"World of Warships","sea"],[/ironwolf/i,"IronWolf","sea"],[/dreadnought/i,"Dreadnought","sea"],[/cloud pirates/i,"Cloud Pirates","air"],
+  [/hearts of iron/i,"Hearts of Iron IV","strategy"],[/total war: shogun/i,"Total War: SHOGUN 2","strategy"],[/civilization vi(?!i)/i,"Civilization VI","strategy"],[/civilization vii/i,"Civilization VII","strategy"],
+  [/stronghold crusader/i,"Stronghold Crusader 2","strategy"],[/age of history/i,"Age of History II","strategy"],[/ages of conflict/i,"Ages of Conflict","strategy"],[/risk: global/i,"RISK","strategy"],
+  [/mount & blade/i,"Mount & Blade: Warband","war"],[/peak$/i,"PEAK","party"],[/crab game/i,"Crab Game","party"],[/pummel party/i,"Pummel Party","party"],[/stumble guys/i,"Stumble Guys","party"],
+  [/deceit/i,"Deceit","party"],[/phasmophobia/i,"Phasmophobia","party"],[/supermarket together/i,"Supermarket Together","party"],[/meccha chameleon/i,"MECCHA CHAMELEON","party"],[/totally reliable/i,"Totally Reliable Delivery Service","party"],
+  [/muck/i,"Muck","survival"],[/the forest/i,"The Forest","survival"],[/don't starve/i,"Don't Starve Together","survival"],[/7 days to die/i,"7 Days to Die","survival"],[/unturned/i,"Unturned","survival"],[/ark: survival evolved/i,"ARK","survival"],
+];
+const CATPRIO = {tank:1, build:2, war:3, air:4, sea:4, strategy:5, party:6, survival:7};
+const SAITO_ONLY = /rimworld|hearts of iron|europa universalis|crusader kings|stellaris|victoria/i; // gry Saito: sam decyduje
+function ideasFor(cat, G, veh){
+  const T = {
+    tank:[[`Od rezerwy do toptiera w ${G}`,"wasz najlepszy format (38,5 tys. w WT) w grze z tymi samymi czołgami"],[`Czołgista z War Thundera gra w ${G}`,"wiarygodność czołgowa w nowej grze, most dla obecnych widzów"],[`TOP 10 NAJGORSZYCH czołgów w ${G}`,"ranking: TOP 10 zrobił 28,8 tys. w WT"]],
+    build:[[`Zbudowaliśmy czołgi w ${G}: który z nas wygra bitwę?`,"trójka + czołgi, czyli wasza marka w nowej grze"],[`Od najgorszego do najlepszego pojazdu w ${G}`,"ranking w nowej grze"]],
+    war:[[`3 czołgistów z War Thundera w ${G}`,"realizm, który zna wasza widownia, i rywalizacja trójki"],[`Czołgista z War Thundera gra w ${G}`,"wasza wiarygodność w większej grze"],...(veh?[[`Od najgorszego do najlepszego pojazdu w ${G}`,"ranking w nowej grze"]]:[])],
+    air:[[`Pilot z War Thundera w ${G}: czy da radę?`,"to samo lotnictwo, ale bez litości – widz WT to zna"],[`Od najmniejszego do największego samolotu w ${G}`,"format „od najmniejszego” zrobił 24,4 tys. w WT"]],
+    sea:[[`Marynarka z War Thundera w ${G}: czy przetrwamy?`,"flota z WT w innej grze"],[`Od najmniejszego do największego okrętu w ${G}`,"format „od najmniejszego” zrobił 24,4 tys. w WT"]],
+    strategy:[[`Każdy z nas dostał jedno państwo – kto przejmie świat? | ${G}`,"strategia wojenna + rywalizacja trójki"],[`Malvel vs Virtuoso vs Saito: wojna w ${G}`,"format trójki, przenośny na każdą grę"]],
+    party:[[`Malvel vs Virtuoso vs Saito w ${G}: przegrany ponosi karę`,"trójka jest marką kanału, gra jest tłem"],[`Kto pierwszy? Wyścig trójki w ${G}`,"wyścig z licznikiem na ekranie"]],
+    survival:[[`Kto z nas przetrwa najdłużej w ${G}?`,"rywalizacja zamiast odcinków let's playa"],[`Zagrałem KAŻDĄ bronią w ${G}`,"format „zagrałem każdym” w nowej grze"]],
+  };
+  return T[cat] || [];
+}
+const norm = s => String(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/ł/g,"l");
+function allGameNames(){
+  const set = new Set(["War Thunder","Minecraft","Battlefield 6","RimWorld","Hearts of Iron IV","Europa Universalis IV","Crusader Kings III","Stellaris","Victoria 3","Gears of War"]);
+  for(const m of MEMBERS) for(const g of (S.games&&S.games[m])||[]) set.add(g);
+  for(const b of BRIDGE) set.add(b[1]);
+  return [...set];
+}
+const ALIAS = [[/\bhoi\s?4\b/i,"Hearts of Iron IV"],[/\beu\s?4\b/i,"Europa Universalis IV"],[/\bck\s?3\b/i,"Crusader Kings III"],[/\bwot\b/i,"World of Tanks"],[/\bbf\s?6\b/i,"Battlefield 6"],[/\bgta\b/i,"Grand Theft Auto V"],[/\bcs\s?2\b/i,"Counter-Strike 2"],[/megakampani/i,"Megakampania (Paradox)"]];
+function gameOf(title, game){
+  if(game) return game;
+  const t = norm(title);
+  if(/war\s*thunder/.test(t)) return "War Thunder";
+  let best = null;
+  for(const g of allGameNames()){ const n = norm(g).replace(/[™®:]/g,"").trim(); if(n.length >= 4 && t.includes(n) && (!best || n.length > norm(best).length)) best = g; }
+  if(best) return best;
+  for(const [re,g] of ALIAS) if(re.test(title)) return g;
+  return null;
+}
+const planWeek = t => Math.floor(diff(PLAN_START, t)/7) + 1; // 1 = 9–15 lis
+function targetShare(w){ return w <= 4 ? 1/3 : w <= 8 ? 2/5 : 1/2; }
+const ageD = v => (Date.now() - Date.parse(v.published))/864e5;
+const med = a => { if(!a.length) return null; const s=[...a].sort((x,y)=>x-y), m=s.length>>1; return s.length%2?s[m]:(s[m-1]+s[m])/2; };
+
+function gameTests(){
+  const R = S.recent || [], wtMed = S.wtMedian || 9100;
+  const by = new Map();
+  for(const v of R){ if(v.is_short || v.wt) continue; const g = gameOf(v.title) || "inna gra"; if(!by.has(g)) by.set(g, []); by.get(g).push(v); }
+  const out = [];
+  for(const [g, list] of by){
+    list.sort((a,b)=>a.published<b.published?-1:1);
+    const mature = list.filter(v => ageD(v) >= 28 && v.v28 != null);
+    const last3 = mature.slice(-3);
+    let st, why;
+    const good = mature.find(v => v.v28 >= wtMed*0.45 && (v.avp90 == null || v.avp90 >= 30));
+    if(good){ st = "ok"; why = `„${good.title}” ma po 28 dniach ${nf(good.v28)} wyświetleń (${Math.round(good.v28/wtMed*100)}% mediany WT)${good.avp90!=null?`, obejrzane średnio ${Math.round(good.avp90)}%`:""}. Próg przejęty: gra dostaje serię.`; }
+    else if(last3.length >= 3 && last3.every(v => v.v28 < wtMed*0.25)){ st = "bad"; why = `3 filmy z rzędu poniżej ${nf(Math.round(wtMed*0.25))} wyświetleń po 28 dniach (25% mediany WT). Wg planu: odpuśćcie tę grę.`; }
+    else if(mature.length){ const b = Math.max(...mature.map(v=>v.v28)); st = "mid"; why = `Najlepszy film: ${nf(b)} po 28 dniach (${Math.round(b/wtMed*100)}% mediany WT, próg 45%). Zmieńcie format albo miniaturę i zróbcie jeszcze jeden film.`; }
+    else { st = "wait"; why = `${list.length} ${list.length===1?"film":"filmy"}, najstarszy ma ${Math.floor(ageD(list[0]))} dni. Oceniamy po 28 dniach${list.length<3?` i po min. 3 filmach (brakuje ${3-list.length})`:""}. Nie oceniajcie gry po pierwszych 48 h.`; }
+    out.push({g, n:list.length, st, why, saito: SAITO_ONLY.test(g)});
+  }
+  return out;
+}
+
+function suggestionsFor(m, w, needNew, test){
+  const t = today(), recentT = (S.recent||[]).filter(v=>ageD(v)<35).map(v=>v.title).join(" | ");
+  const out = [];
+  // 1) jedna nowa gra naraz: najpierw dokończ testowaną grę
+  // gra, która przeszła próg, dostaje serię; inaczej dokańczamy test gry, która ma < 3 filmy
+  const ok = (x) => !x.saito && x.g !== "inna gra";
+  const cur = test.find(x => ok(x) && x.st === "ok") || test.find(x => ok(x) && (x.st === "wait" || x.st === "mid") && x.n < 3);
+  if(m !== "Saito" && needNew && cur){
+    const b = BRIDGE.find(x=>x[1]===cur.g || x[0].test(cur.g));
+    const id = b ? ideasFor(b[2], cur.g, b[3]).find(([tt])=>!recentT.toLowerCase().includes(tt.toLowerCase().slice(0,18))) : null;
+    out.push({t: id ? id[0] : `Kolejny film z serii: ${cur.g}`, g: cur.g, wt:false, why: cur.st === "ok" ? `${cur.g} przeszła próg z planu – gra dostaje serię (playlista, ekran końcowy do następnego odcinka)` : `${cur.g} ma ${cur.n}/3 filmów – zasada „jedna nowa gra naraz”: najpierw min. 3 filmy, potem ocena`});
+  }
+  if(m === "Saito"){
+    if(needNew) out.push({t:"Kolejny film z twojej serii (RimWorld / Paradox) jako wyzwanie albo ranking", g:"", wt:false, why:"gry wybierasz sam; wg planu format wyzwania lub rankingu działa lepiej niż odcinki let's playa, a nazwa gry zawsze w tytule"});
+    const hoi = !recentT.match(/jedno państwo/i);
+    if(hoi && w >= 5) out.push({t:"Każdy z nas dostał jedno państwo – kto przejmie świat? | Hearts of Iron IV", g:"Hearts of Iron IV", wt:false, why:"plan, tydzień 5: test HOI4 z całą trójką – ty prowadzisz"});
+  } else {
+    const lib = (S.games&&S.games[m])||[];
+    const cands = [];
+    for(const name of lib){
+      if(SAITO_ONLY.test(name)) continue;
+      const b = BRIDGE.find(x=>x[0].test(name)); if(!b) continue;
+      const shared = MEMBERS.filter(o=>o!==m && ((S.games&&S.games[o])||[]).some(n=>b[0].test(n))).length;
+      for(const [tt,why] of ideasFor(b[2], b[1], b[3])) if(!recentT.toLowerCase().includes(tt.toLowerCase().slice(0,18))) cands.push({t:tt, g:b[1], wt:false, why: why + (shared?` · grę ma też ${MEMBERS.filter(o=>o!==m && ((S.games&&S.games[o])||[]).some(n=>b[0].test(n))).join(" i ")}`:""), p: CATPRIO[b[2]] - shared*0.3});
+    }
+    cands.sort((a,b)=>a.p-b.p);
+    // rotacja co tydzień, żeby podpowiedzi się nie powtarzały; różne gry
+    const seen = new Set(out.map(x=>x.g)); const pool = [];
+    for(const c of cands) if(!seen.has(c.g)){ seen.add(c.g); pool.push(c); }
+    const off = Math.max(0, w) % Math.max(1, Math.min(4, pool.length));
+    const room = needNew ? 2 : 1;
+    for(let i=0, k=0;i<pool.length && k<room;i++, k++) out.push(needNew ? pool[(i+off)%pool.length] : {...pool[(i+off)%pool.length], why: "albo z nowej gry: " + pool[(i+off)%pool.length].why});
+  }
+  // WT z banku tematów (gdy proporcja mówi WT, albo jako druga opcja)
+  {
+    const fresh = WT_BANK.filter(b=>!b.key.test(recentT));
+    const pick = (fresh.length?fresh:WT_BANK)[(MEMBERS.indexOf(m) + Math.max(0,w)) % (fresh.length||WT_BANK.length)];
+    out.push({t:pick.t, g:"War Thunder", wt:true, why:pick.why});
+  }
+  // gdy plan mówi WT, temat z WT idzie na górę
+  if(!needNew) out.sort((a,b)=>(b.wt?1:0)-(a.wt?1:0));
+  return out.slice(0, 3);
+}
+
+function advice(queue, done, t){
+  const N = [], w = planWeek(t), R = S.recent || [];
+  const add = (lvl, icon, title, html) => N.push({lvl, icon, title, html});
+  // tydzień planu
+  if(w >= 1 && w <= 12){ const P = PLAN12[w-1], a = addDays(PLAN_START,(w-1)*7);
+    add("info","🗓️",`Tydzień ${w}/12 planu przejścia (${fmt(a)} – ${fmt(addDays(a,6))})`, `WT: <b>${esc(P.wt)}</b>${P.ng?` · nowa gra: <b>${esc(P.ng)}</b>`:""} · shorty: ${esc(P.sh)}`); }
+  else if(w < 1) add("info","🗓️","Plan przejścia startuje "+fmt(PLAN_START), `Tydzień 1: <b>${esc(PLAN12[0].wt)}</b> · shorty: ${esc(PLAN12[0].sh)}. Proporcje long-formów WT do nowych gier: tyg. 1–4 ok. 2:1, 5–8 ok. 3:2, 9–12 ok. 1:1.`);
+  else add("info","🗓️","Faza 2: Wybór (miesiące 3–6)","WT do nowych gier ok. 1:1, serie z 1–2 gier, które przeszły bramę 1 (min. 4 tys. w 28 dni i 30% obejrzane).");
+  // proporcja WT : nowe gry
+  const longs = R.filter(v=>!v.is_short && ageD(v) <= 28);
+  const soon = queue.filter(p=>diff(t,p.deadline) <= 14);
+  const nNew = longs.filter(v=>!v.wt).length + soon.filter(p=>!p.wt).length, nAll = longs.length + soon.length;
+  const share = nAll ? nNew/nAll : 0, target = targetShare(w);
+  const needNew = w >= 1 ? share < target - 0.05 : false;
+  if(w >= 1 && nAll >= 2){
+    if(share < target - 0.12) add("warn","⚖️","Za dużo War Thundera względem planu", `Ostatnie 28 dni + kolejka na 2 tygodnie: <b>${nNew} z ${nAll}</b> filmów spoza WT (${Math.round(share*100)}%). Plan na ten tydzień zakłada ok. ${Math.round(target*100)}%. Następny wolny film zróbcie z nowej gry.`);
+    else if(share > target + 0.25) add("warn","⚖️","Spokojnie z nowymi grami", `${nNew} z ${nAll} filmów spoza WT (${Math.round(share*100)}%), a plan zakłada ok. ${Math.round(target*100)}%. WT finansuje przejście – w fazie 1 spadek łącznych wyświetleń o 20–40% to normalny koszt, ale nie przyspieszajcie ponad plan.`);
+    else add("ok","⚖️","Proporcja WT : nowe gry zgodna z planem", `${nNew} z ${nAll} filmów spoza WT (${Math.round(share*100)}%, plan ok. ${Math.round(target*100)}%).`);
+  }
+  // testy nowych gier
+  const test = gameTests();
+  if(test.length){
+    const lab = {ok:["Kontynuuj","okline"], mid:["Obserwuj","warnline"], bad:["Odpuść","badline"], wait:["Za wcześnie","muted"]};
+    add("info","🧪","Test nowych gier (próg z planu)", test.map(x=>`<div class="advg"><b>${esc(x.g)}</b> <span class="${lab[x.st][1]}">${lab[x.st][0]}</span> – ${esc(x.why)}</div>`).join("") + `<div class="muted" style="margin-top:4px">Mediana WT po 28 dniach: ${nf(S.wtMedian||9100)} wyświetleń. Kontynuuj: ≥45% i ≥30% obejrzane · Odpuść: 3 filmy z rzędu &lt;25%.</div>`);
+    const fresh = test.filter(x=>!x.saito && x.g!=="inna gra" && x.st!=="bad" && x.n<3);
+    if(fresh.length > 1) add("warn","🎯","Kilka nowych gier naraz", `Testujecie jednocześnie: ${fresh.map(x=>`<b>${esc(x.g)}</b> (${x.n} ${x.n===1?"film":"filmy"})`).join(", ")}. Plan: jedna nowa gra naraz, min. 3 long-formy i 5 shortów przed oceną. Pięć gier po jednym filmie nie daje algorytmowi sąsiadów do sugerowanych.`);
+  }
+  // shorty
+  const sh7 = R.filter(v=>v.is_short && ageD(v) <= 7).length;
+  if(sh7 < 3) add("warn","📱",`Tylko ${sh7} ${sh7===1?"short":"shorty"} w ostatnich 7 dniach`, `Plan: 3–5 shortów tygodniowo przez cały okres. Zatrzymanie shortów zbiegło się z największym spadkiem wzrostu kanału.`);
+  else add("ok","📱",`${sh7} shortów w 7 dni`, `Plan: 3–5 tygodniowo – trzymacie rytm.`);
+  // aktywne filmy: zwiad, nazwa gry w tytule, let's play
+  const active = S.projects.filter(p=>p.status==="active");
+  for(const p of active){
+    const g = gameOf(p.title, p.game);
+    if(p.wt || !g || g==="War Thunder") { if(!p.wt && !g) add("idea","🏷️",`„${esc(p.title)}”: jaka to gra?`, `Wpisz grę w edycji filmu (✎). Panel ocenia wtedy test gry i pilnuje shortów zwiadowczych.`); continue; }
+    const had = R.some(v=>!v.is_short && gameOf(v.title)===g);
+    const shG = R.filter(v=>v.is_short && ageD(v)<=21 && gameOf(v.title)===g).length;
+    if(!had && shG < 3) add("idea","🔭",`Zwiad przed „${esc(p.title)}”`, `To pierwszy film z <b>${esc(g)}</b>. Plan: 3–5 shortów z nowej gry przed pierwszym long-formem (jest ${shG}).`);
+    if(!norm(p.title).includes(norm(g).replace(/[™®:]/g,"").split(" ").slice(0,2).join(" "))) add("idea","✏️",`Nazwa gry w tytule: „${esc(p.title)}”`, `Plan: nazwa gry zawsze w tytule (np. „… | ${esc(g)}”). Każda seria ma swoją playlistę, a ekran końcowy prowadzi do następnego odcinka.`);
+    if(/let'?s ?play|gameplay|odc(\.|inek)\s*\d|rozdzia[lł]\s*\d|#\d+/i.test(p.title)) add("warn","🎮",`„${esc(p.title)}” wygląda na let's playa`, `Let's playe w odcinkach mają na głównym kanale 100–800 wyświetleń. Lepiej format wyzwania lub rankingu, a długi gameplay na stream.`);
+  }
+  // słaby start świeżego filmu
+  for(const v of R.filter(v=>!v.is_short && v.v24 != null && ageD(v) >= 1 && ageD(v) <= 4)){
+    const prev = R.concat().filter(o=>!o.is_short && o.id!==v.id && !!o.wt===!!v.wt && o.published<v.published && o.v24!=null).sort((a,b)=>a.published<b.published?1:-1).slice(0,10).map(o=>o.v24);
+    const m = prev.length >= 4 ? med(prev) : null;
+    if(m && v.v24 < m*0.6) add("warn","🐢",`Słaby start: „${esc(v.title)}”`, `Po 24 h ${nf(v.v24)} wyświetleń, ok. ${Math.round(v.v24/m*100)}% typowego. Plan: 2 warianty miniatury na film, zmiana po 48 h przy słabym starcie.${!v.wt?" Gry nie oceniajcie jednak po 48 h – decyzja dopiero po 28 dniach.":""}`);
+  }
+  // Iwo Jima
+  if(w >= 4 && w <= 6) add("info","🏝️","Event Iwo Jima", w<6?"Tydzień 5: teasery z mocapu w shortach. Film flagowy w tygodniu 6 – termin wyłącznie wg gotowości serwera; pustą lukę wypełnia film z gry A.":"Tydzień filmu flagowego: bitwa o Iwo Jimę w Minecrafcie. Premiera dopiero po stabilnych testach; potem 5–8 shortów z eventu.");
+  // wolne osoby: propozycje kto i co
+  const free = MEMBERS.filter(m => !active.some(p=>p.member===m) && !onLeave(m, t));
+  for(const m of free){
+    const last = [...done].reverse().find(p=>p.member===m);
+    const rest = last && diff(last.uploaded, t) < restOf(last) ? addDays(last.uploaded, restOf(last)) : null;
+    const sug = suggestionsFor(m, w, needNew, test);
+    if(!sug.length) continue;
+    N.push({lvl:"idea", icon:"💡", who:m, title:`${m} nie ma nic w planie${rest?` (odpoczynek do ${fmt(rest)})`:""} – propozycje`,
+      html: sug.map(s=>`<div class="advs"><div><b>${esc(s.t)}</b>${s.g&&!s.wt?` <span class="tag">${esc(s.g)}</span>`:""}<div class="muted">${esc(s.why)}</div></div>${DEMO||S.me===m||!S.me?`<button class="btn ghost sm" data-sugg="${esc(JSON.stringify({m, t:s.t, g:s.g, wt:s.wt}))}">Do planu</button>`:""}</div>`).join("")});
+  }
+  return {notes:N, free, needNew, w};
+}
+function adviceView(A){
+  if(!A.notes.length) return "";
+  const order = {warn:0, idea:1, info:2, ok:3};
+  return `<div class="adv">${[...A.notes].sort((a,b)=>order[a.lvl]-order[b.lvl]).map(n=>`<div class="adi ${n.lvl}" ${n.who?`style="--c:${COLORS[n.who]}"`:""}><div class="ic">${n.icon}</div><div><div class="t">${n.title}</div><div class="x">${n.html}</div></div></div>`).join("")}</div>`;
+}
+function gamesCard(){
+  const me = MEMBERS.includes(S.me) ? S.me : (DEMO ? "Malvel" : null);
+  if(!me) return "";
+  const list = (S.games&&S.games[me])||[];
+  return `<div class="card"><h2>Moje gry <span class="hint">${list.length} · z nich panel układa propozycje</span></h2>
+    <details><summary class="help" style="cursor:pointer;margin:0">Pokaż / edytuj listę (${esc(me)})</summary>
+    <form id="fGames"><textarea name="names" rows="8" style="width:100%;margin-top:8px">${esc(list.join("\n"))}</textarea>
+    <div class="help">Jedna gra w linii. ${me==="Saito"?"Twoje gry wybierasz sam – panel nie podsuwa ci gier, tylko formaty.":"Gry Saito (RimWorld, Paradox) nie są ci podsuwane."}</div>
+    <button class="btn ghost sm" type="submit">Zapisz listę</button></form></details></div>`;
 }
 
 /* ---------- kalendarz: ten i następny miesiąc ---------- */
@@ -1363,10 +1610,14 @@ document.addEventListener("visibilitychange", () => { if(document.visibilityStat
 
 /* ---------- akcje ---------- */
 const formObj = f => Object.fromEntries(new FormData(f));
+document.addEventListener("input", e => {
+  if(e.target.name === "game" && e.target.form){ const v = e.target.value.trim(); if(v) e.target.form.wt.checked = /war\s*thunder/i.test(v); }
+});
 document.addEventListener("submit", e => {
   const f = e.target; e.preventDefault();
   const o = formObj(f);
-  if(f.id==="fNew") save("POST","projects",{member:o.member,title:o.title,start:o.start,planned_min:Number(o.planned_min),wt:!!o.wt},"Film dodany do planu");
+  if(f.id==="fNew") save("POST","projects",{member:o.member,title:o.title,start:o.start,planned_min:Number(o.planned_min),wt:!!o.wt,game:o.game||null},"Film dodany do planu");
+  if(f.id==="fGames") save("PUT","games",{names:String(o.names||"").split(/\r?\n/)},"Lista gier zapisana");
   if(f.id==="fLeave"){
     if(o.to_date < o.from_date) return toast("⚠ Data końca przed początkiem");
     save("POST","leaves",o,"Wolne zapisane");
@@ -1377,13 +1628,15 @@ document.addEventListener("submit", e => {
   if(f.id==="fUnlock"){ const ms = new FormData(f).getAll("m"); dlg.close(); save("POST","achievements/"+f.dataset.id+"/unlock",{members:ms},"Achievement odblokowany! 🏅"); }
   if(f.id==="fSet") save("PUT","settings",o,"Ustawienia zapisane");
   if(f.id==="fDone"){ dlg.close(); save("PUT","projects/"+f.dataset.id,{status:"done",uploaded:o.uploaded,actual_min:Number(o.actual_min),video_url:o.video_url||null},"Gratulacje, film wrzucony! 🎉"); }
-  if(f.id==="fEdit"){ dlg.close(); save("PUT","projects/"+f.dataset.id,{member:o.member,title:o.title,start:o.start,planned_min:Number(o.planned_min),wt:!!o.wt},"Zmiany zapisane"); }
+  if(f.id==="fEdit"){ dlg.close(); save("PUT","projects/"+f.dataset.id,{member:o.member,title:o.title,start:o.start,planned_min:Number(o.planned_min),wt:!!o.wt,game:o.game||null},"Zmiany zapisane"); }
 });
 document.addEventListener("click", e => {
   const b = e.target.closest("button,[data-close]"); if(!b) return;
   const d = b.dataset;
   if(d.tab){ TAB = d.tab; history.replaceState(null,"","#"+TAB); render(); if(TABDATA[TAB] && !DEMO){ const t=TAB; loadTabData(t).then(()=>{ if(TAB===t) render(); }); } }
   if(d.mem){ const [id,val]=d.mem.split(":"); save("POST","videos/"+id+"/members",{members:val==="1"}, val==="1"?"Oznaczono jako film dla wspierających – wykluczony ze statystyk":"Przywrócono do statystyk"); }
+  if(d.sugg){ const x = JSON.parse(d.sugg), f = document.getElementById("fNew");
+    if(f){ f.member.value = x.m; f.title.value = x.t.replace(/\s*\|\s*$/,""); f.game.value = x.g || ""; f.wt.checked = !!x.wt; f.planned_min.value = 12; f.scrollIntoView({behavior:"smooth", block:"center"}); f.title.focus(); f.title.select(); toast("Wpisane do formularza – popraw tytuł i kliknij „Dodaj do planu”"); } }
   if(d.wt){ const [id,val]=d.wt.split(":"); save("POST","videos/"+id+"/wt",{wt:val==="1"}, val==="1"?"Zmieniono na War Thunder":"Zmieniono na inne gry"); }
   if(d.live){ const [id,val]=d.live.split(":"); save("POST","videos/"+id+"/live",{live:val==="1"}, val==="1"?"Oznaczono jako stream – wykluczony ze statystyk":"Przywrócono do statystyk"); }
   if(d.vf){ VF = d.vf; VSHOW = 25; render(); }
@@ -1438,6 +1691,7 @@ function openEdit(p){
     <div class="row one"><label>Tytuł roboczy<input name="title" maxlength="200" value="${esc(p.title)}" required></label></div>
     <div class="row"><label>Planowana długość (min)<input type="number" name="planned_min" min="1" max="300" value="${p.planned_min}" required></label>
       <label class="chk" style="align-self:end;padding-bottom:8px"><input type="checkbox" name="wt" ${p.wt?"checked":""}> War Thunder</label></div>
+    <div class="row one"><label>Gra<input name="game" maxlength="80" list="gameList" value="${esc(p.game||"")}" placeholder="np. World of Tanks"></label></div>
     <button class="btn" type="submit">Zapisz</button> <button class="btn ghost" type="button" data-close>Anuluj</button>
   </form>`;
   dlg.showModal();
