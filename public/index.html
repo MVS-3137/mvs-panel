@@ -653,6 +653,8 @@ function recordFlags(){
 }
 
 function connectView(){
+  if(Y.apiError) return `<div class="card connect"><div style="font-size:42px">⚠️</div><h2 style="justify-content:center">Błąd panelu</h2>
+    <p>Serwer zwrócił błąd: <b>${esc(Y.apiError)}</b></p><p>Najczęściej oznacza to brakującą kolumnę albo tabelę w bazie D1 (niewykonany plik SQL z któregoś etapu).</p></div>`;
   if(!Y.configured) return `<div class="card connect"><div style="font-size:42px">🔑</div><h2 style="justify-content:center">Brakuje kluczy Google</h2>
     <p>Dodajcie w Cloudflare sekrety <b>GOOGLE_CLIENT_ID</b> i <b>GOOGLE_CLIENT_SECRET</b> (instrukcja w README, etap 2), zróbcie ponowne wdrożenie i wróćcie tutaj.</p></div>`;
   return `<div class="card connect"><div style="font-size:42px">📺</div><h2 style="justify-content:center">Połącz panel z kanałem</h2>
@@ -742,7 +744,8 @@ async function loadYT(){
   if(DEMO){ Y = demoYT(); return; }
   try{
     const r = await fetch("/api/yt",{cache:"no-store"});
-    if(r.ok){ Y = await r.json(); Y.streams = Y.videos.filter(v=>v.live); Y.membersOnly = Y.videos.filter(v=>!v.live && v.members); Y.videos = Y.videos.filter(v=>!v.live && !v.members); }
+    if(!r.ok){ const j = await r.json().catch(()=>({})); Y = {connected:false, configured:true, videos:[], news:[], channel:{}, apiError: j.error || ("HTTP " + r.status)}; return; }
+    { Y = await r.json(); Y.streams = Y.videos.filter(v=>v.live); Y.membersOnly = Y.videos.filter(v=>!v.live && v.members); Y.videos = Y.videos.filter(v=>!v.live && !v.members); }
   }catch{}
 }
 function demoYT(){

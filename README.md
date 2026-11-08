@@ -242,7 +242,7 @@ Zakładka **Oceny** pokazuje avatar każdego z was, tytuły (najedź, żeby zoba
 
 **Tytuły:**
 - **Z waszej listy:** SZEF, Montażysta, Nauczyciel, Ulubieniec widzów, Obibok, MVS Panel Enjoyer, Streamer, Społeczniak, Wędkarz, YouTube na pełny etat, Kiedyś mi się uda..., Rekordzista.
-- **Dodatkowe:** Snajper (CTR), Speedrunner (najszybciej od startu w planie do premiery), Maratończyk (najdłuższe filmy), Pewniak (najczęściej przebija typowy wynik), One Shot, One Kill (najlepszy pojedynczy film z 90 dni), Turysta (najwięcej filmów spoza War Thunder).
+- **Dodatkowe:** Grafik (CTR), Speedrunner (najszybciej od startu w planie do premiery), Maratończyk (najdłuższe filmy), Pewniak (najczęściej przebija typowy wynik), Turysta (najwięcej filmów spoza War Thunder).
 
 **Ręcznie ustawia tylko Saito** (widzi to tylko on, bez powiadomień):
 - **Montażysta:** domyślnie automatycznie wg utrzymania uwagi; panel podpowiada, komu się należy.

@@ -308,7 +308,7 @@ export async function onRequest({ request, env, params, data }) {
 
     return json({ error: "Nie znaleziono" }, 404);
   } catch (e) {
-    return typeof e === "string" ? bad(e) : json({ error: "Błąd serwera" }, 500);
+    return typeof e === "string" ? bad(e) : json({ error: "Błąd serwera: " + String(e && e.message || e).slice(0, 300) }, 500);
   }
 }
 
