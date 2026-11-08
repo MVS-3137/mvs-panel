@@ -544,12 +544,22 @@ function recordTable(filter){
   return WIN.map(w => ({...w, list: pool.map(v => ({v, n: recVal(v,w.h)})).filter(x => x.n != null).sort((a,b)=>b.n-a.n).slice(0,5)}));
 }
 function recordFlags(){
-  const holders = {}, hot = new Set();
+  const holders = {}, hot = new Map();
   for(const c of ["wt","other"]) for(const w of recordTable(c)) if(w.list[0]) (holders[w.list[0].v.id] ||= []).push(w.n);
+  // „na drodze do rekordu”: obecne wyświetlenia × typowy przyrost kanału od tego wieku do 24 h / 7 / 14 / 28 dni
   for(const v of Y.videos){
-    const A = ageH(v); if(v.is_short || A >= 672 || A < 2) continue;
-    const others = Y.videos.filter(o => o.id!==v.id && !o.is_short && ageH(o) >= A).map(o => vAt(o,A)).filter(n=>n!=null);
-    if(others.length >= 3 && v.views > Math.max(...others) && !holders[v.id]) hot.add(v.id);
+    const A = ageH(v); if(v.is_short || A >= 672 || A < 6 || !v.views) continue;
+    const same = Y.videos.filter(o => o.id!==v.id && !o.is_short && cat(o)===cat(v));
+    const hits = [];
+    for(const w of WIN){
+      if(w.h <= A) continue;
+      const ratios = same.map(o => { const a = cAt(o.curve,A), b = cAt(o.curve,w.h); return a>0 && b!=null ? b/a : null; }).filter(r=>r!=null).slice(0,15);
+      if(ratios.length < 5) continue;
+      const proj = Math.round(v.views * median(ratios));
+      const rec = Math.max(0, ...same.map(o => recVal(o,w.h)).filter(n=>n!=null));
+      if(rec > 0 && proj > rec) hits.push({n:w.n, proj, rec});
+    }
+    if(hits.length) hot.set(v.id, hits);
   }
   return {holders, hot};
 }
@@ -595,7 +605,7 @@ function perfView(){
         <div class="s">${whoCell(v)}<span>${ageTxt(A)} temu</span><span>${nf(v.views)} wyśw.</span>
           ${v.is_short?'<span class="tg sh">short</span>':v.wt?'<span class="tg wt">WT</span>':'<span class="tg">inne</span>'}
           ${rec?`<span class="rekord">REKORD ${rec.map(r=>r.replace(" godziny","H").toUpperCase()).join(" · ")}</span>`:""}
-          ${hot.has(v.id)?'<span class="fire">🔥 na rekordowym kursie</span>':""}</div></div>
+          ${hot.has(v.id)?`<span class="fire" title="${hot.get(v.id).map(x=>`${x.n}: prognoza ~${nf(x.proj)}, rekord ${nf(x.rec)}`).join(" · ")}">📈 na drodze do rekordu ${hot.get(v.id).map(x=>x.n.replace(" godziny"," h")).join(", ")} (~${nf(hot.get(v.id).at(-1).proj)} vs ${nf(hot.get(v.id).at(-1).rec)})</span>`:""}</div></div>
       <div class="score">${s && s.pct!=null ? `<b class="${cls}">${s.pct}%</b><span>typowo ${nf(s.base)} po ${ageTxt(s.h)}<br>(mediana ${s.n} ost. ${s.mixed?"filmów":CATN[cat(v)]})</span>` : `<span>za mało danych do porównania</span>`}</div>
     </div>`;
   }).join("");
