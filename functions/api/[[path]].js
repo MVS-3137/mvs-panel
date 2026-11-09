@@ -42,6 +42,7 @@ function cleanProject(b) {
   if (b.start !== undefined) { if (!DATE.test(b.start)) throw "Zła data startu"; out.start = b.start; }
   if (b.planned_min !== undefined) { const n = Number(b.planned_min); if (!(n > 0 && n < 600)) throw "Zła długość"; out.planned_min = n; }
   if (b.wt !== undefined) out.wt = b.wt ? 1 : 0;
+  if (b.public_at !== undefined) { if (b.public_at !== null && isNaN(Date.parse(b.public_at))) throw "Zła data premiery"; out.public_at = b.public_at ? new Date(b.public_at).toISOString() : null; }
   if (b.game !== undefined) out.game = b.game ? String(b.game).trim().slice(0, 80) || null : null;
   if (b.status !== undefined) { if (!["active", "done"].includes(b.status)) throw "Zły status"; out.status = b.status; }
   if (b.uploaded !== undefined) { if (b.uploaded !== null && !DATE.test(b.uploaded)) throw "Zła data wrzucenia"; out.uploaded = b.uploaded; }
@@ -92,8 +93,8 @@ export async function onRequest({ request, env, params, data }) {
         const b = cleanProject(await readBody(request));
         for (const k of ["member", "title", "start", "planned_min"]) if (b[k] === undefined) return bad("Brak pola " + k);
         const r = await db.prepare(
-          "INSERT INTO projects (member, title, start, planned_min, wt, game, created_by) VALUES (?,?,?,?,?,?,?)"
-        ).bind(b.member, b.title, b.start, b.planned_min, b.wt ?? 1, b.game ?? null, user).run();
+          "INSERT INTO projects (member, title, start, planned_min, wt, game, public_at, created_by) VALUES (?,?,?,?,?,?,?,?)"
+        ).bind(b.member, b.title, b.start, b.planned_min, b.wt ?? 1, b.game ?? null, b.public_at ?? null, user).run();
         return json({ id: r.meta.last_row_id });
       }
       if (method === "PUT" && id) {
@@ -160,7 +161,7 @@ export async function onRequest({ request, env, params, data }) {
     if (res === "yt" && method === "GET") {
       const [k, v, n] = await db.batch([
         db.prepare("SELECT key, value FROM kv WHERE key IN ('channel_title','channel_id','channel_thumb','subs','last_refresh','last_error','records')"),
-        db.prepare("SELECT id, title, published, duration_s, thumb, wt, is_short, member, views, likes, comments, curve, approx24, COALESCE(live_override, is_live, 0) AS live, COALESCE(members_override, is_members, 0) AS members FROM videos WHERE removed_at IS NULL ORDER BY published DESC"),
+        db.prepare("SELECT id, title, published, duration_s, thumb, wt, is_short, member, views, likes, comments, curve, approx24, COALESCE(live_override, is_live, 0) AS live, COALESCE(members_override, is_members, 0) AS members, public_at FROM videos WHERE removed_at IS NULL ORDER BY published DESC"),
         db.prepare("SELECT id, ts, type, text, video_id FROM news ORDER BY id DESC LIMIT 60"),
       ]);
       const kv = Object.fromEntries(k.results.map((r) => [r.key, r.value]));
@@ -191,6 +192,12 @@ export async function onRequest({ request, env, params, data }) {
       const col = path[2] === "live" ? "live_override" : "members_override";
       const on = path[2] === "live" ? b.live : b.members;
       const st = [db.prepare(`UPDATE videos SET ${col}=? WHERE id=?`).bind(on ? 1 : 0, id), dropCache(db, "cache_thumbs", "cache_grades")];
+      // „najpierw dla wspierających”: godzina, od której film wpada dla wszystkich (panel przełączy go sam)
+      if (path[2] === "members") {
+        const pa = on && b.public_at && !isNaN(Date.parse(b.public_at)) ? new Date(b.public_at).toISOString() : null;
+        if (on) st.push(db.prepare("UPDATE videos SET public_at=? WHERE id=?").bind(pa, id));
+        else st.push(db.prepare("UPDATE videos SET public_at=NULL WHERE id=?").bind(id));
+      }
       if (on) st.push(
         db.prepare("UPDATE projects SET status='active', uploaded=NULL, actual_min=NULL, video_id=NULL, video_url=NULL WHERE video_id=?").bind(id),
         db.prepare("UPDATE videos SET project_id=NULL WHERE id=?").bind(id),

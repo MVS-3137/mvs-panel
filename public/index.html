@@ -559,6 +559,7 @@ function planView(){
           <div class="row"><label>Planowana długość (min)<input type="number" name="planned_min" min="1" max="300" value="15" required></label>
             <label class="chk" style="align-self:end;padding-bottom:8px"><input type="checkbox" name="wt" checked> War Thunder</label></div>
           <div class="row one"><label>Gra (opcjonalnie)<input name="game" maxlength="80" list="gameList" placeholder="np. World of Tanks"></label></div>
+          ${pubField()}
           <datalist id="gameList">${allGameNames().map(g=>`<option value="${esc(g)}">`).join("")}</datalist>
           <button class="btn" type="submit">Dodaj do planu</button>
         </form>
@@ -616,6 +617,11 @@ function memberCard(m, queue, done, t){
 }
 
 let PLANADV = null;
+// ISO ↔ pole datetime-local (czas lokalny przeglądarki)
+const toLocalInput = iso => { if(!iso) return ""; const d = new Date(iso), z = n => String(n).padStart(2,"0"); return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}T${z(d.getHours())}:${z(d.getMinutes())}`; };
+const fmtDT = iso => new Date(iso).toLocaleString("pl-PL",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
+const pubField = (v="") => `<div class="row one"><label>Najpierw dla wspierających? Dla wszystkich od (opcjonalnie)<input type="datetime-local" name="public_at" value="${v}"></label></div>
+  <div class="help" style="margin-top:-4px">Panel nie pokaże filmu w statystykach ani aktualnościach, dopóki nie wpadnie dla wszystkich, i liczy 24 h od tej godziny.</div>`;
 function gapWho(){
   const f = PLANADV ? PLANADV.free : [];
   if(!f.length) return "Ktoś mógłby wrzucić krótszy film.";
@@ -635,6 +641,7 @@ function queueView(queue, nextNeeded, t){
     html += `<div class="qi" style="--c:${COLORS[p.member]}">
       <div class="d"><b>${toD(p.deadline).getUTCDate()}</b><span>${dow(p.deadline)} ${fmt(p.deadline).split(" ")[1]||""}</span></div>
       <div><div class="t">${esc(p.title)}${p.wt?'<span class="tag">WT</span>':gameOf(p.title,p.game)?`<span class="tag">${esc(gameOf(p.title,p.game))}</span>`:""}</div>
+        ${p.public_at?`<div class="s" style="color:var(--gold)">💎 najpierw dla wspierających · dla wszystkich ${fmtDT(p.public_at)}</div>`:""}
         <div class="s"><span style="color:${COLORS[p.member]};font-weight:600">${p.member}</span> · ~${p.planned_min} min · ${rel(diff(t,p.deadline))}${bestHourTxt()?` · <span title="Najlepsza godzina premiery wg waszych statystyk">wrzuć ok. <b>${bestHourTxt()}</b></span>`:""}</div>
         ${notes.length?`<div>${notes.join(" · ")}</div>`:""}</div>
       <div class="act"><button class="btn sm" data-done="${p.id}">Wrzucony</button><button class="x" title="Edytuj" data-edit="${p.id}">✎</button><button class="x" title="Usuń" data-del="${p.id}">✕</button></div>
@@ -1045,7 +1052,7 @@ function perfView(){
   const rows = list.slice(0, VSHOW).map(v => {
     if(VF==="live" || VF==="mem") return `<div class="vi"><a href="https://youtu.be/${esc(v.id)}" target="_blank" rel="noopener">${thumb(v)}</a>
       <div><div class="t">${esc(v.title)}</div><div class="s"><span>${ageTxt(ageH(v))} temu</span><span>${nf(v.views)} wyśw.</span><span class="tg">${VF==="live"?"zapis streamu":"dla wspierających"}</span></div></div>
-      <div class="score">${DEMO?"":VF==="live"?`<button class="btn ghost sm" data-live="${esc(v.id)}:0" title="Przywróć do statystyk">To nie stream</button>`:`<button class="btn ghost sm" data-mem="${esc(v.id)}:0" title="Przywróć do statystyk">To film publiczny</button>`}</div></div>`;
+      <div class="score">${DEMO?"":VF==="live"?`<button class="btn ghost sm" data-live="${esc(v.id)}:0" title="Przywróć do statystyk">To nie stream</button>`:`${v.public_at && Date.parse(v.public_at) > Date.now() ? `<div class="muted" style="margin-bottom:4px">⏳ dla wszystkich ${fmtDT(v.public_at)}</div>` : ""}<button class="btn ghost sm" data-mem="${esc(v.id)}:0" title="Przywróć do statystyk">To film publiczny</button>`}</div></div>`;
     const s = scoreOf(v), A = ageH(v);
     const cls = !s || s.pct==null ? "" : s.pct >= 120 ? "up" : s.pct >= 80 ? "mid" : "down";
     const rec = holders[v.id];
@@ -1616,7 +1623,7 @@ document.addEventListener("input", e => {
 document.addEventListener("submit", e => {
   const f = e.target; e.preventDefault();
   const o = formObj(f);
-  if(f.id==="fNew") save("POST","projects",{member:o.member,title:o.title,start:o.start,planned_min:Number(o.planned_min),wt:!!o.wt,game:o.game||null},"Film dodany do planu");
+  if(f.id==="fNew") save("POST","projects",{member:o.member,title:o.title,start:o.start,planned_min:Number(o.planned_min),wt:!!o.wt,game:o.game||null,public_at:o.public_at?new Date(o.public_at).toISOString():null},"Film dodany do planu");
   if(f.id==="fGames") save("PUT","games",{names:String(o.names||"").split(/\r?\n/)},"Lista gier zapisana");
   if(f.id==="fLeave"){
     if(o.to_date < o.from_date) return toast("⚠ Data końca przed początkiem");
@@ -1628,12 +1635,14 @@ document.addEventListener("submit", e => {
   if(f.id==="fUnlock"){ const ms = new FormData(f).getAll("m"); dlg.close(); save("POST","achievements/"+f.dataset.id+"/unlock",{members:ms},"Achievement odblokowany! 🏅"); }
   if(f.id==="fSet") save("PUT","settings",o,"Ustawienia zapisane");
   if(f.id==="fDone"){ dlg.close(); save("PUT","projects/"+f.dataset.id,{status:"done",uploaded:o.uploaded,actual_min:Number(o.actual_min),video_url:o.video_url||null},"Gratulacje, film wrzucony! 🎉"); }
-  if(f.id==="fEdit"){ dlg.close(); save("PUT","projects/"+f.dataset.id,{member:o.member,title:o.title,start:o.start,planned_min:Number(o.planned_min),wt:!!o.wt,game:o.game||null},"Zmiany zapisane"); }
+  if(f.id==="fEdit"){ dlg.close(); save("PUT","projects/"+f.dataset.id,{member:o.member,title:o.title,start:o.start,planned_min:Number(o.planned_min),wt:!!o.wt,game:o.game||null,public_at:o.public_at?new Date(o.public_at).toISOString():null},"Zmiany zapisane"); }
+  if(f.id==="fMem"){ dlg.close(); save("POST","videos/"+f.dataset.id+"/members",{members:true, public_at:o.public_at?new Date(o.public_at).toISOString():null}, o.public_at?`Film wpadnie do statystyk ${fmtDT(new Date(o.public_at).toISOString())}`:"Oznaczono jako film tylko dla wspierających"); }
 });
 document.addEventListener("click", e => {
   const b = e.target.closest("button,[data-close]"); if(!b) return;
   const d = b.dataset;
   if(d.tab){ TAB = d.tab; history.replaceState(null,"","#"+TAB); render(); if(TABDATA[TAB] && !DEMO){ const t=TAB; loadTabData(t).then(()=>{ if(TAB===t) render(); }); } }
+  if(d.mem && d.mem.endsWith(":1")){ openMem(d.mem.split(":")[0]); return; }
   if(d.mem){ const [id,val]=d.mem.split(":"); save("POST","videos/"+id+"/members",{members:val==="1"}, val==="1"?"Oznaczono jako film dla wspierających – wykluczony ze statystyk":"Przywrócono do statystyk"); }
   if(d.sugg){ const x = JSON.parse(d.sugg), f = document.getElementById("fNew");
     if(f){ f.member.value = x.m; f.title.value = x.t.replace(/\s*\|\s*$/,""); f.game.value = x.g || ""; f.wt.checked = !!x.wt; f.planned_min.value = 12; f.scrollIntoView({behavior:"smooth", block:"center"}); f.title.focus(); f.title.select(); toast("Wpisane do formularza – popraw tytuł i kliknij „Dodaj do planu”"); } }
@@ -1683,6 +1692,18 @@ function openDone(p){
   </form>`;
   dlg.showModal();
 }
+function openMem(id){
+  const v = (Y.videos||[]).find(x=>x.id===id) || {};
+  const t = new Date(Date.now()+864e5); t.setHours(14,0,0,0);
+  dlg.innerHTML = `<h3>💎 Film dla wspierających</h3>
+  <div class="help" style="margin:0 0 10px">„${esc(v.title||"")}”</div>
+  <form id="fMem" data-id="${esc(id)}">
+    <div class="row one"><label>Kiedy wpada dla wszystkich?<input type="datetime-local" name="public_at" value="${toLocalInput(t.toISOString())}"></label></div>
+    <div class="help">Do tej godziny film jest poza statystykami i aktualnościami. O tej godzinie panel sam go włączy: liczy 24 h, rekordy i achievementy od tego momentu, przypisze autora z planu i da powiadomienie o nowym filmie. Wyczyść pole, jeśli film ma zostać na stałe tylko dla wspierających.</div>
+    <button class="btn" type="submit">Zapisz</button> <button class="btn ghost" type="button" data-close>Anuluj</button>
+  </form>`;
+  dlg.showModal();
+}
 function openEdit(p){
   dlg.innerHTML = `<h3>Edycja filmu</h3>
   <form id="fEdit" data-id="${p.id}">
@@ -1692,6 +1713,7 @@ function openEdit(p){
     <div class="row"><label>Planowana długość (min)<input type="number" name="planned_min" min="1" max="300" value="${p.planned_min}" required></label>
       <label class="chk" style="align-self:end;padding-bottom:8px"><input type="checkbox" name="wt" ${p.wt?"checked":""}> War Thunder</label></div>
     <div class="row one"><label>Gra<input name="game" maxlength="80" list="gameList" value="${esc(p.game||"")}" placeholder="np. World of Tanks"></label></div>
+    ${pubField(toLocalInput(p.public_at))}
     <button class="btn" type="submit">Zapisz</button> <button class="btn ghost" type="button" data-close>Anuluj</button>
   </form>`;
   dlg.showModal();
