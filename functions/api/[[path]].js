@@ -1,4 +1,5 @@
 import { refresh, kvGet, kvSet, linkProject, loadOverrides, curveAt } from "../../lib/yt.js";
+import { gameKey, CATS } from "../../lib/gameinfo.js";
 import { DEFS, DEF, MANUAL, unlockStmts, bestSubs } from "../../lib/ach.js";
 import { generateTags } from "../../lib/tags.js";
 import { topThumbs, importStmts } from "../../lib/thumbs.js";
@@ -61,7 +62,7 @@ export async function onRequest({ request, env, params, data }) {
 
   try {
     if (res === "state" && method === "GET") {
-      const [p, l, s, bt, up, gm, wtc] = await db.batch([
+      const [p, l, s, bt, up, gm, gi, wtc] = await db.batch([
         db.prepare("SELECT * FROM projects ORDER BY start"),
         db.prepare("SELECT * FROM leaves ORDER BY from_date"),
         db.prepare("SELECT key, value FROM settings"),
@@ -70,6 +71,7 @@ export async function onRequest({ request, env, params, data }) {
         db.prepare(`SELECT v.id, v.title, v.published, v.member, v.is_short, v.wt, v.views, v.curve, g.avp90 FROM videos v LEFT JOIN grade_stats g ON g.video_id = v.id
           WHERE v.removed_at IS NULL AND v.published >= ? AND COALESCE(v.live_override, v.is_live, 0) = 0 AND COALESCE(v.members_override, v.is_members, 0) = 0`).bind(new Date(Date.now() - 120 * 864e5).toISOString()),
         db.prepare("SELECT member, name FROM games ORDER BY name"),
+        db.prepare("SELECT key, name, cat, dist, about, src, tags, veh FROM game_info"),
         // mediana WT: długie filmy WT z ostatnich 90 dni (wyświetlenia po 28 dniach liczymy z krzywej)
         db.prepare(`SELECT curve FROM videos WHERE is_short = 0 AND wt = 1 AND removed_at IS NULL AND published >= ? AND published <= ?
           AND COALESCE(live_override, is_live, 0) = 0 AND COALESCE(members_override, is_members, 0) = 0`).bind(new Date(Date.now() - 118 * 864e5).toISOString(), new Date(Date.now() - 28 * 864e5).toISOString()),
@@ -84,7 +86,8 @@ export async function onRequest({ request, env, params, data }) {
       const wtMedian = w28.length ? w28[w28.length >> 1] : null;
       const games = {};
       for (const g of gm.results) (games[g.member] = games[g.member] || []).push(g.name);
-      return json({ projects: p.results, leaves: l.results, settings, me: user, times, recent, games, wtMedian,
+      const gameInfo = Object.fromEntries(gi.results.map(({ key, tags, ...r }) => [key, { ...r, tags: (() => { try { return JSON.parse(tags || "[]"); } catch { return []; } })() }]));
+      return json({ projects: p.results, leaves: l.results, settings, me: user, times, recent, games, wtMedian, gameInfo,
         uploads: recent.filter((v) => !v.is_short && v.published >= new Date(Date.now() - 70 * 864e5).toISOString()) });
     }
 
@@ -132,6 +135,54 @@ export async function onRequest({ request, env, params, data }) {
         await db.prepare("DELETE FROM leaves WHERE id=?").bind(Number(id)).run();
         return json({ ok: true });
       }
+    }
+
+    // --- Pomysły: lista pomysłów + trendy ---
+    if (res === "ideas" && method === "GET" && !id) {
+      const [ideas, k, del] = await db.batch([
+        db.prepare("SELECT id, member, text, created_at FROM ideas WHERE deleted_at IS NULL ORDER BY id DESC LIMIT 300"),
+        db.prepare("SELECT key, value FROM kv WHERE key IN ('trend_wt','trend_g')"),
+        db.prepare("SELECT COUNT(*) AS n FROM ideas WHERE deleted_at IS NOT NULL"),
+      ]);
+      const K = Object.fromEntries(k.results.map((r) => [r.key, JSON.parse(r.value)]));
+      const total = await db.prepare("SELECT COUNT(*) AS n FROM ideas").first();
+      return json({ ideas: ideas.results, wt: K.trend_wt || null, games: K.trend_g || null, total: total.n, deleted: del.results[0].n });
+    }
+    if (res === "ideas" && method === "POST") {
+      if (!MEMBERS.includes(user)) return json({ error: "Tylko dla członków ekipy" }, 403);
+      const b = await readBody(request);
+      const text = String(b.text || "").trim().slice(0, 1000);
+      if (text.length < 3) return json({ error: "Pomysł jest za krótki" }, 400);
+      const nowIso = new Date().toISOString();
+      await db.prepare("INSERT INTO ideas (member, text, created_at) VALUES (?,?,?)").bind(user, text, nowIso).run();
+      const n = (await db.prepare("SELECT COUNT(*) AS n FROM ideas").first()).n;
+      const ach = { 10: "idea10", 100: "idea100", 1000: "idea1000" }[n];
+      if (ach) await db.batch([...unlockStmts(db, ach, { members: [user], note: `${n}. pomysł` }, nowIso), dropCache(db, "cache_challenge")]);
+      return json({ ok: true, n });
+    }
+    if (res === "ideas" && id && method === "DELETE") {
+      if (!MEMBERS.includes(user)) return json({ error: "Tylko dla członków ekipy" }, 403);
+      const nowIso = new Date().toISOString();
+      const r = await db.prepare("UPDATE ideas SET deleted_at=?, deleted_by=? WHERE id=? AND deleted_at IS NULL").bind(nowIso, user, Number(id)).run();
+      if (!r.meta || r.meta.changes) {
+        const n = (await db.prepare("SELECT COUNT(*) AS n FROM ideas WHERE deleted_at IS NOT NULL").first()).n;
+        const ach = { 10: "idea_del10", 100: "idea_del100", 1000: "idea_del1000" }[n];
+        if (ach) await db.batch([...unlockStmts(db, ach, { members: [user], note: `${n}. usunięty pomysł` }, nowIso), dropCache(db, "cache_challenge")]);
+      }
+      return json({ ok: true });
+    }
+
+    // ręczna ocena gry: dystans od widowni WT (1–5) i kategoria; wygrywa z oceną AI
+    if (res === "gameinfo" && method === "PUT") {
+      if (!MEMBERS.includes(user)) return json({ error: "Tylko dla członków ekipy" }, 403);
+      const b = await readBody(request);
+      const key = gameKey(b.name), dist = Math.round(Number(b.dist));
+      if (!key || !(dist >= 1 && dist <= 5)) return json({ error: "Zła ocena" }, 400);
+      const cat = CATS.includes(b.cat) ? b.cat : null;
+      await db.prepare(`INSERT INTO game_info (key, name, cat, dist, src, checked_at) VALUES (?,?,?,?, 'manual', ?)
+        ON CONFLICT(key) DO UPDATE SET dist=excluded.dist, cat=COALESCE(?, game_info.cat), src='manual'`)
+        .bind(key, String(b.name).slice(0, 80), cat || "other", dist, new Date().toISOString(), cat).run();
+      return json({ ok: true });
     }
 
     // biblioteka gier: każdy edytuje tylko swoją

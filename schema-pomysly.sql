@@ -1,0 +1,1 @@
+CREATE TABLE IF NOT EXISTS ideas (id INTEGER PRIMARY KEY AUTOINCREMENT, member TEXT NOT NULL, text TEXT NOT NULL, created_at TEXT, deleted_at TEXT, deleted_by TEXT);
