@@ -61,3 +61,4 @@ CREATE INDEX IF NOT EXISTS reach_day ON reach (day);
 CREATE TABLE IF NOT EXISTS thumb_stats (video_id TEXT PRIMARY KEY, views24 INTEGER, nonsub24 INTEGER, avp24 REAL, d24_at TEXT, views_life INTEGER, nonsub_life INTEGER, avp_life REAL, life_at TEXT);
 INSERT OR IGNORE INTO settings (key, value) VALUES ('favorShift', '1');
 CREATE TABLE IF NOT EXISTS games (member TEXT NOT NULL, name TEXT NOT NULL, PRIMARY KEY (member, name));
+CREATE TABLE IF NOT EXISTS traffic_src (video_id TEXT NOT NULL, day TEXT NOT NULL, kind TEXT NOT NULL, src TEXT NOT NULL DEFAULT '', views INTEGER, PRIMARY KEY (video_id, day, kind, src));

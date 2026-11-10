@@ -156,7 +156,7 @@ dialog h3{color:var(--gold);margin-bottom:12px}
 .ni .ic{font-size:20px;line-height:1.2;flex:none}
 .ni .tx{flex:1;min-width:0}
 .ni .tm{font-size:12px;color:var(--muted);margin-top:2px}
-.ni.record,.ni.achievement{border-color:var(--gold)}.ni.revival{border-color:#e8b54a88}.ni.unassigned{border-color:#7fa8de88}.ni.error{border-color:var(--bad)}.ni.slow_start{border-color:#e2735f88}.ni.grade{border-color:#7fc29b88}
+.ni.record,.ni.achievement{border-color:var(--gold)}.ni.revival{border-color:#e8b54a88}.ni.unassigned{border-color:#7fa8de88}.ni.error{border-color:var(--bad)}.ni.slow_start{border-color:#e2735f88}.ni.grade{border-color:#7fc29b88}.ni.traffic{border-color:#7fa8de88}
 .connect{text-align:center;padding:30px 16px}
 .connect p{color:var(--muted);max-width:520px;margin:8px auto 16px}
 nav button.unread{color:#fff;background:#e2735f;border-color:#e2735f;animation:nudge 2.4s ease-in-out infinite}
@@ -1089,7 +1089,7 @@ function recView(){
   return `${chanBar()}<div style="margin-top:14px" class="chips">${chips}</div><div class="rgrid">${cards}</div>
     <div class="help">Zapisy streamów i filmy dla wspierających nie biorą udziału w rekordach ani w porównaniach. Wyświetlenia liczone od premiery. „≈” oznacza starsze filmy, dla których pierwsza doba jest wyliczona z dziennych danych YouTube Analytics. Nowe filmy panel mierzy co godzinę, więc ich wynik jest dokładny. Shorty nie biorą udziału w rekordach.</div>`;
 }
-const NICON = {slow_start:"🐢", grade:"🏷️", achievement:"🏅", new_video:"🎬", record:"🏆", revival:"🔥", unassigned:"❓", milestone:"🎉", info:"ℹ️", error:"⚠️"};
+const NICON = {traffic:"🔗", slow_start:"🐢", grade:"🏷️", achievement:"🏅", new_video:"🎬", record:"🏆", revival:"🔥", unassigned:"❓", milestone:"🎉", info:"ℹ️", error:"⚠️"};
 function newsView(){
   if(!Y.connected && !DEMO && !Y.news.length) return connectView();
   const items = Y.news.map(n => {
