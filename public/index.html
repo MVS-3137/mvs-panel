@@ -1647,7 +1647,6 @@ const IDEA_STEPS = [10,100,1000];
 function ideasView(){
   if(!ID) return `<div class="card"><div class="help">Ładuję…</div></div>`;
   const W = ID.wt, G = ID.games;
-  const nextAdd = IDEA_STEPS.find(x=>x>ID.total), nextDel = IDEA_STEPS.find(x=>x>ID.deleted);
   const ch = x => x.isNew ? `<span class="chg new">NOWOŚĆ</span>` : x.change == null ? `<span class="chg">–</span>` : x.change > 0 ? `<span class="chg up">▲ ${x.change}</span>` : x.change < 0 ? `<span class="chg dn">▼ ${-x.change}</span>` : `<span class="chg">=</span>`;
   return `<div class="grid">
   <div class="card">
@@ -1665,10 +1664,10 @@ function ideasView(){
       : `<div class="help">Pierwszy ranking pojawi się w ciągu doby.</div>`}
   </div>
   <div class="card">
-    <h2>Nasze pomysły <span class="hint">${ID.total} wpisanych · ${ID.deleted} usuniętych</span></h2>
+    <h2>Nasze pomysły <span class="hint">${ID.ideas.length}</span></h2>
     <form id="fIdea"><textarea name="text" rows="3" maxlength="1000" placeholder="Opisz pomysł na film, format, serię…" style="width:100%"></textarea>
       <div style="display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-top:8px"><button class="btn" type="submit">Dodaj pomysł</button>
-      <span class="help" style="margin:0">${nextAdd?`Do achievementu za ${nextAdd}. pomysł brakuje ${nextAdd-ID.total}`:""}${nextAdd&&nextDel?" · ":""}${nextDel?`za ${nextDel}. usunięty: ${nextDel-ID.deleted}`:""}</span></div></form>
+      </div></form>
     <div class="list" style="margin-top:14px">${ID.ideas.length ? ID.ideas.map(x=>`<div class="li idea" style="--c:${COLORS[x.member]||"var(--muted)"}">
       <div style="min-width:0"><div class="itx">${esc(x.text)}</div><div class="s"><b style="color:${COLORS[x.member]||"var(--text)"}">${esc(x.member)}</b> · ${ago(x.created_at)}</div></div>
       ${DEMO?"":`<button class="x" data-idel="${x.id}" title="Usuń pomysł">✕</button>`}</div>`).join("") : `<div class="help">Jeszcze nic tu nie ma – wpisz pierwszy pomysł.</div>`}</div>
