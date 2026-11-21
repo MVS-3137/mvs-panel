@@ -156,7 +156,7 @@ dialog h3{color:var(--gold);margin-bottom:12px}
 .ni .ic{font-size:20px;line-height:1.2;flex:none}
 .ni .tx{flex:1;min-width:0}
 .ni .tm{font-size:12px;color:var(--muted);margin-top:2px}
-.ni.record,.ni.achievement{border-color:var(--gold)}.ni.revival{border-color:#e8b54a88}.ni.unassigned{border-color:#7fa8de88}.ni.error{border-color:var(--bad)}.ni.slow_start{border-color:#e2735f88}.ni.grade{border-color:#7fc29b88}.ni.traffic{border-color:#7fa8de88}.ni.phase{border-color:var(--gold)}.ni.spike{border-color:#e8c25a88}
+.ni.record,.ni.achievement{border-color:var(--gold)}.ni.revival{border-color:#e8b54a88}.ni.unassigned{border-color:#7fa8de88}.ni.error{border-color:var(--bad)}.ni.slow_start{border-color:#e2735f88}.ni.grade{border-color:#7fc29b88}.ni.traffic{border-color:#7fa8de88}.ni.phase{border-color:var(--gold)}.ni.spike{border-color:#e8c25a88}.ni.hot_start{border-color:#7fc29b88}.ni.subs_lost{border-color:#e2735f88}.ni.trend_game,.ni.comp_hit{border-color:#7fa8de88}.ni.tm a{color:inherit}
 .connect{text-align:center;padding:30px 16px}
 .connect p{color:var(--muted);max-width:520px;margin:8px auto 16px}
 nav button.unread{color:#fff;background:#e2735f;border-color:#e2735f;animation:nudge 2.4s ease-in-out infinite}
@@ -1199,13 +1199,14 @@ function recView(){
   return `${chanBar()}<div style="margin-top:14px" class="chips">${chips}</div><div class="rgrid">${cards}</div>
     <div class="help">Zapisy streamów i filmy dla wspierających nie biorą udziału w rekordach ani w porównaniach. Wyświetlenia liczone od premiery. „≈” oznacza starsze filmy, dla których pierwsza doba jest wyliczona z dziennych danych YouTube Analytics. Nowe filmy panel mierzy co godzinę, więc ich wynik jest dokładny. Shorty nie biorą udziału w rekordach.</div>`;
 }
-const NICON = {spike:"⚡", phase:"🚩", traffic:"🔗", slow_start:"🐢", grade:"🏷️", achievement:"🏅", new_video:"🎬", record:"🏆", revival:"🔥", unassigned:"❓", milestone:"🎉", info:"ℹ️", error:"⚠️"};
+const NICON = {hot_start:"🚀", subs_lost:"📉", trend_game:"🎯", comp_hit:"👀", birthday:"🎂", spike:"⚡", phase:"🚩", traffic:"🔗", slow_start:"🐢", grade:"🏷️", achievement:"🏅", new_video:"🎬", record:"🏆", revival:"🔥", unassigned:"❓", milestone:"🎉", info:"ℹ️", error:"⚠️"};
 function newsView(){
   if(!Y.connected && !DEMO && !Y.news.length) return connectView();
   const items = Y.news.map(n => {
     const v = n.video_id && Y.videos.find(x=>x.id===n.video_id);
     const assign = n.type==="unassigned" && v && !v.member && !DEMO ? `<div style="margin-top:6px">${whoCell(v)}</div>` : "";
-    return `<div class="ni ${n.type}"><div class="ic">${NICON[n.type]||"•"}</div><div class="tx">${esc(n.text)}${assign}<div class="tm">${relTime(n.ts)}</div></div></div>`;
+    const link = n.video_id && /^[A-Za-z0-9_-]{11}$/.test(n.video_id) && ["comp_hit","spike","revival","hot_start","subs_lost","birthday"].includes(n.type) ? ` · <a href="https://www.youtube.com/watch?v=${n.video_id}" target="_blank" rel="noopener">otwórz film</a>` : "";
+    return `<div class="ni ${n.type}"><div class="ic">${NICON[n.type]||"•"}</div><div class="tx">${esc(n.text)}${assign}<div class="tm">${relTime(n.ts)}${link}</div></div></div>`;
   }).join("");
   return `<div class="card"><h2>Aktualności</h2><div class="news">${items || '<div class="empty">Na razie cisza. Powiadomienia pojawią się po pierwszych danych z kanału.</div>'}</div></div>`;
 }
