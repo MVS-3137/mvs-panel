@@ -166,12 +166,12 @@ export async function onRequest({ request, env, params, data }) {
     if (res === "ideas" && method === "GET" && !id) {
       const [ideas, k, del] = await db.batch([
         db.prepare("SELECT id, member, text, created_at FROM ideas WHERE deleted_at IS NULL ORDER BY id DESC LIMIT 300"),
-        db.prepare("SELECT key, value FROM kv WHERE key IN ('trend_wt','trend_g','trend_g_diag')"),
+        db.prepare("SELECT key, value FROM kv WHERE key IN ('trend_wt','trend_rise','trend_g_diag')"),
         db.prepare("SELECT COUNT(*) AS n FROM ideas WHERE deleted_at IS NOT NULL"),
       ]);
       const K = Object.fromEntries(k.results.map((r) => [r.key, JSON.parse(r.value)]));
       const total = await db.prepare("SELECT COUNT(*) AS n FROM ideas").first();
-      return json({ ideas: ideas.results, wt: K.trend_wt || null, games: K.trend_g || null, gamesDiag: K.trend_g_diag || null, total: total.n, deleted: del.results[0].n });
+      return json({ ideas: ideas.results, wt: K.trend_wt || null, rise: K.trend_rise || null, gamesDiag: K.trend_g_diag || null, total: total.n, deleted: del.results[0].n });
     }
     if (res === "ideas" && method === "POST") {
       if (!MEMBERS.includes(user)) return json({ error: "Tylko dla członków ekipy" }, 403);

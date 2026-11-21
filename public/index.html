@@ -156,7 +156,7 @@ dialog h3{color:var(--gold);margin-bottom:12px}
 .ni .ic{font-size:20px;line-height:1.2;flex:none}
 .ni .tx{flex:1;min-width:0}
 .ni .tm{font-size:12px;color:var(--muted);margin-top:2px}
-.ni.record,.ni.achievement{border-color:var(--gold)}.ni.revival{border-color:#e8b54a88}.ni.unassigned{border-color:#7fa8de88}.ni.error{border-color:var(--bad)}.ni.slow_start{border-color:#e2735f88}.ni.grade{border-color:#7fc29b88}.ni.traffic{border-color:#7fa8de88}.ni.phase{border-color:var(--gold)}.ni.spike{border-color:#e8c25a88}.ni.hot_start{border-color:#7fc29b88}.ni.subs_lost{border-color:#e2735f88}.ni.trend_game,.ni.comp_hit{border-color:#7fa8de88}.ni.tm a{color:inherit}
+.ni.record,.ni.achievement{border-color:var(--gold)}.ni.revival{border-color:#e8b54a88}.ni.unassigned{border-color:#7fa8de88}.ni.error{border-color:var(--bad)}.ni.slow_start{border-color:#e2735f88}.ni.grade{border-color:#7fc29b88}.ni.traffic{border-color:#7fa8de88}.ni.phase{border-color:var(--gold)}.ni.spike{border-color:#e8c25a88}.ni.hot_start{border-color:#7fc29b88}.ni.subs_lost{border-color:#e2735f88}.ni.trend_game,.ni.game_rise,.ni.comp_hit{border-color:#7fa8de88}.ni.tm a{color:inherit}
 .connect{text-align:center;padding:30px 16px}
 .connect p{color:var(--muted);max-width:520px;margin:8px auto 16px}
 nav button.unread{color:#fff;background:#e2735f;border-color:#e2735f;animation:nudge 2.4s ease-in-out infinite}
@@ -1223,7 +1223,7 @@ function recView(){
   return `${chanBar()}<div style="margin-top:14px" class="chips">${chips}</div><div class="rgrid">${cards}</div>
     <div class="help">Zapisy streamów i filmy dla wspierających nie biorą udziału w rekordach ani w porównaniach. Wyświetlenia liczone od premiery. „≈” oznacza starsze filmy, dla których pierwsza doba jest wyliczona z dziennych danych YouTube Analytics. Nowe filmy panel mierzy co godzinę, więc ich wynik jest dokładny. Shorty nie biorą udziału w rekordach.</div>`;
 }
-const NICON = {hot_start:"🚀", subs_lost:"📉", trend_game:"🎯", comp_hit:"👀", birthday:"🎂", spike:"⚡", phase:"🚩", traffic:"🔗", slow_start:"🐢", grade:"🏷️", achievement:"🏅", new_video:"🎬", record:"🏆", revival:"🔥", unassigned:"❓", milestone:"🎉", info:"ℹ️", error:"⚠️"};
+const NICON = {hot_start:"🚀", subs_lost:"📉", trend_game:"🎯", game_rise:"🔥", comp_hit:"👀", birthday:"🎂", spike:"⚡", phase:"🚩", traffic:"🔗", slow_start:"🐢", grade:"🏷️", achievement:"🏅", new_video:"🎬", record:"🏆", revival:"🔥", unassigned:"❓", milestone:"🎉", info:"ℹ️", error:"⚠️"};
 function newsView(){
   if(!Y.connected && !DEMO && !Y.news.length) return connectView();
   const items = Y.news.map(n => {
@@ -1754,7 +1754,7 @@ function demoIdeas(){
     wt:{at:ago(5), world:[{topic:"Nowa aktualizacja i jej czołgi",why:"Twórcy testują nowe pojazdy z ostatniej aktualizacji – filmy „first look” zbierają najwięcej.",vph:4200,videos:[v("aaaaaaaaaaa","NEW Update – every new tank tested","Phlydaily",182000,2100),v("bbbbbbbbbbb","Is the new MBT broken?","Spookston",96000,1100)]},
       {topic:"Poradniki dla nowych graczy",why:"Wysyp poradników „jak zacząć w 2026”.",vph:900,videos:[v("ccccccccccc","War Thunder beginner guide 2026","SomeGuy",41000,520)]}],
       pl:[{topic:"Czy warto wrócić do War Thunder?",why:"Polscy twórcy komentują zmiany w ekonomii gry.",vph:300,videos:[v("ddddddddddd","Czy War Thunder jeszcze ma sens?","Kanał PL",12000,140)]}]},
-    games:{at:ago(20), prevAt:ago(44), top:[["Minecraft",2450000,38,21,1,0],["Fortnite",1210000,22,14,3,1],["Counter-Strike 2",980000,15,9,2,-1],["GTA V",760000,12,10,4,0],["EA SPORTS FC 26",540000,9,6,null,null],["Roblox",410000,11,8,5,-1],["Battlefield 6",300000,6,5,8,2],["Schedule I",220000,5,4,6,-1],["Valorant",180000,4,3,7,-1],["War Thunder",150000,5,3,null,null]].map(([game,views,videos,channels,prev,change],i)=>({game,views,videos,channels,rank:i+1,prev,change,isNew:prev===null,top:v("eeeeeeeeeee","Najlepszy film: "+game,"Twórca",Math.round(views/4),0)}))},
+    rise:{at:ago(20), ready:true, days:23, giants:["Minecraft","Fortnite","Roblox","GTA V","Counter-Strike 2","EA SPORTS FC 26"], rising:[["Arc Raiders",640000,null,true,31,3],["Battlefield 6",420000,61000,false,18,9],["Escape from Duckov",180000,34000,false,9,5],["Hell Let Loose: Vietnam",95000,19000,false,6,4]].map(([game,cur,base,isNew,channels,dd])=>({game,cur,base,isNew,channels,ratio:base?Math.round(cur/Math.max(base,5000)*10)/10:null,since:new Date(Date.now()-dd*864e5).toISOString().slice(0,10),top:v("eeeeeeeeeee","Najmocniejszy film: "+game,"Twórca",Math.round(cur*1.4),0)}))},
     ideas:[{id:3,member:"Malvel",text:"3 czołgistów w Hell Let Loose – kto przeżyje najdłużej bez zabicia nikogo?",created_at:ago(3)},{id:2,member:"Saito",text:"HOI4: każdy z nas dostaje jedno państwo, przegrany robi film o najgorszym czołgu.",created_at:ago(30)},{id:1,member:"Virtuoso",text:"Poradnik: jak zacząć War Thunder w 2026 (dla kompletnie nowych).",created_at:ago(80)}]};
 }
 const ago = iso => { const h = (Date.now()-Date.parse(iso))/36e5; return h < 1 ? "przed chwilą" : h < 24 ? `${Math.round(h)} godz. temu` : Math.round(h/24) === 1 ? "wczoraj" : `${Math.round(h/24)} dni temu`; };
@@ -1770,8 +1770,7 @@ function trendSide(title, list, dg){
 const IDEA_STEPS = [10,100,1000];
 function ideasView(){
   if(!ID) return `<div class="card"><div class="help">Ładuję…</div></div>`;
-  const W = ID.wt, G = ID.games;
-  const ch = x => x.isNew ? `<span class="chg new">NOWOŚĆ</span>` : x.change == null ? `<span class="chg">–</span>` : x.change > 0 ? `<span class="chg up">▲ ${x.change}</span>` : x.change < 0 ? `<span class="chg dn">▼ ${-x.change}</span>` : `<span class="chg">=</span>`;
+  const W = ID.wt, R = ID.rise;
   return `<div class="grid">
   <div class="card">
     <h2>Trendy War Thunder <span class="hint">aktualizacja co 12 h${W?` · ${ago(W.at)}`:""}</span></h2>
@@ -1780,12 +1779,15 @@ function ideasView(){
       : `<div class="help">Pierwsze trendy pojawią się po najbliższym odświeżeniu danych (do godziny).</div>`}
   </div>
   <div class="card">
-    <h2>TOP 10 gier na polskim YouTube <span class="hint">ostatnie 7 dni · aktualizacja co 24 h${G?` · ${ago(G.at)}`:""}</span></h2>
-    ${G && G.top.length ? `<div class="tbl"><table class="trtab"><thead><tr><th>#</th><th>zmiana</th><th>Gra</th><th class="r">wyświetlenia</th><th class="r">filmy</th><th class="r">kanały</th><th>najmocniejszy film</th></tr></thead><tbody>
-      ${G.top.map(x=>`<tr><td><b>${x.rank}</b></td><td>${ch(x)}</td><td><b>${esc(x.game)}</b></td><td class="r">${nf(x.views)}</td><td class="r">${x.videos}</td><td class="r">${x.channels}</td><td class="trtop">${x.top?`<a href="${ytLink(x.top.id)}" target="_blank" rel="noopener" title="${esc(x.top.title)} – ${esc(x.top.channel)}">${esc(x.top.title)}</a>`:""}</td></tr>`).join("")}
-    </tbody></table></div>
-    <div class="help">Liczone z najpopularniejszych polskich filmów z kategorii Gry z ostatnich 7 dni (bez shortów): AI rozpoznaje grę, a panel sumuje wyświetlenia. Gra musi mieć filmy z min. 2 różnych kanałów. Zmiana miejsca względem poprzedniej aktualizacji${G.prevAt?` (${ago(G.prevAt)})`:""}.</div>`
-      : `<div class="help">${ID.gamesDiag ? `Ranking jeszcze się nie ułożył – ostatnia próba ${ago(ID.gamesDiag.at)}: znalezione filmy ${ID.gamesDiag.found ?? 0}${ID.gamesDiag.long!=null?`, dłuższe niż 2 min ${ID.gamesDiag.long}`:""}, po polsku ${ID.gamesDiag.kept ?? 0}, rozpoznana gra: AI ${ID.gamesDiag.ai ?? 0}, z tytułu ${ID.gamesDiag.rule ?? 0}${ID.gamesDiag.err?` · błąd: ${esc(ID.gamesDiag.err)}`:""}. Panel spróbuje ponownie za ok. 3 h.` : "Pierwszy ranking pojawi się w ciągu doby."}</div>`}
+    <h2>🔥 Wschodzące gry na YouTube <span class="hint">cały YouTube · aktualizacja co 24 h${R?` · ${ago(R.at)}`:""}</span></h2>
+    ${!R ? `<div class="help">${ID.gamesDiag && ID.gamesDiag.err ? `Ostatnia próba nie wyszła (${esc(ID.gamesDiag.err)}). Panel spróbuje ponownie za ok. 3 h.` : "Pierwszy pomiar pojawi się w ciągu doby."}</div>`
+      : !R.ready ? `<div class="help">Panel zbiera historię: <b>${R.days} z 10</b> dni. Wzrost da się policzyć dopiero, gdy wiadomo, ile gra zwykle ma – pierwsze wyniki za ok. ${Math.max(1,10-R.days)} dni (pełna dokładność po ok. 4 tygodniach).</div>`
+      : R.rising.length ? `<div class="tbl"><table class="trtab"><thead><tr><th>Gra</th><th class="r">wzrost</th><th class="r">świeże wyśw. / dzień</th><th class="r">kanały</th><th>w trendzie od</th><th>najmocniejszy film</th></tr></thead><tbody>
+      ${R.rising.map(x=>{const own=MEMBERS.filter(m=>((S.games&&S.games[m])||[]).some(n=>{const a=gkey(n),b=gkey(x.game);return a.length>=4&&b.length>=4&&(a.includes(b)||b.includes(a));}));
+        return `<tr><td><b>${esc(x.game)}</b>${own.length?` <span class="chg up" title="Macie w bibliotece">🎮 ${own.join(", ")}</span>`:""}</td><td class="r">${x.isNew?`<span class="chg new">NOWOŚĆ</span>`:`<span class="chg up">×${String(x.ratio).replace(".",",")}</span>`}</td><td class="r">${nf(x.cur)}</td><td class="r">${x.channels}</td><td>${x.since?ago(x.since):""}</td><td class="trtop">${x.top?`<a href="${ytLink(x.top.id)}" target="_blank" rel="noopener" title="${esc(x.top.title)} – ${esc(x.top.channel)}">${esc(x.top.title)}</a>`:""}</td></tr>`;}).join("")}
+    </tbody></table></div>`
+      : `<div class="help">Teraz żadna gra nie wybija się ponad swój zwykły poziom. Gdy coś ruszy, pojawi się tutaj i w Aktualnościach (🔥).</div>`}
+    ${R ? `<div class="help">Panel codziennie sprawdza najpopularniejsze świeże filmy (z ostatnich 3 dni, bez shortów) z kategorii Gry na całym YouTube i osobno w Polsce, a AI rozpoznaje grę. Gra trafia tutaj, gdy jej świeże filmy mają <b>min. 3× więcej wyświetleń niż zwykle</b> (średnia z 3 ostatnich dni vs dni 7–28 wstecz) albo wcześniej jej nie było, nagrywa ją min. 3 kanały i ma min. 50 tys. wyświetleń dziennie. Stali giganci nie wchodzą, bo u nich nic się nie zmienia${R.giants&&R.giants.length?` (teraz: ${R.giants.map(esc).join(", ")})`:""}.</div>`:""}
   </div>
   <div class="card">
     <h2>Nasze pomysły <span class="hint">${ID.ideas.length}</span></h2>
