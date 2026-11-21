@@ -64,3 +64,5 @@ CREATE TABLE IF NOT EXISTS games (member TEXT NOT NULL, name TEXT NOT NULL, PRIM
 CREATE TABLE IF NOT EXISTS traffic_src (video_id TEXT NOT NULL, day TEXT NOT NULL, kind TEXT NOT NULL, src TEXT NOT NULL DEFAULT '', views INTEGER, PRIMARY KEY (video_id, day, kind, src));
 CREATE TABLE IF NOT EXISTS game_info (key TEXT PRIMARY KEY, name TEXT, appid INTEGER, tags TEXT, cat TEXT, dist INTEGER, about TEXT, veh INTEGER DEFAULT 0, src TEXT, checked_at TEXT);
 CREATE TABLE IF NOT EXISTS ideas (id INTEGER PRIMARY KEY AUTOINCREMENT, member TEXT NOT NULL, text TEXT NOT NULL, created_at TEXT, deleted_at TEXT, deleted_by TEXT);
+CREATE TABLE IF NOT EXISTS thumb_data (video_id TEXT PRIMARY KEY, ctr REAL, impressions INTEGER, views INTEGER, avd REAL, avp REAL, imported_at TEXT);
+CREATE TABLE IF NOT EXISTS thumb_vision (video_id TEXT PRIMARY KEY, feats TEXT, descr TEXT, at TEXT);

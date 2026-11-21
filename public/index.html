@@ -346,6 +346,26 @@ textarea:focus{outline:2px solid var(--gold2);outline-offset:-1px}
 .reqs{display:grid;gap:10px}.req{padding:10px 12px;border-radius:10px;background:var(--bg2);font-size:13px;cursor:help}
 .rq1{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}.req.ok{box-shadow:inset 3px 0 0 var(--ok)}
 .reqdec{margin-top:12px;padding:12px;border-radius:10px;border:1px solid var(--warn);background:#e2735f14;font-size:13.5px}
+
+/* miniatury v2 */
+.thg{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+.thg.top{grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}
+.tht{background:var(--bg2);border-radius:12px;padding:8px;border:2px solid transparent;cursor:help;min-width:0}
+.tht.on{border-color:var(--gold)}
+.thi2{position:relative;display:block}.thi2 img{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:8px;display:block;background:var(--line)}
+.grd{position:absolute;left:6px;top:6px;min-width:34px;padding:3px 7px;border-radius:7px;background:var(--g);color:#0d1420;font-weight:800;font-size:14px;text-align:center;box-shadow:0 2px 8px #0008}
+.grd.big{font-size:22px;min-width:48px;padding:4px 9px}
+.ins .grd,.il .grd{position:static;display:inline-block;font-size:12px;min-width:28px;padding:2px 6px;box-shadow:none}
+.tt2{font-size:12.5px;font-weight:600;line-height:1.3;margin:7px 2px 3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tm2{font-size:11.5px;color:var(--muted);margin:0 2px 4px}
+.tht label.like{font-size:12px;color:var(--muted);display:flex;flex-direction:row;gap:6px;align-items:center;margin:4px 2px 0;cursor:pointer;font-weight:500;text-transform:none;letter-spacing:0}
+.tht label.like input{width:auto;margin:0;padding:0;flex:none}
+.insl{display:grid;gap:8px}.ins{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) auto;gap:12px;align-items:center;padding:8px 10px;border-radius:10px;background:var(--bg2)}
+@media (max-width:700px){.ins{grid-template-columns:minmax(0,1fr)}}
+.il{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13.5px}.ib{display:flex;gap:8px;align-items:center;font-size:13px}
+.ibar{flex:1;height:6px;border-radius:3px;background:var(--line);overflow:hidden}.ins.up .ibar i{display:block;height:100%;background:var(--ok)}.ins.dn .ibar i{display:block;height:100%;background:var(--bad)}
+.ins.up .ib b{color:var(--ok)}.ins.dn .ib b{color:var(--bad)}
+.iex{display:flex;gap:4px}.iex img{width:64px;height:36px;object-fit:cover;border-radius:5px;background:var(--line);overflow:hidden;font-size:0}
 </style>
 </head>
 <body>
@@ -1247,7 +1267,7 @@ function demoYT(){
 }
 
 /* ---------- etap 3: tablica wyzwań ---------- */
-const DEMO_DEFS = [{"id":"first_blood","name":"First Blood","rarity":"common","desc":"Pierwszy film wrzucony po uruchomieniu tablicy wyzwań."},{"id":"level_up","name":"Level Up!","rarity":"common","desc":"Kanał zdobył 1000 subów od uruchomienia tablicy wyzwań."},{"id":"inquisition","name":"Nobody Expects the Spanish Inquisition","rarity":"common","desc":"Film pojawił się na kanale, choć nie było go w planie nagrywek."},{"id":"repair_cost","name":"Koszt naprawy wyższy niż zysk","rarity":"common","desc":"Film z War Thunder miał po 7 dniach mniej wyświetleń niż średnia filmów z innych gier."},{"id":"one_does_not","name":"One Does Not Simply Upload","rarity":"common","desc":"Praca nad filmem (od startu w planie do premiery) trwała dłużej niż 14 dni."},{"id":"you_died","name":"YOU DIED","rarity":"uncommon","desc":"Film po 14 dniach ma mniej niż 1000 wyświetleń."},{"id":"finally_awake","name":"Hey, You. You're Finally Awake","rarity":"uncommon","desc":"Upload po przerwie dłuższej niż 30 dni od poprzedniego filmu tej samej osoby."},{"id":"gotta_catch","name":"Gotta Catch 'Em All","rarity":"uncommon","desc":"Trzy filmy trzech różnych osób w ciągu 7 dni."},{"id":"speedrun","name":"Speedrun Any%","rarity":"uncommon","desc":"Film wyszedł najpóźniej 3 dni po rozpoczęciu pracy w planie."},{"id":"stay_awhile","name":"Stay a While and Listen","rarity":"uncommon","desc":"Wrzucony film trwa co najmniej godzinę."},{"id":"samurai","name":"Wake Up, Samurai","rarity":"uncommon","desc":"Premiera filmu między północą a 5:00 rano."},{"id":"afk","name":"AFK","rarity":"uncommon","desc":"Ktoś z ekipy przez 21 dni nie wrzucił filmu i nie miał nic w planie."},{"id":"triple_kill","name":"Triple Kill","rarity":"uncommon","desc":"Jedna osoba wrzuciła 3 filmy w ciągu 30 dni."},{"id":"praise_sun","name":"Praise the Sun","rarity":"rare","desc":"Film starszy niż rok odżył i od ponad tygodnia łapie wyraźnie więcej wyświetleń."},{"id":"war_never_changes","name":"War Never Changes","rarity":"rare","desc":"Film z War Thunder pobił rekord (24 h, 7 lub 14 dni) w ciągu pierwszych 14 dni od premiery."},{"id":"critical_hit","name":"Critical Hit","rarity":"rare","desc":"Film po 7 dniach ma 200% lub więcej typowego wyniku kanału."},{"id":"wasted","name":"Wasted","rarity":"rare","desc":"Trzy filmy z rzędu po 7 dniach poniżej 60% typowego wyniku."},{"id":"carrying","name":"Carrying the Team","rarity":"rare","desc":"Trzy kolejne filmy jednej osoby powyżej typowego wyniku kanału."},{"id":"half_life","name":"Half-Life 3 Confirmed","rarity":"rare","desc":"Film, który był przesuwany w planie co najmniej 3 razy, w końcu wyszedł."},{"id":"no_more_war","name":"No More War","rarity":"rare","desc":"Pięć kolejnych filmów spoza War Thunder."},{"id":"headshot","name":"Headshot","rarity":"rare","desc":"Short zdobył 10 000 wyświetleń w ciągu 7 dni."},{"id":"press_f","name":"Press F to Pay Respects","rarity":"rare","desc":"Film zniknął z kanału (usunięty lub ukryty)."},{"id":"rip_tear","name":"Rip and Tear","rarity":"epic","desc":"Rekord 7 dni pobity dwa razy pod rząd przez tę samą osobę."},{"id":"unstoppable","name":"Unstoppable","rarity":"epic","desc":"Film osiągnął 10 000 wyświetleń w ciągu 7 dni."},{"id":"terrorists_win","name":"Terrorists Win","rarity":"epic","desc":"Film spoza War Thunder pobił rekord filmów z War Thunder."},{"id":"sacked","name":"Sacked by the Board","rarity":"epic","desc":"Pięć filmów z rzędu po 7 dniach poniżej 80% typowego wyniku."},{"id":"mission_passed","name":"Mission Passed. Respect+","rarity":"epic","desc":"Cel subów osiągnięty!"},{"id":"dangerous_alone","name":"It's Dangerous to Go Alone","rarity":"epic","desc":"Film zrobiony przez dwie osoby naraz (odblokowuje Saito)."},{"id":"here_we_go","name":"Ah Shit, Here We Go Again","rarity":"epic","desc":"Usunięty film wrócił na kanał jako nowy upload."},{"id":"skill_issue","name":"Skill Issue","rarity":"epic","desc":"Film z najsłabszą pierwszą dobą w historii kanału. Pierwsza doba najbardziej zależy od miniatury i tytułu."},{"id":"princess","name":"Thank You! But Our Princess Is in Another Castle","rarity":"legendary","desc":"Cel subów osiągnięty i w ciągu doby ustawiony następny."},{"id":"toss_coin","name":"Toss a Coin to Your Witcher","rarity":"legendary","desc":"Liczba wspierających kanał osiągnęła co najmniej 50 (odblokowuje Saito)."},{"id":"papiez","name":"Papieżowa godzina","rarity":"legendary","desc":"Premiera o 21:37 albo film złapany z dokładnie 2137 wyświetleniami."},{"id":"sixty_nine","name":"69","rarity":"legendary","desc":"Film ma dokładnie 69 komentarzy i ten stan utrzymał się przez 69 godzin."},{"id":"how_did_we","name":"How Did We Get Here?","rarity":"legendary","desc":"Film jest jednocześnie najsłabszy w historii kanału po 24 h, 7, 14 i 28 dniach."},{"id":"victory_royale","name":"Victory Royale","rarity":"legendary","desc":"Film jest rekordzistą w swojej kategorii we wszystkich czterech oknach: 24 h, 7, 14 i 28 dni."}];
+const DEMO_DEFS = [{"id":"first_blood","name":"First Blood","rarity":"common","desc":"Pierwszy film wrzucony po uruchomieniu tablicy wyzwań."},{"id":"level_up","name":"Level Up!","rarity":"common","desc":"Kanał zdobył 1000 subów od uruchomienia tablicy wyzwań."},{"id":"inquisition","name":"Nobody Expects the Spanish Inquisition","rarity":"common","desc":"Film pojawił się na kanale, choć nie było go w planie nagrywek."},{"id":"repair_cost","name":"Koszt naprawy wyższy niż zysk","rarity":"common","desc":"Film z War Thunder miał po 7 dniach mniej wyświetleń niż średnia filmów z innych gier."},{"id":"one_does_not","name":"One Does Not Simply Upload","rarity":"common","desc":"Praca nad filmem (od startu w planie do premiery) trwała dłużej niż 14 dni."},{"id":"you_died","name":"YOU DIED","rarity":"uncommon","desc":"Film po 14 dniach ma mniej niż 1000 wyświetleń."},{"id":"finally_awake","name":"Hey, You. You're Finally Awake","rarity":"uncommon","desc":"Upload po przerwie dłuższej niż 30 dni od poprzedniego filmu tej samej osoby."},{"id":"gotta_catch","name":"Gotta Catch 'Em All","rarity":"uncommon","desc":"Trzy filmy trzech różnych osób w ciągu 7 dni."},{"id":"speedrun","name":"Speedrun Any%","rarity":"uncommon","desc":"Film wyszedł najpóźniej 3 dni po rozpoczęciu pracy w planie."},{"id":"stay_awhile","name":"Stay a While and Listen","rarity":"uncommon","desc":"Wrzucony film trwa co najmniej godzinę."},{"id":"samurai","name":"Wake Up, Samurai","rarity":"uncommon","desc":"Premiera filmu między północą a 5:00 rano."},{"id":"afk","name":"AFK","rarity":"uncommon","desc":"Ktoś z ekipy przez 21 dni nie wrzucił filmu i nie miał nic w planie."},{"id":"triple_kill","name":"Triple Kill","rarity":"uncommon","desc":"Jedna osoba wrzuciła 3 filmy w ciągu 30 dni."},{"id":"praise_sun","name":"Praise the Sun","rarity":"rare","desc":"Film starszy niż rok odżył i od ponad tygodnia łapie wyraźnie więcej wyświetleń."},{"id":"war_never_changes","name":"War Never Changes","rarity":"rare","desc":"Film z War Thunder pobił rekord (24 h, 7 lub 14 dni) w ciągu pierwszych 14 dni od premiery."},{"id":"critical_hit","name":"Critical Hit","rarity":"rare","desc":"Film po 7 dniach ma 200% lub więcej typowego wyniku kanału."},{"id":"wasted","name":"Wasted","rarity":"rare","desc":"Trzy filmy z rzędu po 7 dniach poniżej 60% typowego wyniku."},{"id":"carrying","name":"Carrying the Team","rarity":"rare","desc":"Trzy kolejne filmy jednej osoby powyżej typowego wyniku kanału."},{"id":"half_life","name":"Half-Life 3 Confirmed","rarity":"rare","desc":"Film, który był przesuwany w planie co najmniej 3 razy, w końcu wyszedł."},{"id":"no_more_war","name":"No More War","rarity":"rare","desc":"Pięć kolejnych filmów spoza War Thunder."},{"id":"headshot","name":"Headshot","rarity":"rare","desc":"Short zdobył 10 000 wyświetleń w ciągu 7 dni."},{"id":"press_f","name":"Press F to Pay Respects","rarity":"rare","desc":"Film zniknął z kanału (usunięty lub ukryty)."},{"id":"rip_tear","name":"Rip and Tear","rarity":"epic","desc":"Rekord 7 dni pobity dwa razy pod rząd przez tę samą osobę."},{"id":"unstoppable","name":"Unstoppable","rarity":"epic","desc":"Film osiągnął 10 000 wyświetleń w ciągu 7 dni."},{"id":"terrorists_win","name":"Terrorists Win","rarity":"epic","desc":"Film spoza War Thunder pobił rekord filmów z War Thunder."},{"id":"sacked","name":"Sacked by the Board","rarity":"epic","desc":"Pięć filmów z rzędu po 7 dniach poniżej 80% typowego wyniku."},{"id":"mission_passed","name":"Mission Passed. Respect+","rarity":"epic","desc":"Cel subów osiągnięty!"},{"id":"dangerous_alone","name":"It's Dangerous to Go Alone","rarity":"epic","desc":"Film zrobiony przez dwie osoby naraz."},{"id":"here_we_go","name":"Ah Shit, Here We Go Again","rarity":"epic","desc":"Usunięty film wrócił na kanał jako nowy upload."},{"id":"skill_issue","name":"Skill Issue","rarity":"epic","desc":"Film z najsłabszą pierwszą dobą w historii kanału. Pierwsza doba najbardziej zależy od miniatury i tytułu."},{"id":"princess","name":"Thank You! But Our Princess Is in Another Castle","rarity":"legendary","desc":"Cel subów osiągnięty i w ciągu doby ustawiony następny."},{"id":"toss_coin","name":"Toss a Coin to Your Witcher","rarity":"legendary","desc":"Liczba wspierających kanał osiągnęła co najmniej 50."},{"id":"papiez","name":"Papieżowa godzina","rarity":"legendary","desc":"Premiera o 21:37 albo film złapany z dokładnie 2137 wyświetleniami."},{"id":"sixty_nine","name":"69","rarity":"legendary","desc":"Film ma dokładnie 69 komentarzy i ten stan utrzymał się przez 69 godzin."},{"id":"how_did_we","name":"How Did We Get Here?","rarity":"legendary","desc":"Film jest jednocześnie najsłabszy w historii kanału po 24 h, 7, 14 i 28 dniach."},{"id":"victory_royale","name":"Victory Royale","rarity":"legendary","desc":"Film jest rekordzistą w swojej kategorii we wszystkich czterech oknach: 24 h, 7, 14 i 28 dni."}];
 const RAR = [
   {id:"common", n:"Common", c:"#a3adbf"},
   {id:"uncommon", n:"Uncommon", c:"#7fc29b"},
@@ -1515,7 +1535,7 @@ async function copyText(txt){
 }
 
 /* ---------- miniatury ---------- */
-let TH = null, THDESC = "";
+let TH = null, THDESC = "", THF = "all", THSHOW = 24;
 let LIKED = (()=>{ try{ return new Set(JSON.parse(localStorage.getItem("mvs_liked")||"[]")); }catch{ return new Set(); } })();
 const saveLiked = () => { try{ localStorage.setItem("mvs_liked", JSON.stringify([...LIKED])); }catch{} };
 async function loadThumbs(){
@@ -1523,93 +1543,135 @@ async function loadThumbs(){
   try{ const r = await fetch("/api/thumbs",{cache:"no-store"}); TH = await r.json(); }catch{}
 }
 function demoThumbs(){
-  let n=0; const v = (id,title,ctr,imp,member,d) => { n++; const sc=Math.max(40,95-(n%5)*9); return {id,title,ctr,impressions:imp,member,thumb:`https://i.ytimg.com/vi/${id}/mqdefault.jpg`,published:new Date(Date.now()-d*864e5).toISOString(),source:"api",
-    score:sc, fresh:40+(n*7)%35, hold:35+(n*5)%20, parts:{ctr:Math.min(100,sc+6),reach:Math.max(0,sc-12),fresh:Math.min(100,sc+3),hold:Math.max(0,sc-8)}, partial:false}; };
-  return {since:new Date(Date.now()-40*864e5).toISOString().slice(0,10), imported:0, partial:12, error:"",
-    top24:[v("ahXb9ko4VuQ","Od REZERWY do TOPTIERA - NIEMIECKIE Czołgi Ciężkie | WAR THUNDER",11.8,18400,"Saito",11),v("VpOiOvOCpKA","Obejrzyj Zanim Wydasz HAJ$ na War Thunder",10.2,12100,"Malvel",20),
-      v("_JqigtQ0v1w","Zagrałem KAŻDYM POJAZDEM 1 Ery Japonii [Część 1]",9.6,15300,"Saito",24),v("Ly1FFxP5iwQ","War Thunder ALE Z KAŻDYM KILLEM jest CIĘŻEJ",8.1,9800,"Virtuoso",34),v("ZuMxUi-R9ug","Jaką nację wybrać w WAR THUNDER? Japonia",7.4,8800,"Malvel",49)],
-    topLife:[v("FAjBzrriFjM","TOP 10 NAJGORSZYCH CZOŁGÓW W WAR THUNDER",9.9,311000,"Saito",67),v("ahXb9ko4VuQ","Od REZERWY do TOPTIERA - NIEMIECKIE Czołgi Ciężkie | WAR THUNDER",9.1,140000,"Saito",11),
-      v("VN2lK9mp6Uc","Jako Czołgista MUSISZ Znać Te Triki w War Thunder!",8.7,132000,"Virtuoso",71),v("_JqigtQ0v1w","Zagrałem KAŻDYM POJAZDEM 1 Ery Japonii [Część 1]",8.2,170000,"Saito",24),v("jUSQtAl8Wag","NAJSZYBSZA Droga do T-80 w War Thunder?",7.9,115000,"Malvel",63)]};
+  const G = ["A+","A","A-","B+","B","B-","C+","C","C-","D","F"];
+  const ids = ["FAjBzrriFjM","ahXb9ko4VuQ","VN2lK9mp6Uc","_JqigtQ0v1w","VpOiOvOCpKA","Ly1FFxP5iwQ","ZuMxUi-R9ug","jUSQtAl8Wag","imtPz1QkSxU","naYRKBGf5EQ","ka3aAuwl6qs","ShIzEcAO2b4"];
+  const titles = ["TOP 10 NAJGORSZYCH CZOŁGÓW W WAR THUNDER","Od REZERWY do TOPTIERA - NIEMIECKIE Czołgi Ciężkie","Jako Czołgista MUSISZ Znać Te Triki!","Zagrałem KAŻDYM POJAZDEM 1 Ery Japonii","Obejrzyj Zanim Wydasz HAJ$ na War Thunder","War Thunder ALE Z KAŻDYM KILLEM jest CIĘŻEJ","Jaką nację wybrać w WAR THUNDER?","Najszybsze czołgi w grze","Omówienie nacji naziemnych","Jaką Nację Mogliby Dodać?","Ja w czołgu vs bossy w Minecraft","Przetrwaliśmy w dżungli"];
+  const videos = ids.map((id,i)=>({id, title:titles[i], member:["Saito","Malvel","Virtuoso"][i%3], wt:i<10?1:0, thumb:`https://i.ytimg.com/vi/${id}/hqdefault.jpg`, score:96-i*8, grade:G[Math.min(10,i)], ctr:Math.round((9.5-i*0.5)*10)/10, imp:Math.round(300000/(i+1)), impEst:false, views:Math.round(30000/(i+1)), avp:Math.round(48-i*1.5), avd:500, parts:{eff:95-i*8,ctr:90-i*7,reach:98-i*8,hold:80-i*5}, descr:i%2?"Czołg na pierwszym planie, wybuch w tle, krótki czerwony napis.":"Trzy postacie z emocją obok czołgu, zatłoczone tło.", hasVision:true}));
+  return {import:{at:new Date(Date.now()-3*864e5).toISOString(), n:312, cols:["Treść","Współczynnik klikalności miniatury (%)","Wyświetlenia miniatury","Wyświetlenia"]}, videos, vision:{done:12,of:12},
+    insights:{n:12, avg:52, items:[{id:"vehicle",label:"Pojazd jako główny motyw",n:8,avg:66,diff:14,grade:"B+",examples:ids.slice(0,3)},{id:"text13",label:"Krótki napis (1–3 słowa)",n:6,avg:61,diff:9,grade:"B",examples:ids.slice(1,4)},{id:"explosion",label:"Akcja: wybuch, ogień, strzał",n:5,avg:58,diff:6,grade:"B",examples:ids.slice(2,5)},{id:"busy",label:"Zatłoczone tło",n:4,avg:39,diff:-13,grade:"C+",examples:ids.slice(6,9)},{id:"text4",label:"Dłuższy napis (4+ słów)",n:4,avg:35,diff:-17,grade:"C",examples:ids.slice(8,11)}]},
+    inspo:{at:new Date(Date.now()-2*864e5).toISOString(), items:[["WT – świat","aaaaaaaaaaa","The WORST tank in War Thunder history","Phly",820000,41],["WT – świat","bbbbbbbbbbb","I tried EVERY plane in one battle","Spookston",410000,12.5],["WT – Polska","ccccccccccc","Czy WT jeszcze ma sens?","Turteł",48000,2.3],["Gaming PL","ddddddddddd","Przetrwaliśmy 100 dni w Minecraft","Kanał",900000,8.1]].map(([group,id,title,channel,views,ratio])=>({group,id,title,channel,views,ratio,thumb:`https://i.ytimg.com/vi/${id}/hqdefault.jpg`,descr:"Duży pojazd w centrum, wyrazista emocja, 2 słowa napisu."}))}};
 }
-const SPARTS = [["ctr","CTR"],["reach","zasięg"],["fresh","nowi"],["hold","utrzymanie"]];
-function scoreTip(v){
-  if(!v.parts) return "";
-  const P = v.parts, f = x => x==null ? "brak danych (jeszcze się pobiera)" : x+"/100";
-  return `Wynik ${v.score}/100 (50 = typowa miniatura kanału)
-CTR na tle zasięgu (40%): ${f(P.ctr)} – CTR ${String(v.ctr).replace(".",",")}%
-Zasięg (25%): ${f(P.reach)}${v.impressions?` – ${nf(v.impressions)} wyświetleń miniatury`:""}
-Nowi widzowie (20%): ${f(P.fresh)}${v.fresh!=null?` – ${String(v.fresh).replace(".",",")}% wyświetleń od osób bez suba`:""}
-Dotrzymana obietnica (15%): ${f(P.hold)}${v.hold!=null?` – średnio obejrzane ${String(v.hold).replace(".",",")}% filmu`:""}`;
+const GCOL = g => !g ? "var(--muted)" : ({A:"#5fc28b",B:"#a3c95a",C:"#e8c25a",D:"#e8955a",F:"#e2735f"})[g[0]];
+const gradeBadge = (g, big) => `<span class="grd${big?" big":""}" style="--g:${GCOL(g)}">${g||"–"}</span>`;
+const THPARTS = [["eff","Skuteczne kliknięcie (CTR × % obejrzenia)",35],["ctr","CTR na tle zasięgu",35],["reach","Zasięg (wyświetlenia miniatury)",20],["hold","Dotrzymana obietnica (% obejrzenia)",10]];
+const p1 = x => x==null ? "–" : String(x).replace(".",",");
+function thTip(v){
+  const P = v.parts || {};
+  return `Ocena ${v.grade} (${v.score}/100 na tle waszych filmów)
+${THPARTS.map(([k,n,w])=>`${n} – waga ${w}%: ${P[k]==null?"brak danych":P[k]+"/100"}`).join("\n")}
+CTR ${p1(v.ctr)}% · wyświetlenia miniatury ${nf(v.imp)}${v.impEst?" (szacunek)":""} · średnio obejrzane ${v.avp==null?"–":p1(v.avp)+"%"}${v.descr?`\nAI widzi: ${v.descr}`:""}`;
 }
-function thumbList(list, kind){
-  if(!list || !list.length) return `<div class="empty">${kind==="24"?"Pojawi się, gdy raporty CTR obejmą premierę nowego filmu (raporty YouTube ruszają do 48 h po wdrożeniu).":"Wgraj eksport ze Studio (przycisk wyżej), żeby zobaczyć CTR starszych filmów."}</div>`;
-  return list.map((v,i)=>{ const on = LIKED.has(v.id);
-    return `<div class="thi ${on?"on":""}"><div class="thn">${i+1}</div>
-      <a href="https://youtu.be/${esc(v.id)}" target="_blank" rel="noopener">${v.thumb?`<img src="${esc(v.thumb)}" alt="" loading="lazy">`:'<div class="ph"></div>'}</a>
-      <div><div class="t">${esc(v.title)}</div><div class="m"><span class="ctr" title="${esc(scoreTip(v))}">${v.score??"–"}<small>/100</small></span> · CTR ${String(v.ctr).replace(".",",")}%${v.fresh!=null?` · ${String(v.fresh).replace(".",",")}% bez suba`:""}${v.member?` · <b style="color:${COLORS[v.member]}">${esc(v.member)}</b>`:""}</div>
-        ${v.parts?`<div class="sbars" title="${esc(scoreTip(v))}">${SPARTS.map(([k,n])=>`<span><i style="width:${v.parts[k]??0}%;${v.parts[k]==null?"opacity:.25":""}"></i><em>${n}</em></span>`).join("")}</div>`:""}</div>
-      <label class="cb"><input type="checkbox" data-like="${esc(v.id)}" ${on?"checked":""} aria-label="Podoba mi się"></label></div>`; }).join("");
+function thTile(v, big){
+  return `<div class="tht${big?" big":""}${LIKED.has(v.id)?" on":""}" title="${esc(thTip(v))}">
+    <a href="${ytLink(v.id)}" target="_blank" rel="noopener" class="thi2"><img src="${esc(v.thumb)}" alt="" loading="lazy">${gradeBadge(v.grade, big)}</a>
+    <div class="tt2">${esc(v.title)}</div>
+    <div class="tm2">CTR ${p1(v.ctr)}% · ${nf(v.imp)} wyśw. min.${v.avp!=null?` · ${p1(v.avp)}% obejrz.`:""}${v.member?` · <b style="color:${COLORS[v.member]}">${esc(v.member)}</b>`:""}</div>
+    <label class="like"><input type="checkbox" data-like="${esc(v.id)}" ${LIKED.has(v.id)?"checked":""}> podoba mi się</label></div>`;
+}
+function inspoTile(x){
+  return `<div class="tht${LIKED.has(x.id)?" on":""}" title="${esc((x.descr?`AI widzi: ${x.descr}\n`:"")+`${nf(x.views)} wyświetleń przy ${nf(x.subs||0)} subach kanału`)}">
+    <a href="${ytLink(x.id)}" target="_blank" rel="noopener" class="thi2"><img src="${esc(x.thumb)}" alt="" loading="lazy"><span class="grd" style="--g:var(--saito)">×${p1(x.ratio)}</span></a>
+    <div class="tt2">${esc(x.title)}</div><div class="tm2">${esc(x.channel)} · ${nf(x.views)} wyśw.</div>
+    <label class="like"><input type="checkbox" data-like="${esc(x.id)}" ${LIKED.has(x.id)?"checked":""}> podoba mi się</label></div>`;
 }
 function thumbsView(){
-  if(!Y.connected && !DEMO) return connectView();
-  if(!TH) return `<div class="card"><div class="empty">Ładuję…</div></div>`;
-  if(TH.error && !TH.top24) return `<div class="card"><div class="badline">${esc(TH.error)}</div></div>`;
-  const status = TH.error ? `<div class="badline">${esc(TH.error)}</div>`
-    : TH.since ? `CTR z raportów YouTube od <b>${fmt(TH.since)}</b>${TH.until?` do ${fmt(TH.until)}`:""} (YouTube dosyła dane z 1–2 dniowym opóźnieniem).`
-    : `Raporty CTR uruchomione. YouTube przygotowuje pierwsze dane, może to potrwać do 48 h.`;
-  const liked = [...LIKED];
-  return `<div class="card"><h2>Miniatury <span class="hint">wynik 0–100 · bez shortów · doba: min. 200 wyśw. miniatury · cały czas: filmy z min. 3000 wyświetleń</span></h2>
-    <div class="help" style="margin-top:0">Wynik porównuje miniaturę z resztą filmów kanału (50 = typowa). Liczą się: <b>CTR na tle zasięgu</b> (40%, bo CTR naturalnie spada, gdy YouTube pokazuje film szerzej), <b>zasięg</b> (25%, ile razy pokazano miniaturę), <b>nowi widzowie</b> (20%, udział wyświetleń od osób bez suba) i <b>dotrzymana obietnica</b> (15%, średni % obejrzenia, bo clickbait z szybkim odpływem nie jest dobrą miniaturą). Najedź na wynik, żeby zobaczyć rozbicie.${TH.audience!=null&&!DEMO&&TH.poolLife>TH.audience?` Dane o widzach spoza subów pobierają się stopniowo (${TH.audience} filmów gotowych), do tego czasu część wyników liczy się z CTR i zasięgu.`:""}</div>
-    <div class="help" style="margin-top:0">${status}${TH.imported?` Z eksportu Studio: ${TH.imported} filmów.`:""}${TH.partial?` ${TH.partial} starszych filmów czeka na eksport ze Studio, bo raporty obejmują tylko ostatnie tygodnie.`:""}</div>
-    ${DEMO?"":`<div class="tgrow"><span class="filebtn btn ghost sm">Wgraj eksport ze Studio (CSV)<input type="file" accept=".csv,text/csv" id="ctrFile"></span>
-      <span class="help" style="margin:0">Studio → Statystyki → Tryb zaawansowany → zakres „Od początku” → Eksportuj → CSV → wgraj plik „Dane tabeli.csv” / „Table data.csv”.</span></div>`}
+  if(!TH) return `<div class="card"><div class="help">Ładuję…</div></div>`;
+  if(TH.error) return `<div class="card"><div class="badline">${esc(TH.error)}</div></div>`;
+  const V = TH.videos || [], I = TH.import, ins = TH.insights || {items:[]};
+  const imported = I ? `Dane z importu ${new Date(I.at).toLocaleDateString("pl-PL")} · ${I.n} filmów · ocenionych ${V.length} (min. 1000 wyświetleń miniatury, bez shortów)` : "Brak danych – wgraj plik z YouTube Studio.";
+  const noImp = I && I.cols && !I.cols.some(c=>/miniatur|impression/i.test(c) && !/klikaln|click/i.test(c));
+  const howto = `<details class="help" style="margin-top:8px"><summary style="cursor:pointer">Jak wyeksportować plik ze Studio</summary>
+    <ol style="margin:6px 0 0 18px;padding:0"><li>YouTube Studio → <b>Statystyki</b> → <b>Tryb zaawansowany</b> (prawy górny róg).</li><li>Zakładka <b>Treść</b>, okres <b>Od początku</b>.</li>
+    <li>Kolumny (ikonka nad tabelą): <b>Wyświetlenia miniatury</b>, <b>Współczynnik klikalności miniatury</b>, <b>Wyświetlenia</b>. Średni % obejrzenia panel pobiera sam.</li>
+    <li><b>Eksportuj bieżący widok</b> → <b>Wartości rozdzielane przecinkami (CSV)</b>, rozpakuj ZIP i wgraj <b>Table data.csv</b> (albo „Dane tabeli.csv”).</li></ol>Raz w miesiącu wystarczy – stare liczby się aktualizują, nowe filmy dochodzą.</details>`;
+  const pool = V.filter(v => THF==="all" || (THF==="wt" ? v.wt : !v.wt));
+  const insp = TH.inspo && TH.inspo.items || [];
+  const groups = [...new Set(insp.map(x=>x.group))];
+  const sel = [...V, ...insp].filter(x=>LIKED.has(x.id)).length;
+  return `<div class="grid">
+  <div class="card">
+    <h2>Miniatury <span class="hint">ocena A+…F na tle waszych filmów</span></h2>
+    <div class="tgrow" style="align-items:center;gap:12px;flex-wrap:wrap">${DEMO?"":`<span class="filebtn btn">Wgraj „Table data.csv”<input type="file" accept=".csv,text/csv" id="thFile"></span>`}<span class="help" style="margin:0">${imported}</span></div>
+    ${noImp?`<div class="warnline" style="margin-top:8px">W pliku brakuje kolumny „Wyświetlenia miniatury” – zasięg jest szacowany z wyświetleń i CTR. Dodaj tę kolumnę przy następnym eksporcie, ocena będzie dokładniejsza.</div>`:""}
+    ${howto}
   </div>
-  <div class="thgrid" style="margin-top:14px">
-    <div class="card"><div class="thhead"><h2>TOP 5 – pierwsza doba</h2><div class="like">Podoba mi się</div></div><div class="thl">${thumbList(TH.top24,"24")}</div></div>
-    <div class="card"><div class="thhead"><h2>TOP 5 – cały czas</h2><div class="like">Podoba mi się</div></div><div class="thl">${thumbList(TH.topLife,"life")}</div></div>
+  ${V.length?`<div class="card"><h2>TOP 5 waszych miniatur</h2><div class="thg top">${V.slice(0,5).map(v=>thTile(v,true)).join("")}</div></div>`:""}
+  <div class="card"><h2>Co działa u was <span class="hint">AI ogląda każdą miniaturę · ${TH.vision?`${TH.vision.done}/${TH.vision.of} przeanalizowanych`:""}</span></h2>
+    ${ins.items.length ? `<div class="help" style="margin-top:0">Średnia ocena miniatur z daną cechą względem średniej kanału (${ins.avg}/100). Najedź na wiersz, żeby zobaczyć przykłady.</div>
+      <div class="insl">${ins.items.map(x=>`<div class="ins ${x.diff>=0?"up":"dn"}"><div class="il">${gradeBadge(x.grade)} <b>${esc(x.label)}</b> <span class="muted">${x.n} miniatur</span></div>
+        <div class="ib"><span class="ibar"><i style="width:${Math.min(100,Math.abs(x.diff)*3)}%"></i></span><b>${x.diff>0?"+":""}${x.diff} pkt</b></div>
+        <div class="iex">${(x.examples||[]).map(id=>{ const v=V.find(q=>q.id===id); return v?`<img src="${esc(v.thumb)}" alt="" title="${esc(v.title)} – ${v.grade}" loading="lazy">`:""; }).join("")}</div></div>`).join("")}</div>
+      <div class="help">To korelacja, nie gwarancja – temat i tytuł też robią swoje. Ale jeśli cecha powtarza się na najlepszych miniaturach, warto ją świadomie zamawiać w generatorze.</div>`
+      : `<div class="help">Analiza pojawi się, gdy AI obejrzy min. 8 ocenionych miniatur (po 3 na każde odświeżenie danych, czyli co godzinę).</div>`}
   </div>
-  <div class="card" style="margin-top:14px"><h2>Nowa miniatura <span class="hint">zaznaczone: ${liked.length}</span></h2>
-    <label>O czym jest nowy film?<textarea id="thDesc" maxlength="2000" placeholder="np. Gram każdym niemieckim niszczycielem czołgów od rezerwy do topu; na końcu Jagdtiger. Chcę pokazać emocje i duży kontrast.">${esc(THDESC)}</textarea></label>
-    <div class="tgrow"><button class="btn" data-thprompt>Kopiuj prompt</button><span class="help" style="margin:0">Wklej w czacie z Claude. Odpowiem gotowym promptem po angielsku do generatora grafik.</span></div>
+  <div class="card"><h2>Wszystkie oceny <span class="hint">${pool.length} filmów</span></h2>
+    <div class="chips" style="margin-bottom:12px">${[["all","Wszystkie"],["wt","War Thunder"],["ot","Inne gry"]].map(([k,n])=>`<button class="chip ${THF===k?"on":""}" data-thf="${k}">${n}</button>`).join("")}</div>
+    ${pool.length?`<div class="thg">${pool.slice(0,THSHOW).map(v=>thTile(v)).join("")}</div>${pool.length>THSHOW?`<button class="btn ghost sm" data-thmore style="margin-top:12px">Pokaż więcej</button>`:""}`:`<div class="help">Brak ocenionych filmów – wgraj plik ze Studio.</div>`}
+  </div>
+  <div class="card"><h2>Inspiracje z YouTube <span class="hint">ostatnie 30 dni · aktualizacja co tydzień${TH.inspo?` · ${ago(TH.inspo.at)}`:""}</span></h2>
+    ${insp.length?groups.map(gr=>`<h3 class="trh">${esc(gr)}</h3><div class="thg">${insp.filter(x=>x.group===gr).map(inspoTile).join("")}</div>`).join("")+`<div class="help">Filmy, które zebrały najwięcej wyświetleń w stosunku do liczby subów kanału (×N) – czyli miniatura i temat przyciągnęły ludzi spoza widowni twórcy. Shorty pominięte.</div>`
+      :`<div class="help">Pierwsze inspiracje pojawią się po najbliższym odświeżeniu danych.</div>`}
+  </div>
+  <div class="card"><h2>Prompt do Claude <span class="hint">zaznaczone: ${sel}</span></h2>
+    <label>O czym jest nowy film?<textarea id="thDesc" maxlength="2000" rows="3" placeholder="np. Gram każdym niemieckim niszczycielem czołgów od rezerwy do toptiera">${esc(THDESC)}</textarea></label>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px"><button class="btn" data-thprompt>Kopiuj prompt</button>${sel?`<button class="btn ghost sm" data-thclear>Wyczyść zaznaczenie</button>`:""}
+    <span class="help" style="margin:0">Zaznacz „podoba mi się” przy waszych miniaturach i/lub inspiracjach. Claude dostanie ich opisy, oceny i to, co u was działa, i odda gotowy prompt do generatora grafik (bez napisów – te dodajecie ręcznie) w 2 wariantach do testu A/B.</span></div>
+  </div>
+  <div class="card"><details><summary style="cursor:pointer"><h2 style="display:inline">Jak oceniamy miniatury</h2></summary>
+    <div class="help" style="margin-top:10px;line-height:1.6">
+    <b>Dlaczego nie sam CTR:</b> YouTube w teście A/B miniatur (Test &amp; Compare) wybiera zwycięzcę po <b>udziale w czasie oglądania</b>, a nie po CTR. Liczy się kliknięcie, po którym widz zostaje. Do tego CTR naturalnie spada, gdy YouTube pokazuje film szerzej (np. z 9% do 3,5% przy 10× większym zasięgu), a wysoki CTR na starcie to głównie wasi najwierniejsi widzowie.<br>
+    <b>Ocena (porównanie z waszymi filmami):</b> ${THPARTS.map(([,n,w])=>`${n} ${w}%`).join(" · ")}. Wynik 0–100 zamieniamy na skalę: A+ (top 5%), A, A-, B+, B, B-, C+, C, C-, D, F (dolne 10%).<br>
+    <b>Z badań (setki tysięcy miniatur):</b> twarze średnio nie dają przewagi (w gamingu są tylko na 47% miniatur), co trzecia miniatura gamingowa nie ma napisu, a mediana napisu to 4–5 słów. Dlatego panel nie ocenia „z góry”, tylko sprawdza, co działa u was.</div></details></div>
   </div>`;
 }
 function thumbPrompt(){
-  const all = [...(TH.top24||[]).map(v=>({...v,k:"po pierwszej dobie"})), ...(TH.topLife||[]).map(v=>({...v,k:"od początku"}))];
-  const seen = new Map();
-  for(const v of all) if(LIKED.has(v.id)){ const s = seen.get(v.id); const t=`wynik ${v.score}/100, CTR ${String(v.ctr).replace(".",",")}% ${v.k}`; if(s) s.k.push(t); else seen.set(v.id,{...v,k:[t]}); }
-  const list = [...seen.values()];
-  return `Pomóż mi zrobić miniaturę YouTube dla kanału MVS (polski kanał gamingowy, głównie War Thunder).
-
-Podobają mi się miniatury tych filmów (najlepszy wynik miniatury na kanale: CTR na tle zasięgu, zasięg, nowi widzowie, utrzymanie):
-${list.map((v,i)=>`${i+1}. https://youtu.be/${v.id} – „${v.title}” (${v.k.join("; ")})`).join("\n")}
-ID filmów: ${list.map(v=>v.id).join(", ")}
-
-Obejrzyj te miniatury (np. przez vidIQ: vidiq_get_images z tymi ID) i wyciągnij ich wspólny styl: kompozycja, kadr, kolory i kontrast, postać/maskotka, pojazdy, tło, efekty, miejsce na tekst.
+  const V = TH.videos||[], insp = (TH.inspo&&TH.inspo.items)||[];
+  const ours = V.filter(v=>LIKED.has(v.id)), ins = insp.filter(x=>LIKED.has(x.id));
+  const good = (TH.insights&&TH.insights.items||[]).filter(x=>x.diff>=5).slice(0,4), bad = (TH.insights&&TH.insights.items||[]).filter(x=>x.diff<=-5).slice(-3);
+  return `Jesteś specjalistą od miniatur YouTube. Pomóż mi przygotować prompt do generatora grafik AI dla polskiego kanału gamingowego MVS (War Thunder, przejście na szerszy gaming; trójka twórców: Malvel, Virtuoso, Saito). Napisy dodajemy ręcznie, więc grafika ma być BEZ tekstu, z czystym miejscem na napis.
 
 Nowy film: ${THDESC.trim()}
+${ours.length?`
+Nasze miniatury, które nam się podobają (ocena na tle kanału, CTR, opis):
+${ours.map(v=>`– „${v.title}” – ocena ${v.grade}, CTR ${p1(v.ctr)}%${v.descr?`; na miniaturze: ${v.descr}`:""}`).join("\n")}`:""}
+${ins.length?`
+Inspiracje z YouTube, które nam się podobają (wystrzeliły ponad swój kanał):
+${ins.map(x=>`– „${x.title}” (${x.channel}) – ×${p1(x.ratio)} wyświetleń względem subów${x.descr?`; na miniaturze: ${x.descr}`:""}`).join("\n")}`:""}
+${good.length||bad.length?`
+Co u nas działa (analiza naszych miniatur, średnia ocena cechy względem kanału):
+${good.map(x=>`+ ${x.label}: ${x.diff>0?"+":""}${x.diff} pkt (${x.n} miniatur)`).join("\n")}
+${bad.map(x=>`– ${x.label}: ${x.diff} pkt (${x.n} miniatur)`).join("\n")}`:""}
 
-Odpowiedz w 3 częściach:
-1. Po polsku, krótko (3–5 punktów): jaki wspólny styl widzisz w tych miniaturach.
-2. Gotowy prompt PO ANGIELSKU w bloku kodu, do skopiowania do generatora grafik AI: miniatura 16:9 (1280×720) w tym samym stylu, idealnie dopasowana do nowego filmu. Bez napisów w samej grafice, za to z czystym miejscem na tekst (napisy generowane przez AI zwykle wychodzą krzywo).
-3. Propozycja tekstu na miniaturę po polsku (2–4 słowa), z kolorem i miejscem, gdzie go dodać.`;
+Odpowiedz w 4 częściach:
+1. Po polsku, krótko (3–5 punktów): jaki styl łączy wybrane miniatury i co z tego bierzemy.
+2. Dwa gotowe prompty PO ANGIELSKU w osobnych blokach kodu (wariant A i B do testu A/B w YouTube Studio – różniące się jednym wyraźnym elementem, np. kadrem albo emocją): miniatura 16:9 (1280×720), bez żadnego tekstu w grafice, z czystym miejscem na napis.
+3. Propozycja napisu po polsku (2–4 słowa) dla każdego wariantu, z kolorem i miejscem.
+4. Jedna rzecz, której unikać, żeby miniatura nie była clickbaitem (YouTube ocenia miniatury po czasie oglądania, nie tylko po kliknięciach).`;
 }
-async function importCtrCsv(file){
+async function importThumbCsv(file){
   const text = await file.text();
-  const rows = parseCsv(text);
+  const rows = parseCsv(text.replace(/^﻿/,""));
   if(rows.length < 2){ toast("⚠ Pusty plik"); return; }
   const head = rows[0].map(h=>h.trim()), body = rows.slice(1);
   const idRe = /^[A-Za-z0-9_-]{11}$/;
   const idCol = head.findIndex((_,i)=> body.filter(r=>idRe.test((r[i]||"").trim())).length >= Math.max(1, body.length*0.5));
   const lc = head.map(h=>h.toLowerCase());
-  let ctrCol = lc.findIndex(h=>/(ctr|click-through|klikaln|współczynnik klik)/.test(h));
-  let impCol = lc.findIndex((h,i)=> i!==ctrCol && /(impression|wyświetlenia miniatur|wyświetlenia na liście|wyświetleń miniatur)/.test(h));
-  const durCol = lc.findIndex(h=>/(czas trwania|duration)/.test(h));
-  if(idCol<0 || ctrCol<0){ toast("⚠ Nie rozpoznano kolumn. Wyeksportuj CSV z kolumną CTR (zmień język Studio na angielski, jeśli trzeba)."); return; }
-  const num = s => Number(String(s||"").replace(/[\s %]/g,"").replace(",","."));
-  const out = body.filter(r=>idRe.test((r[idCol]||"").trim()) && !(durCol>=0 && num(r[durCol])>0 && num(r[durCol])<=180)).map(r=>({id:r[idCol].trim(), ctr:num(r[ctrCol]), impressions:impCol>=0?num(r[impCol]):0})).filter(r=>!isNaN(r.ctr));
-  try{ const r = await api.call("POST","ctr/import",{rows:out}); toast(`Wczytano CTR ${r.imported} filmów`); }
+  const find = (re, not) => lc.findIndex(h => re.test(h) && !(not && not.test(h)));
+  const ctrCol = find(/(klikaln|click-through|\bctr\b)/);
+  const impCol = find(/(wyświetlenia miniatur|wyświetleń miniatur|impressions)/, /(klikaln|click-through|ctr)/);
+  const viewsCol = lc.findIndex(h => /^(wyświetlenia|views)$/.test(h));
+  const avdCol = find(/(średni czas oglądania|average view duration)/);
+  const avpCol = find(/(średni procent obejrzenia|średni % obejrzenia|average percentage viewed)/);
+  const durCol = find(/(czas trwania|duration)/);
+  if(idCol<0 || ctrCol<0){ toast("⚠ Nie rozpoznano kolumn. Potrzebna kolumna z CTR miniatury (patrz instrukcja eksportu)."); return; }
+  const num = s => Number(String(s||"").replace(/[\s % ]/g,"").replace(",","."));
+  const secs = s => { const t = String(s||"").trim(); if(/^\d+(:\d+){1,2}$/.test(t)) return t.split(":").reduce((a,b)=>a*60+Number(b),0); const n = num(t); return isNaN(n)?null:n; };
+  const out = body.filter(r=>idRe.test((r[idCol]||"").trim()) && !(durCol>=0 && num(r[durCol])>0 && num(r[durCol])<=120)).map(r=>({
+    id:r[idCol].trim(), ctr:num(r[ctrCol]), impressions:impCol>=0?num(r[impCol]):null, views:viewsCol>=0?num(r[viewsCol]):null,
+    avd:avdCol>=0?secs(r[avdCol]):null, avp:avpCol>=0?num(r[avpCol]):null })).filter(r=>!isNaN(r.ctr));
+  const cols = [ctrCol, impCol, viewsCol, avdCol, avpCol].filter(i=>i>=0).map(i=>head[i]);
+  try{ const r = await api.call("POST","thumbs/import",{rows:out, cols}); toast(`Wczytano ${r.imported} filmów – oceny przeliczone`); TABAT.thumb = 0; await loadTabData("thumb", true); render(); }
   catch(e){ toast("⚠ "+e.message); }
-  await load();
 }
 function parseCsv(t){
   const rows=[]; let row=[], f="", q=false;
@@ -1832,8 +1894,11 @@ document.addEventListener("click", e => {
   if(d.gentags!==undefined) genTags();
   if(d.csort){ const [l,k]=d.csort.split(":"); CPSORT[l]=k; render(); }
   if(d.cdel && confirm("Usunąć ten kanał z tabeli?")) save("DELETE","competition/"+d.cdel+"?list=pl",null,"Usunięto kanał");
+  if(d.thf){ THF = d.thf; THSHOW = 24; render(); }
+  if(d.thmore!==undefined){ THSHOW += 24; render(); }
+  if(d.thclear!==undefined){ LIKED.clear(); saveLiked(); render(); }
   if(d.thprompt!==undefined){ const t=document.getElementById("thDesc"); if(t) THDESC=t.value;
-    if(!LIKED.size || ![...(TH.top24||[]),...(TH.topLife||[])].some(v=>LIKED.has(v.id))) toast("⚠ Zaznacz „Podoba mi się” przy co najmniej jednej miniaturze");
+    if(![...(TH.videos||[]),...((TH.inspo&&TH.inspo.items)||[])].some(v=>LIKED.has(v.id))) toast("⚠ Zaznacz „podoba mi się” przy co najmniej jednej miniaturze");
     else if(THDESC.trim().length < 10) toast("⚠ Opisz nowy film");
     else copyText(thumbPrompt()).then(ok=>toast(ok?"Prompt skopiowany: wklej go w czacie z Claude":"⚠ Nie udało się skopiować")); }
   if(d.tagtoggle){ TG.off.has(d.tagtoggle) ? TG.off.delete(d.tagtoggle) : TG.off.add(d.tagtoggle); syncTagInputs(); render(); }
@@ -1853,7 +1918,7 @@ document.addEventListener("click", e => {
 document.addEventListener("change", e => {
   if(e.target.dataset && e.target.dataset.like){ const id=e.target.dataset.like; e.target.checked ? LIKED.add(id) : LIKED.delete(id); saveLiked();
     const t=document.getElementById("thDesc"); if(t) THDESC=t.value; render(); return; }
-  if(e.target.id==="ctrFile" && e.target.files[0]){ importCtrCsv(e.target.files[0]); return; }
+  if(e.target.id==="thFile" && e.target.files[0]){ importThumbCsv(e.target.files[0]); return; }
   const id = e.target.dataset && e.target.dataset.assign;
   if(!id || !e.target.value) return;
   save("POST","videos/"+id+"/assign",{member:e.target.value},"Autor przypisany");

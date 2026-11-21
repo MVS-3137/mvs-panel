@@ -3,7 +3,7 @@ import { gameKey, CATS } from "../../lib/gameinfo.js";
 import { loadPhase, phaseDates, phaseDef, advance } from "../../lib/phase.js";
 import { DEFS, DEF, MANUAL, unlockStmts, bestSubs } from "../../lib/ach.js";
 import { generateTags } from "../../lib/tags.js";
-import { topThumbs, importStmts } from "../../lib/thumbs.js";
+import { thumbsData, importStmts } from "../../lib/thumbs.js";
 import { compTables, resolveChannel, EDITABLE, OWN_ID } from "../../lib/comp.js";
 import { accessToken } from "../../lib/yt.js";
 import { computeGrades, clickStmt, MANUAL_TAGS } from "../../lib/grades.js";
@@ -362,18 +362,18 @@ export async function onRequest({ request, env, params, data }) {
     }
 
     if (res === "thumbs" && method === "GET") {
-      try { return json(await cached(db, "cache_thumbs", () => topThumbs(db))); }
-      catch (e) { return json({ error: "Brak tabel na miniatury. Wykonaj SQL z pliku schema-miniatury.sql." }, 500); }
+      try { return json(await cached(db, "cache_thumbs", () => thumbsData(db))); }
+      catch (e) { return json({ error: "Brak tabel na miniatury. Wykonaj SQL z pliku schema-miniatury-v2.sql. (" + e.message + ")" }, 500); }
     }
 
-    if (res === "ctr" && id === "import" && method === "POST") {
+    // import „Table data.csv” z YouTube Studio (parsowany w przeglądarce) – jedno zapytanie do bazy
+    if ((res === "thumbs" || res === "ctr") && id === "import" && method === "POST") {
       const b = await readBody(request);
-      const rows = Array.isArray(b.rows) ? b.rows.slice(0, 5000) : [];
-      const st = importStmts(db, rows.map((r) => ({ id: String(r.id || ""), ctr: Number(r.ctr), impressions: Number(r.impressions) })), new Date().toISOString());
-      if (!st.length) return bad("Nie znaleziono w pliku filmów z CTR");
-      for (let i = 0; i < st.length; i += 100) await db.batch(st.slice(i, i + 100));
-      await db.batch([dropCache(db, "cache_thumbs", "cache_grades")]);
-      return json({ ok: true, imported: st.length });
+      const rows = (Array.isArray(b.rows) ? b.rows.slice(0, 5000) : []).map((r) => ({ id: String(r.id || ""), ctr: Number(r.ctr), impressions: Number(r.impressions) || null, views: Number(r.views) || null, avd: Number(r.avd) || null, avp: Number(r.avp) || null }));
+      const { n, st } = importStmts(db, rows, { by: user, cols: Array.isArray(b.cols) ? b.cols.slice(0, 12) : [], period: String(b.period || "").slice(0, 60) }, new Date().toISOString());
+      if (!n) return bad("Nie znaleziono w pliku filmów z CTR");
+      await db.batch(st);
+      return json({ ok: true, imported: n });
     }
 
     if (res === "competition") {
