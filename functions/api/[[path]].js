@@ -238,7 +238,8 @@ export async function onRequest({ request, env, params, data }) {
       const [k, v, n] = await db.batch([
         db.prepare("SELECT key, value FROM kv WHERE key IN ('channel_title','channel_id','channel_thumb','subs','last_refresh','last_error','records','audience')"),
         db.prepare("SELECT id, title, published, duration_s, thumb, wt, is_short, member, views, likes, comments, curve, approx24, COALESCE(live_override, is_live, 0) AS live, COALESCE(members_override, is_members, 0) AS members, public_at FROM videos WHERE removed_at IS NULL ORDER BY published DESC"),
-        db.prepare("SELECT id, ts, type, text, video_id FROM news ORDER BY id DESC LIMIT 60"),
+        // powiadomienia osobiste (np. zmiany tytułów z Ocen) widzi tylko osoba, której dotyczą
+        db.prepare("SELECT id, ts, type, text, video_id FROM news WHERE who IS NULL OR who = '' OR (',' || who || ',') LIKE ? ORDER BY id DESC LIMIT 60").bind(`%,${user},%`),
       ]);
       const kv = Object.fromEntries(k.results.map((r) => [r.key, r.value]));
       const connected = !!(await kvGet(db, "yt_refresh_token"));
