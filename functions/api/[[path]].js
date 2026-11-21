@@ -270,7 +270,9 @@ export async function onRequest({ request, env, params, data }) {
       if (!v) return json({ error: "Nie ma takiego filmu" }, 404);
       if (!MEMBERS.includes(b.member)) return bad("Nieznana osoba");
       const stmts = [db.prepare("UPDATE videos SET member=? WHERE id=?").bind(b.member, id), dropCache(db, "cache_thumbs", "cache_grades")];
-      if (!v.project_id) {
+      // tylko długi film (nie short, nie stream, nie dla wspierających) może zamknąć film w planie
+      const excluded = v.is_short || (v.live_override ?? v.is_live) == 1 || (v.members_override ?? v.is_members) == 1;
+      if (!v.project_id && !excluded) {
         const p = await db.prepare("SELECT * FROM projects WHERE member=? AND video_id IS NULL ORDER BY (status='active') DESC, start DESC LIMIT 1").bind(b.member).first();
         if (p) stmts.push(...linkProject(db, v, p));
       }
