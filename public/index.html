@@ -339,6 +339,9 @@ textarea:focus{outline:2px solid var(--gold2);outline-offset:-1px}
 .tbl{overflow-x:auto}
 .li.idea{border-left:3px solid var(--c);justify-content:space-between;align-items:flex-start;padding:10px 12px}.itx{white-space:pre-wrap;word-break:break-word;font-size:14px}.li.idea .s{font-size:12px;color:var(--muted);margin-top:3px}
 @media (min-width:700px){nav{flex-wrap:wrap;overflow:visible;gap:2px}nav button{padding-left:7px;padding-right:7px}}
+
+.aud{min-width:240px;cursor:help;font-size:12.5px;color:var(--muted)}.audv{display:flex;gap:16px;align-items:baseline;flex-wrap:wrap}.audv b{color:var(--text)}
+.audbar{height:5px;border-radius:3px;background:var(--line);margin-top:6px;overflow:hidden}.audbar i{display:block;height:100%;background:var(--gold)}
 </style>
 </head>
 <body>
@@ -1082,11 +1085,26 @@ function chanBar(){
     <div><div class="lbl">Kanał</div><div style="font-weight:600;font-size:17px">${esc(c.title||"–")}</div></div>
     <div><div class="lbl">Suby</div><div class="big">${nf(c.subs)}</div></div>
     <div><div class="lbl">Filmy</div><div class="big">${nf(Y.videos.filter(v=>!v.is_short).length)}</div></div>
+    ${audienceBox()}
     <div class="sp"></div>
     <div style="text-align:right;font-size:12.5px;color:var(--muted)">${Y.last_refresh?"dane z "+relTime(Y.last_refresh):"czekam na pierwsze dane…"}<br>
       ${DEMO?"":`<button class="btn ghost sm" data-refresh style="margin-top:6px">Odśwież teraz</button>`}</div>
     ${Y.last_error?`<div class="badline" style="flex-basis:100%">Ostatni błąd: ${esc(Y.last_error)}</div>`:""}
   </div>`;
+}
+const pc1 = x => x==null ? "–" : String(x.toFixed(1)).replace(".",",")+"%";
+function audienceBox(){
+  const A = Y.audience;
+  if(!A || A.wt == null) return `<div class="aud" title="Szacunek liczy się raz w tygodniu – pierwszy pojawi się w ciągu kilku godzin."><div class="lbl">Widzowie</div><div class="muted" style="margin-top:6px">liczę szacunek…</div></div>`;
+  const P = A.parts || {}, d = A.prevWt != null ? Math.round((A.wt - A.prevWt)*10)/10 : null;
+  const tip = `Szacunek z ${new Date(A.at).toLocaleDateString("pl-PL")} (aktualizacja co tydzień). To przybliżenie z wyświetleń i subskrypcji, nie liczba osób.
+• Subskrybenci (waga 60%): ${pc1(P.subs)} subów z filmów WT – cała historia kanału (dla porównania ostatnie 90 dni: ${pc1(P.subs90)})
+• Kto ogląda (waga 25%): ${pc1(P.cross)} – filmy WT + widzowie z subem na filmach z innych gier (z subem jest ${pc1(P.followers)} wyświetleń innych gier)
+• Wyświetlenia (waga 15%): ${pc1(P.views)} wyświetleń z ostatnich 90 dni to filmy WT${d!=null?`
+Zmiana od poprzedniego tygodnia: ${d>0?"+":""}${String(d).replace(".",",")} pkt`:""}`;
+  return `<div class="aud" title="${esc(tip)}"><div class="lbl">Widzowie (szacunek)</div>
+    <div class="audv"><span><b class="big" style="color:var(--gold)">${pc1(A.wt)}</b> War Thunder</span><span><b class="big" style="color:var(--text)">${pc1(A.other)}</b> inne gry</span></div>
+    <div class="audbar"><i style="width:${A.wt}%"></i></div></div>`;
 }
 function thumb(v){ return v.thumb ? `<img class="th" src="${esc(v.thumb)}" alt="" loading="lazy">` : `<div class="th">${v.wt?"WAR THUNDER":"MVS"}</div>`; }
 function whoCell(v){
@@ -1180,7 +1198,7 @@ function demoYT(){
   const streams = [{id:"st1",title:"Łikendowy Grind w Łor Tandera ale Jest Wysoko",wt:1,is_short:0,live:1,published:new Date(now-15*24*HOURMS).toISOString(),views:2549,thumb:"",curve:null},
     {id:"st2",title:"ORDT do EMBT – lecimy dalej od 3.0",wt:1,is_short:0,live:1,published:new Date(now-30*24*HOURMS).toISOString(),views:2355,thumb:"",curve:null}];
   const membersOnly = [{id:"m1",title:"OVERWATCH + CZOŁGI? Czyli hero shooter WOT HEAT | BEZ CENZURY |",wt:0,is_short:0,members:1,published:new Date(now-200*24*HOURMS).toISOString(),views:14,thumb:"",curve:null}];
-  return {streams, membersOnly, connected:true, configured:true, channel:{title:"MVS",subs:1287}, last_refresh:new Date(now-20*6e4).toISOString(), last_error:"", videos:vids,
+  return {streams, membersOnly, connected:true, configured:true, channel:{title:"MVS",subs:1287}, audience:{at:new Date(Date.now()-2*864e5).toISOString(), wt:78.4, other:21.6, prevWt:79.1, parts:{subs:86.2, subsLife:91.3, subs90:78.5, cross:72.9, followers:41.7, views:64.0}}, last_refresh:new Date(now-20*6e4).toISOString(), last_error:"", videos:vids,
     news:[{id:5,type:"record",ts:new Date(now-2*HOURMS).toISOString(),text:"NOWY REKORD 24 godzin: „Tiger II – czy był aż tak straszny? | War Thunder” – 2 989 wyświetleń (Saito)"},
       {id:4,type:"new_video",ts:new Date(now-29*HOURMS).toISOString(),text:"Nowy film na kanale: „Tiger II – czy był aż tak straszny? | War Thunder” (montował: Saito)"},
       {id:3,type:"revival",ts:new Date(now-50*HOURMS).toISOString(),text:"Film odżywa! „Bombowce, które zmieniły wojnę” złapał 640 wyświetleń w dobę (zwykle ok. 35)."},

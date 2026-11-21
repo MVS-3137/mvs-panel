@@ -211,7 +211,7 @@ export async function onRequest({ request, env, params, data }) {
 
     if (res === "yt" && method === "GET") {
       const [k, v, n] = await db.batch([
-        db.prepare("SELECT key, value FROM kv WHERE key IN ('channel_title','channel_id','channel_thumb','subs','last_refresh','last_error','records')"),
+        db.prepare("SELECT key, value FROM kv WHERE key IN ('channel_title','channel_id','channel_thumb','subs','last_refresh','last_error','records','audience')"),
         db.prepare("SELECT id, title, published, duration_s, thumb, wt, is_short, member, views, likes, comments, curve, approx24, COALESCE(live_override, is_live, 0) AS live, COALESCE(members_override, is_members, 0) AS members, public_at FROM videos WHERE removed_at IS NULL ORDER BY published DESC"),
         db.prepare("SELECT id, ts, type, text, video_id FROM news ORDER BY id DESC LIMIT 60"),
       ]);
@@ -222,6 +222,7 @@ export async function onRequest({ request, env, params, data }) {
         connected, configured: !!(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET), me: user,
         channel: { title: kv.channel_title || "", id: kv.channel_id || "", thumb: kv.channel_thumb || "", subs: kv.subs ? Number(kv.subs) : null },
         last_refresh: kv.last_refresh || null, last_error: kv.last_error || "",
+        audience: kv.audience ? JSON.parse(kv.audience) : null,
         videos: v.results.map((r) => ({ ...r, curve: r.curve ? JSON.parse(r.curve) : null, manual: ov[r.id] || null })),
         news: n.results,
       });
