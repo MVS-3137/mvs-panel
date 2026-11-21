@@ -1,5 +1,6 @@
 import { refresh, kvGet, kvSet, linkProject, loadOverrides, curveAt } from "../../lib/yt.js";
 import { gameKey, CATS } from "../../lib/gameinfo.js";
+import { loadPhase, phaseDates, phaseDef, advance } from "../../lib/phase.js";
 import { DEFS, DEF, MANUAL, unlockStmts, bestSubs } from "../../lib/ach.js";
 import { generateTags } from "../../lib/tags.js";
 import { topThumbs, importStmts } from "../../lib/thumbs.js";
@@ -62,11 +63,12 @@ export async function onRequest({ request, env, params, data }) {
 
   try {
     if (res === "state" && method === "GET") {
-      const [p, l, s, bt, up, gm, gi, wtc] = await db.batch([
+      const [p, l, s, bt, ph, up, gm, gi, wtc] = await db.batch([
         db.prepare("SELECT * FROM projects ORDER BY start"),
         db.prepare("SELECT * FROM leaves ORDER BY from_date"),
         db.prepare("SELECT key, value FROM settings"),
         db.prepare("SELECT value FROM kv WHERE key='best_times'"),
+        db.prepare("SELECT key, value FROM kv WHERE key IN ('phase','phase_status')"),
         // filmy z ostatnich 120 dni (z shortami) do kalendarza i podpowiedzi planu
         db.prepare(`SELECT v.id, v.title, v.published, v.member, v.is_short, v.wt, v.views, v.curve, g.avp90 FROM videos v LEFT JOIN grade_stats g ON g.video_id = v.id
           WHERE v.removed_at IS NULL AND v.published >= ? AND COALESCE(v.live_override, v.is_live, 0) = 0 AND COALESCE(v.members_override, v.is_members, 0) = 0`).bind(new Date(Date.now() - 120 * 864e5).toISOString()),
@@ -87,7 +89,10 @@ export async function onRequest({ request, env, params, data }) {
       const games = {};
       for (const g of gm.results) (games[g.member] = games[g.member] || []).push(g.name);
       const gameInfo = Object.fromEntries(gi.results.map(({ key, tags, ...r }) => [key, { ...r, tags: (() => { try { return JSON.parse(tags || "[]"); } catch { return []; } })() }]));
-      return json({ projects: p.results, leaves: l.results, settings, me: user, times, recent, games, wtMedian, gameInfo,
+      const PH = Object.fromEntries(ph.results.map((r) => [r.key, JSON.parse(r.value)]));
+      const pst = PH.phase || { n: 1, start: "2026-11-09", ext: 0 };
+      const phase = { ...pst, ...phaseDates(pst), name: phaseDef(pst.n).name, status: PH.phase_status || null };
+      return json({ projects: p.results, leaves: l.results, settings, me: user, times, recent, games, wtMedian, gameInfo, phase,
         uploads: recent.filter((v) => !v.is_short && v.published >= new Date(Date.now() - 70 * 864e5).toISOString()) });
     }
 
@@ -135,6 +140,26 @@ export async function onRequest({ request, env, params, data }) {
         await db.prepare("DELETE FROM leaves WHERE id=?").bind(Number(id)).run();
         return json({ ok: true });
       }
+    }
+
+    // --- Fazy planu: decyzja Saito po niespełnionej fazie ---
+    if (res === "phase" && method === "POST") {
+      if (user !== "Saito") return json({ error: "Tylko Saito" }, 404);
+      const b = await readBody(request);
+      const st = await loadPhase(db), D = phaseDates(st);
+      const today = new Date().toISOString().slice(0, 10);
+      if (today <= D.end) return bad("Faza jeszcze trwa");
+      const nowIso = new Date().toISOString(), P = phaseDef(st.n);
+      let next, text;
+      if (b.action === "extend") { next = { ...st, ext: (st.ext || 0) + 1 }; text = `Saito przedłużył ${P.name} o tydzień (do ${phaseDates(next).end}), żeby dociągnąć cele.`; }
+      else if (b.action === "accept") { next = advance(st, "Saito", "wyniki zaakceptowane", Date.now()); text = next.done ? `Saito zaakceptował wyniki – plan przejścia zakończony.` : `Saito zaakceptował wyniki ${P.name} – startuje ${phaseDef(next.n).name}.`; }
+      else return bad("Nieznana decyzja");
+      await db.batch([
+        db.prepare("INSERT INTO kv (key, value) VALUES ('phase', ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value").bind(JSON.stringify(next)),
+        db.prepare("DELETE FROM kv WHERE key IN ('phase_day','phase_status')"),
+        db.prepare("INSERT INTO news (ts, type, text, uniq) VALUES (?,?,?,?)").bind(nowIso, "phase", text, `phasedec:${nowIso}`),
+      ]);
+      return json({ ok: true });
     }
 
     // --- Pomysły: lista pomysłów + trendy ---
