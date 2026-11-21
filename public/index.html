@@ -272,6 +272,10 @@ textarea:focus{outline:2px solid var(--gold2);outline-offset:-1px}
 .ptag:hover .tip,.ptag:focus .tip{opacity:1;transform:translate(-50%,0)}
 .ptag .tip{visibility:hidden}.ptag:hover .tip,.ptag:focus .tip{visibility:visible}
 .ptags{overflow:visible}.person{overflow:hidden}.person .ptags{overflow:visible}
+/* dymek nad całym rzędem tytułów, w granicach karty – nic się nie ucina */
+.person .ptags{position:relative}.person .ptag{position:static}
+.person .ptag .tip{left:0;right:0;width:auto;bottom:calc(100% + 6px);transform:translateY(4px);background:#141d31;z-index:20}
+.person .ptag:hover .tip,.person .ptag:focus .tip{transform:translateY(0)}
 @media (max-width:560px){.ptag .tip{width:200px}}
 .ptag .tip b{display:block;color:var(--gold);margin-bottom:2px}
 .pnone{font-size:12.5px;color:var(--muted)}
@@ -1781,7 +1785,7 @@ function ideasView(){
       ${G.top.map(x=>`<tr><td><b>${x.rank}</b></td><td>${ch(x)}</td><td><b>${esc(x.game)}</b></td><td class="r">${nf(x.views)}</td><td class="r">${x.videos}</td><td class="r">${x.channels}</td><td class="trtop">${x.top?`<a href="${ytLink(x.top.id)}" target="_blank" rel="noopener" title="${esc(x.top.title)} – ${esc(x.top.channel)}">${esc(x.top.title)}</a>`:""}</td></tr>`).join("")}
     </tbody></table></div>
     <div class="help">Liczone z najpopularniejszych polskich filmów z kategorii Gry z ostatnich 7 dni (bez shortów): AI rozpoznaje grę, a panel sumuje wyświetlenia. Gra musi mieć filmy z min. 2 różnych kanałów. Zmiana miejsca względem poprzedniej aktualizacji${G.prevAt?` (${ago(G.prevAt)})`:""}.</div>`
-      : `<div class="help">${ID.gamesDiag ? `Ranking jeszcze się nie ułożył – ostatnia próba ${ago(ID.gamesDiag.at)}: znalezione filmy ${ID.gamesDiag.found ?? 0}, po polsku i dłuższe niż 2 min ${ID.gamesDiag.kept ?? 0}, rozpoznana gra: AI ${ID.gamesDiag.ai ?? 0}, z tytułu ${ID.gamesDiag.rule ?? 0}${ID.gamesDiag.err?` · błąd: ${esc(ID.gamesDiag.err)}`:""}. Panel spróbuje ponownie za ok. 3 h.` : "Pierwszy ranking pojawi się w ciągu doby."}</div>`}
+      : `<div class="help">${ID.gamesDiag ? `Ranking jeszcze się nie ułożył – ostatnia próba ${ago(ID.gamesDiag.at)}: znalezione filmy ${ID.gamesDiag.found ?? 0}${ID.gamesDiag.long!=null?`, dłuższe niż 2 min ${ID.gamesDiag.long}`:""}, po polsku ${ID.gamesDiag.kept ?? 0}, rozpoznana gra: AI ${ID.gamesDiag.ai ?? 0}, z tytułu ${ID.gamesDiag.rule ?? 0}${ID.gamesDiag.err?` · błąd: ${esc(ID.gamesDiag.err)}`:""}. Panel spróbuje ponownie za ok. 3 h.` : "Pierwszy ranking pojawi się w ciągu doby."}</div>`}
   </div>
   <div class="card">
     <h2>Nasze pomysły <span class="hint">${ID.ideas.length}</span></h2>
