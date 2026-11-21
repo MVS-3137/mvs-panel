@@ -324,7 +324,7 @@ textarea:focus{outline:2px solid var(--gold2);outline-offset:-1px}
 /* pomysły */
 .trg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}
 @media (max-width:760px){.trg{grid-template-columns:minmax(0,1fr)}}
-.trh{font-size:14px;color:var(--gold);margin-bottom:8px}
+.trh{font-size:14px;color:var(--gold);margin-bottom:8px}.trh small{color:var(--muted);font-weight:500;text-transform:none}
 .trt{display:grid;grid-template-columns:24px minmax(0,1fr);gap:8px;padding:10px 0;border-top:1px dashed var(--line)}
 .trt:first-of-type{border-top:0}.trt .t{font-weight:600}.trn{color:var(--muted);font-weight:700}
 .trvs{display:grid;gap:6px}
@@ -1639,8 +1639,8 @@ function trendVideo(v){
   return `<a class="trv" href="${ytLink(v.id)}" target="_blank" rel="noopener" title="${esc(v.title)}">
     <img src="${esc(v.thumb)}" alt="" loading="lazy"><span><b>${esc(v.title)}</b><em>${esc(v.channel)} · ${nf(v.views)} wyśw.${v.vph?` · ${nf(v.vph)}/h`:""}${v.short?" · short":""}</em></span></a>`;
 }
-function trendSide(title, list){
-  if(!list || !list.length) return `<div><h3 class="trh">${title}</h3><div class="help">Brak wyraźnych trendów w tym oknie.</div></div>`;
+function trendSide(title, list, dg){
+  if(!list || !list.length) return `<div><h3 class="trh">${title}</h3><div class="help">Brak wyraźnych trendów w tym oknie${dg?` (znalezione filmy: ${dg.found}, pasujące: ${dg.kept})`:""}.</div></div>`;
   return `<div><h3 class="trh">${title}</h3>${list.map((t,i)=>`<div class="trt"><div class="trn">${i+1}</div><div style="min-width:0"><div class="t">${esc(t.topic)}</div>${t.why?`<div class="help" style="margin:2px 0 6px">${esc(t.why)}</div>`:""}<div class="trvs">${t.videos.map(trendVideo).join("")}</div></div></div>`).join("")}</div>`;
 }
 const IDEA_STEPS = [10,100,1000];
@@ -1650,9 +1650,9 @@ function ideasView(){
   const ch = x => x.isNew ? `<span class="chg new">NOWOŚĆ</span>` : x.change == null ? `<span class="chg">–</span>` : x.change > 0 ? `<span class="chg up">▲ ${x.change}</span>` : x.change < 0 ? `<span class="chg dn">▼ ${-x.change}</span>` : `<span class="chg">=</span>`;
   return `<div class="grid">
   <div class="card">
-    <h2>Trendy War Thunder <span class="hint">ostatnie 4 dni · aktualizacja co 12 h${W?` · ${ago(W.at)}`:""}</span></h2>
-    ${W ? `<div class="trg">${trendSide("🌍 Świat", W.world)}${trendSide("🇵🇱 Polska", W.pl)}</div>
-      <div class="help">Tematy wyłonione z filmów o War Thunder z największą liczbą wyświetleń na godzinę (bez naszego kanału). Kliknij film, żeby otworzyć go na YouTube.</div>`
+    <h2>Trendy War Thunder <span class="hint">aktualizacja co 12 h${W?` · ${ago(W.at)}`:""}</span></h2>
+    ${W ? `<div class="trg">${trendSide("🌍 Świat <small>· 4 dni</small>", W.world, W.diag&&W.diag.en)}${trendSide("🇵🇱 Polska <small>· 7 dni</small>", W.pl, W.diag&&W.diag.pl)}</div>
+      <div class="help">Tematy wyłonione z filmów o War Thunder (bez shortów i bez naszego kanału) z największą liczbą wyświetleń na godzinę. Polska: polskie wyszukiwanie + najnowsze filmy kanałów z zakładki Konkurencja. Kliknij film, żeby otworzyć go na YouTube.</div>`
       : `<div class="help">Pierwsze trendy pojawią się po najbliższym odświeżeniu danych (do godziny).</div>`}
   </div>
   <div class="card">
@@ -1660,8 +1660,8 @@ function ideasView(){
     ${G && G.top.length ? `<div class="tbl"><table class="trtab"><thead><tr><th>#</th><th>zmiana</th><th>Gra</th><th class="r">wyświetlenia</th><th class="r">filmy</th><th class="r">kanały</th><th>najmocniejszy film</th></tr></thead><tbody>
       ${G.top.map(x=>`<tr><td><b>${x.rank}</b></td><td>${ch(x)}</td><td><b>${esc(x.game)}</b></td><td class="r">${nf(x.views)}</td><td class="r">${x.videos}</td><td class="r">${x.channels}</td><td class="trtop">${x.top?`<a href="${ytLink(x.top.id)}" target="_blank" rel="noopener" title="${esc(x.top.title)} – ${esc(x.top.channel)}">${esc(x.top.title)}</a>`:""}</td></tr>`).join("")}
     </tbody></table></div>
-    <div class="help">Liczone z najpopularniejszych polskich filmów z kategorii Gry z ostatnich 7 dni: AI rozpoznaje grę, a panel sumuje wyświetlenia. Gra musi mieć filmy z min. 2 różnych kanałów. Zmiana miejsca względem poprzedniej aktualizacji${G.prevAt?` (${ago(G.prevAt)})`:""}.</div>`
-      : `<div class="help">Pierwszy ranking pojawi się w ciągu doby.</div>`}
+    <div class="help">Liczone z najpopularniejszych polskich filmów z kategorii Gry z ostatnich 7 dni (bez shortów): AI rozpoznaje grę, a panel sumuje wyświetlenia. Gra musi mieć filmy z min. 2 różnych kanałów. Zmiana miejsca względem poprzedniej aktualizacji${G.prevAt?` (${ago(G.prevAt)})`:""}.</div>`
+      : `<div class="help">${ID.gamesDiag ? `Ranking jeszcze się nie ułożył – ostatnia próba ${ago(ID.gamesDiag.at)}: znalezione filmy ${ID.gamesDiag.found ?? 0}, po polsku i dłuższe niż 2 min ${ID.gamesDiag.kept ?? 0}, rozpoznana gra: AI ${ID.gamesDiag.ai ?? 0}, z tytułu ${ID.gamesDiag.rule ?? 0}${ID.gamesDiag.err?` · błąd: ${esc(ID.gamesDiag.err)}`:""}. Panel spróbuje ponownie za ok. 3 h.` : "Pierwszy ranking pojawi się w ciągu doby."}</div>`}
   </div>
   <div class="card">
     <h2>Nasze pomysły <span class="hint">${ID.ideas.length}</span></h2>
@@ -1759,6 +1759,7 @@ document.addEventListener("click", e => {
   const d = b.dataset;
   if(d.tab){ TAB = d.tab; history.replaceState(null,"","#"+TAB); render(); if(TABDATA[TAB] && !DEMO){ const t=TAB; loadTabData(t).then(()=>{ if(TAB===t) render(); }); } }
   if(d.mem && d.mem.endsWith(":1")){ openMem(d.mem.split(":")[0]); return; }
+  if(d.memnever){ dlg.close(); save("POST","videos/"+d.memnever+"/members",{members:true, public_at:null}, "Film na stałe tylko dla wspierających"); return; }
   if(d.mem){ const [id,val]=d.mem.split(":"); save("POST","videos/"+id+"/members",{members:val==="1"}, val==="1"?"Oznaczono jako film dla wspierających – wykluczony ze statystyk":"Przywrócono do statystyk"); }
   if(d.idel){ if(!confirm("Usunąć ten pomysł?")) return; api.call("DELETE","ideas/"+d.idel).then(()=>{ toast("Pomysł usunięty"); return loadTabData("ideas", true); }).then(render).catch(e=>toast("⚠ "+e.message)); return; }
   if(d.sugg){ const x = JSON.parse(d.sugg), f = document.getElementById("fNew");
@@ -1816,8 +1817,10 @@ function openMem(id){
   <div class="help" style="margin:0 0 10px">„${esc(v.title||"")}”</div>
   <form id="fMem" data-id="${esc(id)}">
     <div class="row one"><label>Kiedy wpada dla wszystkich?<input type="datetime-local" name="public_at" value="${toLocalInput(t.toISOString())}"></label></div>
-    <div class="help">Do tej godziny film jest poza statystykami i aktualnościami. O tej godzinie panel sam go włączy: liczy 24 h, rekordy i achievementy od tego momentu, przypisze autora z planu i da powiadomienie o nowym filmie. Wyczyść pole, jeśli film ma zostać na stałe tylko dla wspierających.</div>
-    <button class="btn" type="submit">Zapisz</button> <button class="btn ghost" type="button" data-close>Anuluj</button>
+    <div class="help">Do tej godziny film jest poza statystykami i aktualnościami. O tej godzinie panel sam go włączy: liczy 24 h, rekordy i achievementy od tego momentu, przypisze autora z planu i da powiadomienie o nowym filmie. Jeśli film nigdy nie będzie publiczny, kliknij „Nigdy”.</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" type="submit">Zapisz</button>
+    <button class="btn ghost" type="button" data-memnever="${esc(id)}" title="Film nigdy nie będzie publiczny – na stałe poza statystykami">Nigdy (tylko dla wspierających)</button>
+    <button class="btn ghost" type="button" data-close>Anuluj</button></div>
   </form>`;
   dlg.showModal();
 }
